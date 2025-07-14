@@ -143,10 +143,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { Patient } from 'src/types/index.ts'
+import type { Patient as PatientType } from 'src/types/index'
+
 
 interface Props {
-  patient?: Patient
+  patient?: PatientType
   isEdit?: boolean
 }
 

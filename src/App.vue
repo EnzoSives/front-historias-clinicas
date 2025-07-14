@@ -225,8 +225,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
-import { medicalStore } from 'src/stores/medicalStore.ts'
-import { Patient, Consultation } from 'src/types/index.ts'
+import { medicalStore } from 'src/stores/medicalStore'
+import type { Patient as PatientType } from 'src/types/index'
+import type { Consultation as ConsultationType } from 'src/types/index'
 import Dashboard from 'src/components/Dashboard.vue'
 import PatientCard from 'src/components/PatientCard.vue'
 import PatientForm from 'src/components/PatientForm.vue'
@@ -238,7 +239,7 @@ const $q = useQuasar()
 // Reactive state
 const drawerOpen = ref(false)
 const currentView = ref<'dashboard' | 'patients' | 'patient-form' | 'patient-history' | 'consultation-form'>('dashboard')
-const selectedPatient = ref<Patient | null>(null)
+const selectedPatient = ref<PatientType | null>(null)
 const searchQuery = ref('')
 const previousView = ref<string>('')
 
@@ -261,12 +262,12 @@ const patientConsultations = computed(() => {
 })
 
 // Methods
-const selectPatient = (patient: Patient) => {
+const selectPatient = (patient: PatientType) => {
   selectedPatient.value = patient
   medicalStore.currentPatient = patient
 }
 
-const viewPatientHistory = (patient: Patient) => {
+const viewPatientHistory = (patient: PatientType) => {
   previousView.value = currentView.value
   selectedPatient.value = patient
   currentView.value = 'patient-history'
@@ -278,19 +279,19 @@ const showNewPatientForm = () => {
   currentView.value = 'patient-form'
 }
 
-const showEditPatientForm = (patient: Patient) => {
+const showEditPatientForm = (patient: PatientType) => {
   previousView.value = currentView.value
   selectedPatient.value = patient
   currentView.value = 'patient-form'
 }
 
-const showNewConsultationForm = (patient: Patient) => {
+const showNewConsultationForm = (patient: PatientType) => {
   previousView.value = currentView.value
   selectedPatient.value = patient
   currentView.value = 'consultation-form'
 }
 
-const editConsultation = (consultation: Consultation) => {
+const editConsultation = (consultation: ConsultationType) => {
   // For now, just show a notification
   $q.notify({
     type: 'info',
@@ -298,7 +299,7 @@ const editConsultation = (consultation: Consultation) => {
   })
 }
 
-const savePatient = (patient: Patient) => {
+const savePatient = (patient: PatientType) => {
   if (selectedPatient.value) {
     medicalStore.updatePatient(patient)
     $q.notify({
@@ -316,7 +317,7 @@ const savePatient = (patient: Patient) => {
   goBack()
 }
 
-const saveConsultation = (consultation: Consultation) => {
+const saveConsultation = (consultation: ConsultationType) => {
   medicalStore.addConsultation(consultation)
   $q.notify({
     type: 'positive',
@@ -335,7 +336,7 @@ const deleteConsultation = (consultationId: string) => {
   })
 }
 
-const viewConsultation = (consultation: Consultation) => {
+const viewConsultation = (consultation: ConsultationType) => {
   const patient = medicalStore.getPatientById(consultation.patientId)
   if (patient) {
     viewPatientHistory(patient)

@@ -61,10 +61,10 @@
 </template>
 
 <script setup lang="ts">
-import { Patient } from 'src/types/index.ts'
+import type { Patient as PatientType } from 'src/types/index'
 
 interface Props {
-  patient: Patient
+  patient: PatientType
 }
 
 defineProps<Props>()

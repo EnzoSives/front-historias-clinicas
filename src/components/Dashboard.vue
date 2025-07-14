@@ -131,11 +131,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { medicalStore } from 'src/stores/medicalStore.ts'
-import { Patient, Consultation } from 'src/types/index.ts'
+import type { Patient as PatientType } from 'src/types/index'
+import type { Consultation as ConsultationType } from 'src/types/index'
 
 defineEmits<{
-  'select-patient': [patient: Patient]
-  'view-consultation': [consultation: Consultation]
+  'select-patient': [patient: PatientType]
+  'view-consultation': [consultation: ConsultationType]
 }>()
 
 const totalPatients = computed(() => medicalStore.getTotalPatients())

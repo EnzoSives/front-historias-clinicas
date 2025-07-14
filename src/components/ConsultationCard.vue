@@ -83,10 +83,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { Consultation } from 'src/types/index.ts'
+import type { Consultation as ConsultationType } from 'src/types/index'
 
 interface Props {
-  consultation: Consultation
+  consultation: ConsultationType
 }
 
 const $q = useQuasar()

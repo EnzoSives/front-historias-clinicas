@@ -189,12 +189,13 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { Patient, Consultation } from '../types'
+import type { Patient as PatientType } from 'src/types/index'
+import type { Consultation as ConsultationType } from 'src/types/index'
 import ConsultationCard from 'src/components/ConsultationCard.vue'
 
 interface Props {
-  patient: Patient
-  consultations: Consultation[]
+  patient: PatientType
+  consultations: ConsultationType[]
 }
 
 const props = defineProps<Props>()

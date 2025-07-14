@@ -100,10 +100,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { Patient, Consultation } from 'src/types/index.ts'
+import type { Patient as PatientType } from 'src/types/index'
+import type { Consultation as ConsultationType } from 'src/types/index'
 
 interface Props {
-  patient: Patient
+  patient: PatientType
 }
 
 const props = defineProps<Props>()
