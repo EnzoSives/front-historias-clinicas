@@ -201,8 +201,8 @@ interface Props {
 const props = defineProps<Props>()
 
 defineEmits<{
-  'new-consultation': [patient: Patient]
-  'edit-consultation': [consultation: Consultation]
+  'new-consultation': [patient: PatientType]
+  'edit-consultation': [consultation: ConsultationType]
   'delete-consultation': [consultationId: string]
 }>()
 
@@ -217,9 +217,9 @@ const sortedConsultations = computed(() => {
   const sorted = [...props.consultations]
 
   if (sortOrder.value === 'newest') {
-    return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    return sorted.sort((a, b) => new Date(b.fechaConsulta).getTime() - new Date(a.fechaConsulta).getTime())
   } else {
-    return sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    return sorted.sort((a, b) => new Date(a.fechaConsulta).getTime() - new Date(b.fechaConsulta).getTime())
   }
 })
 
