@@ -80,15 +80,15 @@
         />
 
         <q-card-actions align="right" class="q-pt-md">
-          <q-btn 
-            flat 
-            color="grey-7" 
-            label="Cancelar" 
+          <q-btn
+            flat
+            color="grey-7"
+            label="Cancelar"
             @click="$emit('cancel')"
           />
-          <q-btn 
-            type="submit" 
-            color="primary" 
+          <q-btn
+            type="submit"
+            color="primary"
             label="Guardar Consulta"
             :loading="loading"
           />
@@ -100,7 +100,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { Patient, Consultation } from '../types'
+import { Patient, Consultation } from 'src/types/index.ts'
 
 interface Props {
   patient: Patient
@@ -131,17 +131,17 @@ const calculateAge = (birthDate: string): number => {
   const birth = new Date(birthDate)
   let age = today.getFullYear() - birth.getFullYear()
   const monthDiff = today.getMonth() - birth.getMonth()
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--
   }
-  
+
   return age
 }
 
 const handleSubmit = async () => {
   loading.value = true
-  
+
   try {
     const consultationData: Consultation = {
       id: `consultation_${Date.now()}`,
@@ -149,7 +149,7 @@ const handleSubmit = async () => {
       ...form,
       createdAt: new Date().toISOString()
     }
-    
+
     emit('save', consultationData)
   } finally {
     loading.value = false

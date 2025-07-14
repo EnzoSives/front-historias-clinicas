@@ -64,8 +64,8 @@
               No hay pacientes registrados
             </div>
             <q-list v-else>
-              <q-item 
-                v-for="patient in recentPatients" 
+              <q-item
+                v-for="patient in recentPatients"
                 :key="patient.id"
                 clickable
                 @click="$emit('select-patient', patient)"
@@ -101,8 +101,8 @@
               No hay consultas registradas
             </div>
             <q-list v-else>
-              <q-item 
-                v-for="consultation in recentConsultations" 
+              <q-item
+                v-for="consultation in recentConsultations"
                 :key="consultation.id"
                 clickable
                 @click="$emit('view-consultation', consultation)"
@@ -130,8 +130,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { medicalStore } from '../stores/medicalStore'
-import { Patient, Consultation } from '../types'
+import { medicalStore } from 'src/stores/medicalStore.ts'
+import { Patient, Consultation } from 'src/types/index.ts'
 
 defineEmits<{
   'select-patient': [patient: Patient]

@@ -12,10 +12,10 @@
           </div>
         </div>
         <div class="col-auto">
-          <q-btn 
-            flat 
-            round 
-            color="primary" 
+          <q-btn
+            flat
+            round
+            color="primary"
             icon="more_vert"
             @click="showActions = !showActions"
           />
@@ -50,9 +50,9 @@
       </div>
 
       <div v-if="consultation.nextAppointment" class="q-mt-md">
-        <q-chip 
-          color="secondary" 
-          text-color="white" 
+        <q-chip
+          color="secondary"
+          text-color="white"
           icon="schedule"
           size="sm"
         >
@@ -62,17 +62,17 @@
     </q-card-section>
 
     <q-card-actions v-if="showActions" align="right">
-      <q-btn 
-        flat 
-        color="primary" 
-        icon="edit" 
+      <q-btn
+        flat
+        color="primary"
+        icon="edit"
         label="Editar"
         @click="$emit('edit', consultation)"
       />
-      <q-btn 
-        flat 
-        color="negative" 
-        icon="delete" 
+      <q-btn
+        flat
+        color="negative"
+        icon="delete"
         label="Eliminar"
         @click="confirmDelete"
       />
@@ -83,7 +83,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { Consultation } from '../types'
+import { Consultation } from 'src/types/index.ts'
 
 interface Props {
   consultation: Consultation

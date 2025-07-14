@@ -1,20 +1,20 @@
 <template>
-  <q-card 
-    class="patient-card q-ma-sm" 
-    flat 
-    bordered 
+  <q-card
+    class="patient-card q-ma-sm"
+    flat
+    bordered
     @click="$emit('select-patient', patient)"
   >
     <q-card-section class="row items-center">
-      <q-avatar 
-        color="primary" 
-        text-color="white" 
+      <q-avatar
+        color="primary"
+        text-color="white"
         size="50px"
         class="q-mr-md"
       >
         <q-icon name="person" size="24px" />
       </q-avatar>
-      
+
       <div class="col">
         <div class="text-h6 text-primary">
           {{ patient.firstName }} {{ patient.lastName }}
@@ -26,11 +26,11 @@
           {{ calculateAge(patient.birthDate) }} años • {{ patient.gender }}
         </div>
       </div>
-      
+
       <div class="column items-end">
-        <q-chip 
-          :color="getBloodTypeColor(patient.bloodType)" 
-          text-color="white" 
+        <q-chip
+          :color="getBloodTypeColor(patient.bloodType)"
+          text-color="white"
           size="sm"
         >
           {{ patient.bloodType }}
@@ -42,18 +42,18 @@
     </q-card-section>
 
     <q-card-actions align="right">
-      <q-btn 
-        flat 
-        color="primary" 
-        icon="visibility" 
-        label="Ver Historial" 
+      <q-btn
+        flat
+        color="primary"
+        icon="visibility"
+        label="Ver Historial"
         @click.stop="$emit('view-history', patient)"
       />
-      <q-btn 
-        flat 
-        color="secondary" 
-        icon="add" 
-        label="Nueva Consulta" 
+      <q-btn
+        flat
+        color="secondary"
+        icon="add"
+        label="Nueva Consulta"
         @click.stop="$emit('new-consultation', patient)"
       />
     </q-card-actions>
@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { Patient } from '../types'
+import { Patient } from 'src/types/index.ts'
 
 interface Props {
   patient: Patient
@@ -80,11 +80,11 @@ const calculateAge = (birthDate: string): number => {
   const birth = new Date(birthDate)
   let age = today.getFullYear() - birth.getFullYear()
   const monthDiff = today.getMonth() - birth.getMonth()
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--
   }
-  
+
   return age
 }
 

@@ -123,15 +123,15 @@
         />
 
         <q-card-actions align="right" class="q-pt-md">
-          <q-btn 
-            flat 
-            color="grey-7" 
-            label="Cancelar" 
+          <q-btn
+            flat
+            color="grey-7"
+            label="Cancelar"
             @click="$emit('cancel')"
           />
-          <q-btn 
-            type="submit" 
-            color="primary" 
+          <q-btn
+            type="submit"
+            color="primary"
             :label="isEdit ? 'Actualizar' : 'Crear Paciente'"
             :loading="loading"
           />
@@ -143,7 +143,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { Patient } from '../types'
+import { Patient } from 'src/types/index.ts'
 
 interface Props {
   patient?: Patient
@@ -193,14 +193,14 @@ watch(
 
 const handleSubmit = async () => {
   loading.value = true
-  
+
   try {
     const patientData: Patient = {
       id: props.patient?.id || `patient_${Date.now()}`,
       ...form,
       createdAt: props.patient?.createdAt || new Date().toISOString()
     }
-    
+
     emit('save', patientData)
   } finally {
     loading.value = false

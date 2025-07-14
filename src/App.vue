@@ -2,24 +2,24 @@
   <q-layout view="hHh lpR fFf">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-btn 
-          flat 
-          dense 
-          round 
-          icon="menu" 
+        <q-btn
+          flat
+          dense
+          round
+          icon="menu"
           @click="drawerOpen = !drawerOpen"
         />
-        
+
         <q-toolbar-title>
           <q-icon name="local_hospital" class="q-mr-sm" />
           Sistema de Historias Clínicas
         </q-toolbar-title>
-        
-        <q-btn 
+
+        <q-btn
           v-if="currentView !== 'dashboard'"
-          flat 
-          icon="arrow_back" 
-          label="Volver" 
+          flat
+          icon="arrow_back"
+          label="Volver"
           @click="goBack"
         />
       </q-toolbar>
@@ -39,10 +39,10 @@
             <q-icon name="menu" class="q-mr-sm" />
             Menú Principal
           </q-item-label>
-          
-          <q-item 
-            clickable 
-            v-ripple 
+
+          <q-item
+            clickable
+            v-ripple
             @click="currentView = 'dashboard'"
             :active="currentView === 'dashboard'"
           >
@@ -51,10 +51,10 @@
             </q-item-section>
             <q-item-section>Dashboard</q-item-section>
           </q-item>
-          
-          <q-item 
-            clickable 
-            v-ripple 
+
+          <q-item
+            clickable
+            v-ripple
             @click="currentView = 'patients'"
             :active="currentView === 'patients'"
           >
@@ -63,10 +63,10 @@
             </q-item-section>
             <q-item-section>Pacientes</q-item-section>
           </q-item>
-          
-          <q-item 
-            clickable 
-            v-ripple 
+
+          <q-item
+            clickable
+            v-ripple
             @click="showNewPatientForm"
           >
             <q-item-section avatar>
@@ -74,14 +74,14 @@
             </q-item-section>
             <q-item-section>Nuevo Paciente</q-item-section>
           </q-item>
-          
+
           <q-separator class="q-my-md" />
-          
+
           <q-item-label header class="text-grey-7">
             <q-icon name="analytics" class="q-mr-sm" />
             Estadísticas
           </q-item-label>
-          
+
           <q-item>
             <q-item-section avatar>
               <q-icon name="people" color="primary" />
@@ -91,7 +91,7 @@
               <q-item-label caption>Pacientes</q-item-label>
             </q-item-section>
           </q-item>
-          
+
           <q-item>
             <q-item-section avatar>
               <q-icon name="medical_services" color="secondary" />
@@ -114,7 +114,7 @@
             @view-consultation="viewConsultation"
           />
         </div>
-        
+
         <!-- Patients List View -->
         <div v-else-if="currentView === 'patients'">
           <div class="q-pa-md">
@@ -129,15 +129,15 @@
                 </div>
               </div>
               <div class="col-auto">
-                <q-btn 
-                  color="primary" 
-                  icon="person_add" 
+                <q-btn
+                  color="primary"
+                  icon="person_add"
                   label="Nuevo Paciente"
                   @click="showNewPatientForm"
                 />
               </div>
             </div>
-            
+
             <!-- Search -->
             <q-input
               v-model="searchQuery"
@@ -149,15 +149,15 @@
                 <q-icon name="search" />
               </template>
               <template v-slot:append>
-                <q-icon 
-                  v-if="searchQuery" 
-                  name="close" 
-                  @click="searchQuery = ''" 
-                  class="cursor-pointer" 
+                <q-icon
+                  v-if="searchQuery"
+                  name="close"
+                  @click="searchQuery = ''"
+                  class="cursor-pointer"
                 />
               </template>
             </q-input>
-            
+
             <!-- Patients Grid -->
             <div v-if="filteredPatients.length === 0" class="text-center text-grey-6 q-pa-xl">
               <q-icon name="people" size="64px" />
@@ -166,10 +166,10 @@
                 {{ searchQuery ? 'Prueba con otros términos de búsqueda' : 'Comienza agregando un nuevo paciente' }}
               </div>
             </div>
-            
+
             <div v-else class="row">
-              <div 
-                v-for="patient in filteredPatients" 
+              <div
+                v-for="patient in filteredPatients"
                 :key="patient.id"
                 class="col-12 col-md-6 col-lg-4"
               >
@@ -183,7 +183,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- Patient Form View -->
         <div v-else-if="currentView === 'patient-form'">
           <div class="flex flex-center q-pa-md">
@@ -195,7 +195,7 @@
             />
           </div>
         </div>
-        
+
         <!-- Patient History View -->
         <div v-else-if="currentView === 'patient-history'">
           <PatientHistory
@@ -206,7 +206,7 @@
             @delete-consultation="deleteConsultation"
           />
         </div>
-        
+
         <!-- Consultation Form View -->
         <div v-else-if="currentView === 'consultation-form'">
           <div class="flex flex-center q-pa-md">
@@ -225,13 +225,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
-import { medicalStore } from './stores/medicalStore'
-import { Patient, Consultation } from './types'
-import Dashboard from './components/Dashboard.vue'
-import PatientCard from './components/PatientCard.vue'
-import PatientForm from './components/PatientForm.vue'
-import PatientHistory from './components/PatientHistory.vue'
-import ConsultationForm from './components/ConsultationForm.vue'
+import { medicalStore } from 'src/stores/medicalStore.ts'
+import { Patient, Consultation } from 'src/types/index.ts'
+import Dashboard from 'src/components/Dashboard.vue'
+import PatientCard from 'src/components/PatientCard.vue'
+import PatientForm from 'src/components/PatientForm.vue'
+import PatientHistory from 'src/components/PatientHistory.vue'
+import ConsultationForm from 'src/components/ConsultationForm.vue'
 
 const $q = useQuasar()
 
@@ -245,9 +245,9 @@ const previousView = ref<string>('')
 // Computed properties
 const filteredPatients = computed(() => {
   if (!searchQuery.value) return medicalStore.patients
-  
+
   const query = searchQuery.value.toLowerCase()
-  return medicalStore.patients.filter(patient => 
+  return medicalStore.patients.filter(patient =>
     patient.firstName.toLowerCase().includes(query) ||
     patient.lastName.toLowerCase().includes(query) ||
     patient.dni.toLowerCase().includes(query) ||
@@ -312,7 +312,7 @@ const savePatient = (patient: Patient) => {
       message: 'Paciente creado exitosamente'
     })
   }
-  
+
   goBack()
 }
 
@@ -322,7 +322,7 @@ const saveConsultation = (consultation: Consultation) => {
     type: 'positive',
     message: 'Consulta guardada exitosamente'
   })
-  
+
   // Go back to patient history
   currentView.value = 'patient-history'
 }

@@ -14,10 +14,10 @@
             </div>
           </div>
           <div class="col-auto">
-            <q-btn 
-              color="primary" 
-              icon="add" 
-              label="Nueva Consulta" 
+            <q-btn
+              color="primary"
+              icon="add"
+              label="Nueva Consulta"
               @click="$emit('new-consultation', patient)"
             />
           </div>
@@ -32,7 +32,7 @@
           <q-icon name="person" class="q-mr-sm" />
           Información del Paciente
         </div>
-        
+
         <div class="row q-gutter-md">
           <div class="col-12 col-md-6">
             <q-list>
@@ -45,7 +45,7 @@
                   <q-item-label caption>{{ patient.phone }}</q-item-label>
                 </q-item-section>
               </q-item>
-              
+
               <q-item>
                 <q-item-section avatar>
                   <q-icon name="email" color="primary" />
@@ -55,7 +55,7 @@
                   <q-item-label caption>{{ patient.email || 'No especificado' }}</q-item-label>
                 </q-item-section>
               </q-item>
-              
+
               <q-item>
                 <q-item-section avatar>
                   <q-icon name="location_on" color="primary" />
@@ -67,7 +67,7 @@
               </q-item>
             </q-list>
           </div>
-          
+
           <div class="col-12 col-md-6">
             <q-list>
               <q-item>
@@ -79,7 +79,7 @@
                   <q-item-label caption>{{ patient.bloodType }}</q-item-label>
                 </q-item-section>
               </q-item>
-              
+
               <q-item>
                 <q-item-section avatar>
                   <q-icon name="emergency" color="orange" />
@@ -89,7 +89,7 @@
                   <q-item-label caption>{{ patient.emergencyContact }} - {{ patient.emergencyPhone }}</q-item-label>
                 </q-item-section>
               </q-item>
-              
+
               <q-item>
                 <q-item-section avatar>
                   <q-icon name="calendar_today" color="primary" />
@@ -112,7 +112,7 @@
           <q-icon name="medical_information" class="q-mr-sm" />
           Información Médica
         </div>
-        
+
         <div class="row q-gutter-md">
           <div class="col-12 col-md-6">
             <q-card flat bordered>
@@ -127,7 +127,7 @@
               </q-card-section>
             </q-card>
           </div>
-          
+
           <div class="col-12 col-md-6">
             <q-card flat bordered>
               <q-card-section>
@@ -165,14 +165,14 @@
           </div>
         </div>
       </q-card-section>
-      
+
       <q-card-section class="q-pt-none">
         <div v-if="consultations.length === 0" class="text-center text-grey-6 q-pa-lg">
           <q-icon name="medical_services" size="64px" />
           <div class="q-mt-md">No hay consultas registradas</div>
           <div class="text-caption">Las consultas aparecerán aquí una vez que sean creadas</div>
         </div>
-        
+
         <div v-else>
           <ConsultationCard
             v-for="consultation in sortedConsultations"
@@ -190,7 +190,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { Patient, Consultation } from '../types'
-import ConsultationCard from './ConsultationCard.vue'
+import ConsultationCard from 'src/components/ConsultationCard.vue'
 
 interface Props {
   patient: Patient
@@ -214,7 +214,7 @@ const sortOptions = [
 
 const sortedConsultations = computed(() => {
   const sorted = [...props.consultations]
-  
+
   if (sortOrder.value === 'newest') {
     return sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   } else {
@@ -227,11 +227,11 @@ const calculateAge = (birthDate: string): number => {
   const birth = new Date(birthDate)
   let age = today.getFullYear() - birth.getFullYear()
   const monthDiff = today.getMonth() - birth.getMonth()
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--
   }
-  
+
   return age
 }
 
