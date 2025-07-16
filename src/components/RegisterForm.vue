@@ -129,6 +129,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useQuasar } from 'quasar';
+import { api } from 'src/boot/axios'; // Import the API instance
 
 // Define the shape of the registration form data
 interface RegisterForm {
@@ -166,21 +167,21 @@ const emit = defineEmits<{
 }>();
 
 const handleSubmit = async () => {
-  // In a real application, you would perform API calls here
   loading.value = true;
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log('Registration data:', form);
+    // Make the API call to your backend
+    const response = await api.post('http://localhost:3000/auth/register', form); // Use the imported 'api' instance
+    console.log('Registration successful:', response.data);
     emit('register', { ...form });
     $q.notify({
       type: 'positive',
       message: 'Registro exitoso!'
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('Error during registration:', error.response || error);
     $q.notify({
       type: 'negative',
-      message: 'Error en el registro.'
+      message: error.response?.data?.message || 'Error en el registro. Intente nuevamente.'
     });
   } finally {
     loading.value = false;

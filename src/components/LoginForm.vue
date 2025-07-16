@@ -8,7 +8,7 @@
     <q-card-section>
       <q-form @submit="handleSubmit" class="q-gutter-md">
         <q-input
-          v-model="form.emailOrUsername"
+          v-model="form.username"
           label="Email o Username"
           filled
           :rules="[val => !!val || 'Este campo es requerido']"
@@ -32,10 +32,11 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useQuasar } from 'quasar';
+import { api } from 'src/boot/axios'; // Import the API instance
 
 // Define the shape of the login form data
 interface LoginForm {
-  emailOrUsername: string;
+  username: string;
   password: string;
 }
 
@@ -43,7 +44,7 @@ const $q = useQuasar();
 const loading = ref(false);
 
 const form: LoginForm = reactive({
-  emailOrUsername: '',
+  username: '',
   password: ''
 });
 
@@ -52,21 +53,22 @@ const emit = defineEmits<{
 }>();
 
 const handleSubmit = async () => {
-  // In a real application, you would perform API calls here
   loading.value = true;
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log('Login data:', form);
+    // Make the API call to your backend
+    const response = await api.post('http://localhost:3000/auth/login', form); // Use the imported 'api' instance
+    console.log('Login successful:', response.data);
     emit('login', { ...form });
     $q.notify({
       type: 'positive',
       message: 'Inicio de sesión exitoso!'
     });
-  } catch (error) {
+    // You might want to redirect the user or store authentication tokens here
+  } catch (error: any) {
+    console.error('Error during login:', error.response || error);
     $q.notify({
       type: 'negative',
-      message: 'Error en el inicio de sesión. Verifique sus credenciales.'
+      message: error.response?.data?.message || 'Error en el inicio de sesión. Verifique sus credenciales.'
     });
   } finally {
     loading.value = false;
