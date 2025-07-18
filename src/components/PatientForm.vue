@@ -52,6 +52,8 @@
             class="col"
             :options="genderOptions"
             :rules="[val => !!val || 'Sexo requerido']"
+            emit-value   
+            map-options  
           />
           <q-input
             v-model="form.lugarNacimiento"
