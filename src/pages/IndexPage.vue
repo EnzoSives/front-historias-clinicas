@@ -1,18 +1,15 @@
 <template>
-  <q-layout view="lHh Lpr fFf"> <q-header elevated class="bg-primary text-white">
+  <q-layout view="lHh Lpr fFf">
+    <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          @click="drawerOpen = !drawerOpen"
-        />
+        <q-btn flat dense round icon="menu" @click="drawerOpen = !drawerOpen" />
 
         <q-toolbar-title>
           <q-icon name="local_hospital" class="q-mr-sm" />
           Sistema de Historias Clínicas
         </q-toolbar-title>
+
+        <q-space />
 
         <q-btn
           v-if="currentView !== 'dashboard'"
@@ -21,92 +18,120 @@
           label="Volver"
           @click="goBack"
         />
+
+        <q-btn flat round dense>
+          <q-avatar size="32px">
+            <img :src="user.avatar" />
+          </q-avatar>
+          <q-menu>
+            <div class="q-pa-md">
+              <div class="text-center">
+                <q-avatar size="72px">
+                  <img :src="user.avatar" />
+                </q-avatar>
+                <div class="text-weight-bold q-mt-sm">{{ user.name }}</div>
+                <div class="text-caption text-grey">{{ user.email }}</div>
+              </div>
+              <q-separator class="q-my-md" />
+              <q-list dense>
+                <q-item clickable v-ripple @click="goToProfile">
+                  <q-item-section avatar>
+                    <q-icon name="person" />
+                  </q-item-section>
+                  <q-item-section>Mi Perfil</q-item-section>
+                </q-item>
+                <q-item clickable v-ripple @click="logout">
+                  <q-item-section avatar>
+                    <q-icon name="logout" />
+                  </q-item-section>
+                  <q-item-section>Cerrar Sesión</q-item-section>
+                </q-item>
+              </q-list>
+            </div>
+          </q-menu>
+        </q-btn>
       </q-toolbar>
     </q-header>
 
-    
-
     <q-page-container>
       <q-drawer
-      v-model="drawerOpen"
-      show-if-above
-      :width="280"
-      :breakpoint="700"
-      elevated
-      class="bg-grey-2"
-    >
-      <q-scroll-area class="fit">
-        <q-list>
-          <q-item-label header class="text-primary">
-            <q-icon name="menu" class="q-mr-sm" />
-            Menú Principal
-          </q-item-label>
+        v-model="drawerOpen"
+        show-if-above
+        :width="280"
+        :breakpoint="700"
+        elevated
+        class="bg-grey-2"
+      >
+        <q-scroll-area class="fit">
+          <q-list>
+            <q-item-label header class="text-primary">
+              <q-icon name="menu" class="q-mr-sm" />
+              Menú Principal
+            </q-item-label>
 
-          <q-item
-            clickable
-            v-ripple
-            @click="currentView = 'dashboard'"
-            :active="currentView === 'dashboard'"
-          >
-            <q-item-section avatar>
-              <q-icon name="dashboard" />
-            </q-item-section>
-            <q-item-section>Dashboard</q-item-section>
-          </q-item>
+            <q-item
+              clickable
+              v-ripple
+              @click="currentView = 'dashboard'"
+              :active="currentView === 'dashboard'"
+            >
+              <q-item-section avatar>
+                <q-icon name="dashboard" />
+              </q-item-section>
+              <q-item-section>Dashboard</q-item-section>
+            </q-item>
 
-          <q-item
-            clickable
-            v-ripple
-            @click="currentView = 'patients'"
-            :active="currentView === 'patients'"
-          >
-            <q-item-section avatar>
-              <q-icon name="people" />
-            </q-item-section>
-            <q-item-section>Pacientes</q-item-section>
-          </q-item>
+            <q-item
+              clickable
+              v-ripple
+              @click="currentView = 'patients'"
+              :active="currentView === 'patients'"
+            >
+              <q-item-section avatar>
+                <q-icon name="people" />
+              </q-item-section>
+              <q-item-section>Pacientes</q-item-section>
+            </q-item>
 
-          <q-item
-            clickable
-            v-ripple
-            @click="showNewPatientForm"
-          >
-            <q-item-section avatar>
-              <q-icon name="person_add" />
-            </q-item-section>
-            <q-item-section>Nuevo Paciente</q-item-section>
-          </q-item>
+            <q-item clickable v-ripple @click="showNewPatientForm">
+              <q-item-section avatar>
+                <q-icon name="person_add" />
+              </q-item-section>
+              <q-item-section>Nuevo Paciente</q-item-section>
+            </q-item>
 
-          <q-separator class="q-my-md" />
+            <q-separator class="q-my-md" />
 
-          <q-item-label header class="text-grey-7">
-            <q-icon name="analytics" class="q-mr-sm" />
-            Estadísticas
-          </q-item-label>
+            <q-item-label header class="text-grey-7">
+              <q-icon name="analytics" class="q-mr-sm" />
+              Estadísticas
+            </q-item-label>
 
-          <q-item>
-            <q-item-section avatar>
-              <q-icon name="people" color="primary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ medicalStore.getTotalPatients }}</q-item-label>
-              <q-item-label caption>Pacientes</q-item-label>
-            </q-item-section>
-          </q-item>
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="people" color="primary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ medicalStore.getTotalPatients }}</q-item-label>
+                <q-item-label caption>Pacientes</q-item-label>
+              </q-item-section>
+            </q-item>
 
-          <q-item>
-            <q-item-section avatar>
-              <q-icon name="medical_services" color="secondary" />
-            </q-item-section>
-            <q-item-section>
-              <q-item-label>{{ medicalStore.getTotalConsultations }}</q-item-label>
-              <q-item-label caption>Consultas</q-item-label>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-scroll-area>
-    </q-drawer>
-    
+            <q-item>
+              <q-item-section avatar>
+                <q-icon name="medical_services" color="secondary" />
+              </q-item-section>
+              <q-item-section>
+                <q-item-label>{{
+                  medicalStore.getTotalConsultations
+                }}</q-item-label>
+                <q-item-label caption>Consultas</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-scroll-area>
+      </q-drawer>
+
       <q-page class="bg-grey-1 q-page-no-padding-top">
         <div v-if="currentView === 'dashboard'">
           <Dashboard
@@ -124,7 +149,8 @@
                   Pacientes
                 </div>
                 <div class="text-subtitle1 text-grey-7">
-                  {{ medicalStore.getAllPatients.length }} paciente(s) registrado(s)
+                  {{ medicalStore.getAllPatients.length }} paciente(s)
+                  registrado(s)
                 </div>
               </div>
               <div class="col-auto">
@@ -156,11 +182,18 @@
               </template>
             </q-input>
 
-            <div v-if="filteredPatients.length === 0" class="text-center text-grey-6 q-pa-xl">
+            <div
+              v-if="filteredPatients.length === 0"
+              class="text-center text-grey-6 q-pa-xl"
+            >
               <q-icon name="people" size="64px" />
               <div class="q-mt-md">No se encontraron pacientes</div>
               <div class="text-caption">
-                {{ searchQuery ? 'Prueba con otros términos de búsqueda' : 'Comienza agregando un nuevo paciente' }}
+                {{
+                  searchQuery
+                    ? "Prueba con otros términos de búsqueda"
+                    : "Comienza agregando un nuevo paciente"
+                }}
               </div>
             </div>
 
@@ -211,156 +244,218 @@
             />
           </div>
         </div>
+
+        <div v-else-if="currentView === 'profile'">
+          <div class="flex flex-center q-pa-xl">
+            <div class="text-center">
+              <q-avatar size="150px">
+                <img :src="user.avatar" />
+              </q-avatar>
+              <h4 class="q-mt-md q-mb-xs">{{ user.name }}</h4>
+              <p class="text-grey-7">{{ user.email }}</p>
+              <q-btn
+                color="primary"
+                label="Editar Perfil"
+                @click="$q.notify('Función en desarrollo')"
+              />
+            </div>
+          </div>
+        </div>
       </q-page>
     </q-page-container>
   </q-layout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useQuasar } from 'quasar'
-import { useMedicalStore } from 'src/stores/medicalStore'
-import type { Patient as PatientType } from 'src/types/index'
-import type { Consultation as ConsultationType } from 'src/types/index'
-import Dashboard from 'src/components/Dashboard.vue'
-import PatientCard from 'src/components/PatientCard.vue'
-import PatientForm from 'src/components/PatientForm.vue'
-import PatientHistory from 'src/components/PatientHistory.vue'
-import ConsultationForm from 'src/components/ConsultationForm.vue'
+import { ref, computed, onMounted } from "vue";
+import { useQuasar } from "quasar";
+import { useRouter } from "vue-router";
+import { useMedicalStore } from "src/stores/medicalStore";
+import { useAuthStore } from "src/stores/authStore";
+import type { Patient as PatientType } from "src/types/index";
+import type { Consultation as ConsultationType } from "src/types/index";
+import Dashboard from "src/components/Dashboard.vue";
+import PatientCard from "src/components/PatientCard.vue";
+import PatientForm from "src/components/PatientForm.vue";
+import PatientHistory from "src/components/PatientHistory.vue";
+import ConsultationForm from "src/components/ConsultationForm.vue";
 
-const $q = useQuasar()
+const $q = useQuasar();
+const router = useRouter();
+const medicalStore = useMedicalStore();
+const authStore = useAuthStore();
 
-const medicalStore = useMedicalStore()
+const drawerOpen = ref(false);
+// Reemplaza tu línea actual de currentView con esta
+const currentView = ref<
+  | "dashboard"
+  | "patients"
+  | "patient-form"
+  | "patient-history"
+  | "consultation-form"
+  | "profile"
+>("dashboard");
+const selectedPatient = ref<PatientType | null>(null);
+const searchQuery = ref("");
+const previousView = ref<string>("");
 
-const drawerOpen = ref(false)
-const currentView = ref<'dashboard' | 'patients' | 'patient-form' | 'patient-history' | 'consultation-form'>('dashboard')
-const selectedPatient = ref<PatientType | null>(null)
-const searchQuery = ref('')
-const previousView = ref<string>('')
+// Simulación de datos del usuario. En una app real, vendrían del login.
+const user = ref({
+  name: "Dra. Elena Rodriguez",
+  email: "e.rodriguez@clinicavida.com",
+  avatar: "https://cdn.quasar.dev/img/avatar2.jpg",
+});
+
+const goToProfile = () => {
+  previousView.value = currentView.value;
+  currentView.value = "profile";
+};
+
+const logout = () => {
+  $q.dialog({
+    title: "Confirmar",
+    message: "¿Estás seguro de que quieres cerrar la sesión?",
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    $q.notify({
+      type: "info",
+      message: "Has cerrado la sesión.",
+      icon: "logout",
+    });
+    authStore.logout();
+    router.push("/login");
+  });
+};
 
 const filteredPatients = computed(() => {
-  if (!searchQuery.value) return medicalStore.getAllPatients
+  if (!searchQuery.value) return medicalStore.getAllPatients;
 
-  const query = searchQuery.value.toLowerCase()
-  return medicalStore.getAllPatients.filter(patient =>
-    patient.firstName.toLowerCase().includes(query) || // Asegúrate de que 'firstName' exista en PatientType
-    patient.lastName.toLowerCase().includes(query) || // Asegúrate de que 'lastName' exista en PatientType
-    patient.dni.toLowerCase().includes(query) ||
-    patient.email.toLowerCase().includes(query)
-  )
-})
+  const query = searchQuery.value.toLowerCase();
+  return medicalStore.getAllPatients.filter(
+    (patient) =>
+      patient.firstName.toLowerCase().includes(query) || // Asegúrate de que 'firstName' exista en PatientType
+      patient.lastName.toLowerCase().includes(query) || // Asegúrate de que 'lastName' exista en PatientType
+      patient.dni.toLowerCase().includes(query) ||
+      patient.email.toLowerCase().includes(query)
+  );
+});
 
 const patientConsultations = computed(() => {
-  if (!selectedPatient.value) return []
-  return medicalStore.getConsultationsByPatientId(selectedPatient.value.id)
-})
+  if (!selectedPatient.value) return [];
+  return medicalStore.getConsultationsByPatientId(selectedPatient.value.id);
+});
 
 const selectPatient = (patient: PatientType) => {
-  selectedPatient.value = patient
-}
+  selectedPatient.value = patient;
+};
 
 const viewPatientHistory = (patient: PatientType) => {
-  previousView.value = currentView.value
-  selectedPatient.value = patient
-  currentView.value = 'patient-history'
-}
+  previousView.value = currentView.value;
+  selectedPatient.value = patient;
+  currentView.value = "patient-history";
+};
 
 const showNewPatientForm = () => {
-  previousView.value = currentView.value
-  selectedPatient.value = null
-  currentView.value = 'patient-form'
-}
+  previousView.value = currentView.value;
+  selectedPatient.value = null;
+  currentView.value = "patient-form";
+};
 
 const showEditPatientForm = (patient: PatientType) => {
-  previousView.value = currentView.value
-  selectedPatient.value = patient
-  currentView.value = 'patient-form'
-}
+  previousView.value = currentView.value;
+  selectedPatient.value = patient;
+  currentView.value = "patient-form";
+};
 
 const showNewConsultationForm = (patient: PatientType) => {
-  previousView.value = currentView.value
-  selectedPatient.value = patient
-  currentView.value = 'consultation-form'
-}
+  previousView.value = currentView.value;
+  selectedPatient.value = patient;
+  currentView.value = "consultation-form";
+};
 
 const editConsultation = (consultation: ConsultationType) => {
   $q.notify({
-    type: 'info',
-    message: 'Función de edición de consultas en desarrollo'
-  })
-}
+    type: "info",
+    message: "Función de edición de consultas en desarrollo",
+  });
+};
 
 const savePatient = async (patient: PatientType) => {
   try {
     if (selectedPatient.value && patient.id) {
-      await medicalStore.updatePatient(patient.id, patient)
+      await medicalStore.updatePatient(patient.id, patient);
       $q.notify({
-        type: 'positive',
-        message: 'Paciente actualizado exitosamente'
-      })
+        type: "positive",
+        message: "Paciente actualizado exitosamente",
+      });
     } else {
-      await medicalStore.addPatient(patient)
+      await medicalStore.addPatient(patient);
       $q.notify({
-        type: 'positive',
-        message: 'Paciente creado exitosamente'
-      })
+        type: "positive",
+        message: "Paciente creado exitosamente",
+      });
     }
-    goBack()
+    goBack();
   } catch (error) {
-    console.error('Error saving patient:', error)
+    console.error("Error saving patient:", error);
     $q.notify({
-      type: 'negative',
-      message: medicalStore.getStoreError || 'Error al guardar el paciente.'
-    })
+      type: "negative",
+      message: medicalStore.getStoreError || "Error al guardar el paciente.",
+    });
   }
-}
+};
 
 const saveConsultation = (consultation: ConsultationType) => {
-  medicalStore.addConsultation(consultation)
+  medicalStore.addConsultation(consultation);
   $q.notify({
-    type: 'positive',
-    message: 'Consulta guardada exitosamente'
-  })
+    type: "positive",
+    message: "Consulta guardada exitosamente",
+  });
 
-  currentView.value = 'patient-history'
-}
+  currentView.value = "patient-history";
+};
 
 const deleteConsultation = (consultationId: string) => {
-  medicalStore.deleteConsultation(consultationId)
+  medicalStore.deleteConsultation(consultationId);
   $q.notify({
-    type: 'positive',
-    message: 'Consulta eliminada exitosamente'
-  })
-}
+    type: "positive",
+    message: "Consulta eliminada exitosamente",
+  });
+};
 
 const viewConsultation = async (consultation: ConsultationType) => {
   try {
-    const patient = await medicalStore.fetchPatientById(consultation.pacienteId)
+    const patient = await medicalStore.fetchPatientById(
+      consultation.pacienteId
+    );
     if (patient) {
-      viewPatientHistory(patient)
+      viewPatientHistory(patient);
     } else {
       $q.notify({
-        type: 'negative',
-        message: 'No se encontró el paciente para esta consulta.'
-      })
+        type: "negative",
+        message: "No se encontró el paciente para esta consulta.",
+      });
     }
   } catch (error) {
-    console.error('Error fetching patient for consultation:', error)
+    console.error("Error fetching patient for consultation:", error);
     $q.notify({
-      type: 'negative',
-      message: medicalStore.getStoreError || 'Error al cargar el paciente de la consulta.'
-    })
+      type: "negative",
+      message:
+        medicalStore.getStoreError ||
+        "Error al cargar el paciente de la consulta.",
+    });
   }
-}
+};
 
 const goBack = () => {
-  currentView.value = previousView.value || 'dashboard'
-  previousView.value = ''
-}
+  currentView.value = previousView.value || "dashboard";
+  previousView.value = "";
+};
 
 onMounted(async () => {
-  await medicalStore.initializeStore()
-})
+  await medicalStore.initializeStore();
+});
 </script>
 
 <style scoped>

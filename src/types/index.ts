@@ -41,7 +41,7 @@ export interface Patient {
   primerObservacion?: string | undefined;
   imagen?: string | undefined;
   imagen2?: string | undefined;
-  activo?: boolean | undefined;
+  fechaCreacion?: Date | undefined;
   id_medico?: number | undefined; // Optional field to link to Doctor
 }
 

@@ -1,8 +1,10 @@
 <template>
-  <q-card class="q-ma-md" style="max-width: 800px; width: 100%;">
+  <q-card class="q-ma-md" style="max-width: 800px; width: 100%">
     <q-card-section>
       <div class="text-h6 text-primary">Registro de Nuevo Médico</div>
-      <div class="text-subtitle1 text-grey-7">Complete los datos para crear su cuenta</div>
+      <div class="text-subtitle1 text-grey-7">
+        Complete los datos para crear su cuenta
+      </div>
     </q-card-section>
 
     <q-card-section>
@@ -13,8 +15,10 @@
           label="Username"
           filled
           :rules="[
-            val => !!val || 'El username es requerido',
-            val => val.trim().length >= 3 && val.trim().length <= 50 || 'El username debe tener entre 3 y 50 caracteres'
+            (val) => !!val || 'El username es requerido',
+            (val) =>
+              (val.trim().length >= 3 && val.trim().length <= 50) ||
+              'El username debe tener entre 3 y 50 caracteres',
           ]"
         />
         <q-input
@@ -23,8 +27,8 @@
           filled
           type="email"
           :rules="[
-            val => !!val || 'El email es requerido',
-            val => /.+@.+\..+/.test(val) || 'Debe ser un email válido'
+            (val) => !!val || 'El email es requerido',
+            (val) => /.+@.+\..+/.test(val) || 'Debe ser un email válido',
           ]"
         />
         <q-input
@@ -33,8 +37,10 @@
           filled
           type="password"
           :rules="[
-            val => !!val || 'La contraseña es requerida',
-            val => val.length >= 6 || 'La contraseña debe tener al menos 6 caracteres'
+            (val) => !!val || 'La contraseña es requerida',
+            (val) =>
+              val.length >= 6 ||
+              'La contraseña debe tener al menos 6 caracteres',
           ]"
         />
 
@@ -48,8 +54,10 @@
             filled
             class="col"
             :rules="[
-              val => !!val || 'El nombre es requerido',
-              val => val.trim().length >= 2 && val.trim().length <= 100 || 'El nombre debe tener entre 2 y 100 caracteres'
+              (val) => !!val || 'El nombre es requerido',
+              (val) =>
+                (val.trim().length >= 2 && val.trim().length <= 100) ||
+                'El nombre debe tener entre 2 y 100 caracteres',
             ]"
           />
           <q-input
@@ -58,8 +66,10 @@
             filled
             class="col"
             :rules="[
-              val => !!val || 'El apellido es requerido',
-              val => val.trim().length >= 2 && val.trim().length <= 100 || 'El apellido debe tener entre 2 y 100 caracteres'
+              (val) => !!val || 'El apellido es requerido',
+              (val) =>
+                (val.trim().length >= 2 && val.trim().length <= 100) ||
+                'El apellido debe tener entre 2 y 100 caracteres',
             ]"
           />
         </div>
@@ -70,8 +80,9 @@
             filled
             class="col"
             :rules="[
-              val => !!val || 'El DNI es requerido',
-              val => /^\d{7,8}$/.test(val) || 'El DNI debe tener 7 u 8 dígitos'
+              (val) => !!val || 'El DNI es requerido',
+              (val) =>
+                /^\d{7,8}$/.test(val) || 'El DNI debe tener 7 u 8 dígitos',
             ]"
           />
           <q-input
@@ -80,8 +91,10 @@
             filled
             class="col"
             :rules="[
-              val => !!val || 'La especialidad es requerida',
-              val => val.trim().length >= 2 && val.trim().length <= 200 || 'La especialidad debe tener entre 2 y 200 caracteres'
+              (val) => !!val || 'La especialidad es requerida',
+              (val) =>
+                (val.trim().length >= 2 && val.trim().length <= 200) ||
+                'La especialidad debe tener entre 2 y 200 caracteres',
             ]"
           />
         </div>
@@ -90,8 +103,10 @@
           label="Matrícula"
           filled
           :rules="[
-            val => !!val || 'La matrícula es requerida',
-            val => val.trim().length >= 3 && val.trim().length <= 50 || 'La matrícula debe tener entre 3 y 50 caracteres'
+            (val) => !!val || 'La matrícula es requerida',
+            (val) =>
+              (val.trim().length >= 3 && val.trim().length <= 50) ||
+              'La matrícula debe tener entre 3 y 50 caracteres',
           ]"
         />
 
@@ -104,7 +119,10 @@
           filled
           hint="Opcional"
           :rules="[
-            val => !val || /^[\d\s\-\+\(\)]+$/.test(val) || 'El teléfono tiene un formato inválido'
+            (val) =>
+              !val ||
+              /^[\d\s\-\+\(\)]+$/.test(val) ||
+              'El teléfono tiene un formato inválido',
           ]"
         />
         <q-input
@@ -113,13 +131,26 @@
           filled
           hint="Opcional"
           :rules="[
-            val => !val || (val.trim().length >= 2 && val.trim().length <= 200) || 'El colegio médico debe tener entre 2 y 200 caracteres'
+            (val) =>
+              !val ||
+              (val.trim().length >= 2 && val.trim().length <= 200) ||
+              'El colegio médico debe tener entre 2 y 200 caracteres',
           ]"
         />
 
         <q-card-actions align="right" class="q-pt-md">
-          <q-btn flat label="Cancelar" color="grey-7" @click="$emit('cancel')" />
-          <q-btn type="submit" label="Registrarse" color="primary" :loading="loading" />
+          <q-btn
+            flat
+            label="Cancelar"
+            color="grey-7"
+            @click="$emit('cancel')"
+          />
+          <q-btn
+            type="submit"
+            label="Registrarse"
+            color="primary"
+            :loading="loading"
+          />
         </q-card-actions>
       </q-form>
     </q-card-section>
@@ -127,9 +158,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
-import { useQuasar } from 'quasar';
-import { api } from 'src/boot/axios'; // Import the API instance
+import { ref, reactive } from "vue";
+import { useQuasar } from "quasar";
+import { api } from "src/boot/axios"; // Import the API instance
 
 // Define the shape of the registration form data
 interface RegisterForm {
@@ -149,39 +180,44 @@ const $q = useQuasar();
 const loading = ref(false);
 
 const form: RegisterForm = reactive({
-  username: '',
-  email: '',
-  password: '',
-  nombre: '',
-  apellido: '',
-  dni: '',
-  especialidad: '',
-  matricula: '',
-  telefono: '',
-  colegioMedico: ''
+  username: "",
+  email: "",
+  password: "",
+  nombre: "",
+  apellido: "",
+  dni: "",
+  especialidad: "",
+  matricula: "",
+  telefono: "",
+  colegioMedico: "",
 });
 
 const emit = defineEmits<{
-  (e: 'register', formData: RegisterForm): void;
-  (e: 'cancel'): void;
+  (e: "register", formData: RegisterForm): void;
+  (e: "cancel"): void;
 }>();
 
 const handleSubmit = async () => {
   loading.value = true;
   try {
     // Make the API call to your backend
-    const response = await api.post('http://localhost:3000/auth/register', form); // Use the imported 'api' instance
-    console.log('Registration successful:', response.data);
-    emit('register', { ...form });
+    const response = await api.post(
+      "http://localhost:3003/auth/register",
+      form
+    ); // Use the imported 'api' instance
+    console.log("Registration successful:", response.data);
+    emit("register", { ...form });
     $q.notify({
-      type: 'positive',
-      message: 'Registro exitoso!'
+      type: "positive",
+      message: "Registro exitoso!",
     });
   } catch (error: any) {
-    console.error('Error during registration:', error.response || error);
+    console.error("Error during registration:", error.response || error);
     $q.notify({
-      type: 'negative',
-      message: error.response?.data?.message || 'Error en el registro. Intente nuevamente.'
+      type: "negative",
+      message:
+        error.response?.data?.message ||
+        "Error en el registro. Intente nuevamente.",
     });
   } finally {
     loading.value = false;

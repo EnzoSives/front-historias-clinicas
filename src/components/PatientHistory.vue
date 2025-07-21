@@ -8,9 +8,13 @@
               <q-icon name="history" class="q-mr-sm" />
               Historial Médico
             </div>
-            <div class="text-h6">{{ patient.firstName }} {{ patient.lastName }}</div>
+            <div class="text-h6">
+              {{ patient.nombre }} {{ patient.apellido }}
+            </div>
             <div class="text-subtitle2 text-grey-7">
-              DNI: {{ patient.dni }} • {{ calculateAge(patient.birthDate) }} años • {{ patient.gender }}
+              DNI: {{ patient.dni }} •
+              {{ calculateAge(patient.fechaNacimiento) }} años •
+              {{ patient.genero }}
             </div>
           </div>
           <div class="col-auto">
@@ -52,7 +56,9 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Email</q-item-label>
-                  <q-item-label caption>{{ patient.email || 'No especificado' }}</q-item-label>
+                  <q-item-label caption>{{
+                    patient.email || "No especificado"
+                  }}</q-item-label>
                 </q-item-section>
               </q-item>
 
@@ -86,7 +92,10 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Contacto de Emergencia</q-item-label>
-                  <q-item-label caption>{{ patient.emergencyContact }} - {{ patient.emergencyPhone }}</q-item-label>
+                  <q-item-label caption
+                    >{{ patient.emergencyContact }} -
+                    {{ patient.emergencyPhone }}</q-item-label
+                  >
                 </q-item-section>
               </q-item>
 
@@ -96,7 +105,9 @@
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Registrado</q-item-label>
-                  <q-item-label caption>{{ formatDate(patient.createdAt) }}</q-item-label>
+                  <q-item-label caption>{{
+                    formatDate(patient.createdAt)
+                  }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -122,7 +133,7 @@
                   Alergias
                 </div>
                 <div class="q-mt-sm">
-                  {{ patient.allergies || 'No se reportan alergias' }}
+                  {{ patient.allergies || "No se reportan alergias" }}
                 </div>
               </q-card-section>
             </q-card>
@@ -136,7 +147,9 @@
                   Medicamentos Actuales
                 </div>
                 <div class="q-mt-sm">
-                  {{ patient.medications || 'No toma medicamentos actualmente' }}
+                  {{
+                    patient.medications || "No toma medicamentos actualmente"
+                  }}
                 </div>
               </q-card-section>
             </q-card>
@@ -167,10 +180,15 @@
       </q-card-section>
 
       <q-card-section class="q-pt-none">
-        <div v-if="consultations.length === 0" class="text-center text-grey-6 q-pa-lg">
+        <div
+          v-if="consultations.length === 0"
+          class="text-center text-grey-6 q-pa-lg"
+        >
           <q-icon name="medical_services" size="64px" />
           <div class="q-mt-md">No hay consultas registradas</div>
-          <div class="text-caption">Las consultas aparecerán aquí una vez que sean creadas</div>
+          <div class="text-caption">
+            Las consultas aparecerán aquí una vez que sean creadas
+          </div>
         </div>
 
         <div v-else>
@@ -188,61 +206,69 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import type { Patient as PatientType } from 'src/types/index'
-import type { Consultation as ConsultationType } from 'src/types/index'
-import ConsultationCard from 'src/components/ConsultationCard.vue'
+import { computed, ref } from "vue";
+import type { Patient as PatientType } from "src/types/index";
+import type { Consultation as ConsultationType } from "src/types/index";
+import ConsultationCard from "src/components/ConsultationCard.vue";
 
 interface Props {
-  patient: PatientType
-  consultations: ConsultationType[]
+  patient: PatientType;
+  consultations: ConsultationType[];
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 defineEmits<{
-  'new-consultation': [patient: PatientType]
-  'edit-consultation': [consultation: ConsultationType]
-  'delete-consultation': [consultationId: string]
-}>()
+  "new-consultation": [patient: PatientType];
+  "edit-consultation": [consultation: ConsultationType];
+  "delete-consultation": [consultationId: string];
+}>();
 
-const sortOrder = ref('newest')
+const sortOrder = ref("newest");
 
 const sortOptions = [
-  { label: 'Más reciente', value: 'newest' },
-  { label: 'Más antiguo', value: 'oldest' }
-]
+  { label: "Más reciente", value: "newest" },
+  { label: "Más antiguo", value: "oldest" },
+];
 
 const sortedConsultations = computed(() => {
-  const sorted = [...props.consultations]
+  const sorted = [...props.consultations];
 
-  if (sortOrder.value === 'newest') {
-    return sorted.sort((a, b) => new Date(b.fechaConsulta).getTime() - new Date(a.fechaConsulta).getTime())
+  if (sortOrder.value === "newest") {
+    return sorted.sort(
+      (a, b) =>
+        new Date(b.fechaConsulta).getTime() -
+        new Date(a.fechaConsulta).getTime()
+    );
   } else {
-    return sorted.sort((a, b) => new Date(a.fechaConsulta).getTime() - new Date(b.fechaConsulta).getTime())
+    return sorted.sort(
+      (a, b) =>
+        new Date(a.fechaConsulta).getTime() -
+        new Date(b.fechaConsulta).getTime()
+    );
   }
-})
+});
 
 const calculateAge = (birthDate: string): number => {
-  const today = new Date()
-  const birth = new Date(birthDate)
-  let age = today.getFullYear() - birth.getFullYear()
-  const monthDiff = today.getMonth() - birth.getMonth()
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
 
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--
+    age--;
   }
 
-  return age
-}
+  return age;
+};
 
 const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
+  return new Date(dateString).toLocaleDateString("es-ES", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 </script>
 
 <style scoped>

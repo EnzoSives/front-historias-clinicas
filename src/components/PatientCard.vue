@@ -6,24 +6,18 @@
     @click="$emit('select-patient', patient)"
   >
     <q-card-section class="row items-center">
-      <q-avatar
-        color="primary"
-        text-color="white"
-        size="50px"
-        class="q-mr-md"
-      >
+      <q-avatar color="primary" text-color="white" size="50px" class="q-mr-md">
         <q-icon name="person" size="24px" />
       </q-avatar>
 
       <div class="col">
         <div class="text-h6 text-primary">
-          {{ patient.firstName }} {{ patient.lastName }}
+          {{ patient.nombre }} {{ patient.apellido }}
         </div>
-        <div class="text-subtitle2 text-grey-7">
-          DNI: {{ patient.dni }}
-        </div>
+        <div class="text-subtitle2 text-grey-7">DNI: {{ patient.dni }}</div>
         <div class="text-caption text-grey-6">
-          {{ calculateAge(patient.birthDate) }} años • {{ patient.gender }}
+          {{ calculateAge(patient.fechaNacimiento) }} años •
+          {{ patient.genero }}
         </div>
       </div>
 
@@ -36,7 +30,7 @@
           {{ patient.bloodType }}
         </q-chip>
         <div class="text-caption text-grey-6 q-mt-xs">
-          {{ formatDate(patient.createdAt) }}
+          {{ formatDate(patient.fechaCreacion) }}
         </div>
       </div>
     </q-card-section>
@@ -61,50 +55,50 @@
 </template>
 
 <script setup lang="ts">
-import type { Patient as PatientType } from 'src/types/index'
+import type { Patient as PatientType } from "src/types/index";
 
 interface Props {
-  patient: PatientType
+  patient: PatientType;
 }
 
-defineProps<Props>()
+defineProps<Props>();
 
 defineEmits<{
-  'select-patient': [patient: Patient]
-  'view-history': [patient: Patient]
-  'new-consultation': [patient: Patient]
-}>()
+  "select-patient": [patient: Patient];
+  "view-history": [patient: Patient];
+  "new-consultation": [patient: Patient];
+}>();
 
 const calculateAge = (birthDate: string): number => {
-  const today = new Date()
-  const birth = new Date(birthDate)
-  let age = today.getFullYear() - birth.getFullYear()
-  const monthDiff = today.getMonth() - birth.getMonth()
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
 
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--
+    age--;
   }
 
-  return age
-}
+  return age;
+};
 
 const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('es-ES')
-}
+  return new Date(dateString).toLocaleDateString("es-ES");
+};
 
 const getBloodTypeColor = (bloodType: string): string => {
   const colors: { [key: string]: string } = {
-    'O+': 'red-5',
-    'O-': 'red-7',
-    'A+': 'blue-5',
-    'A-': 'blue-7',
-    'B+': 'green-5',
-    'B-': 'green-7',
-    'AB+': 'purple-5',
-    'AB-': 'purple-7'
-  }
-  return colors[bloodType] || 'grey-5'
-}
+    "O+": "red-5",
+    "O-": "red-7",
+    "A+": "blue-5",
+    "A-": "blue-7",
+    "B+": "green-5",
+    "B-": "green-7",
+    "AB+": "purple-5",
+    "AB-": "purple-7",
+  };
+  return colors[bloodType] || "grey-5";
+};
 </script>
 
 <style scoped>
@@ -115,6 +109,6 @@ const getBloodTypeColor = (bloodType: string): string => {
 
 .patient-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 </style>
