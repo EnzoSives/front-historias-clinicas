@@ -3,10 +3,10 @@
     <q-card-section>
       <div class="text-h6 text-primary">
         <q-icon name="medical_services" class="q-mr-sm" />
-        Nueva Consulta - {{ patient.firstName }} {{ patient.lastName }}
+        {{ isEdit ? 'Editar Consulta' : 'Nueva Consulta' }} - {{ patient.nombre }} {{ patient.apellido }}
       </div>
       <div class="text-subtitle2 text-grey-7">
-        DNI: {{ patient.dni }} • {{ calculateAge(patient.birthDate) }} años
+        DNI: {{ patient.dni }} • {{ calculateAge(patient.fechaNacimiento) }} años
       </div>
     </q-card-section>
 
@@ -14,45 +14,55 @@
       <q-form @submit="handleSubmit" class="q-gutter-md">
         <div class="row q-gutter-md">
           <q-input
-            v-model="form.date"
+            v-model="form.fechaConsulta"
             label="Fecha de Consulta"
             filled
             type="datetime-local"
             class="col"
             :rules="[val => !!val || 'Fecha de consulta requerida']"
           />
-          <q-input
-            v-model="form.nextAppointment"
-            label="Próxima Cita"
-            filled
-            type="datetime-local"
-            class="col"
-            hint="Opcional"
-          />
-        </div>
+          </div>
 
         <q-input
-          v-model="form.symptoms"
-          label="Síntomas"
+          v-model="form.motivoConsulta"
+          label="Motivo de Consulta"
           filled
           type="textarea"
-          rows="4"
-          :rules="[val => !!val || 'Síntomas requeridos']"
-          hint="Describa los síntomas que presenta el paciente"
+          rows="2"
+          :rules="[val => !!val || 'Motivo de consulta requerido']"
+          hint="Describa el motivo principal de la consulta"
         />
 
         <q-input
-          v-model="form.diagnosis"
+          v-model="form.anamnesis"
+          label="Anamnesis"
+          filled
+          type="textarea"
+          rows="4"
+          hint="Historial clínico y detalles del padecimiento actual"
+        />
+
+        <q-input
+          v-model="form.examenFisico"
+          label="Examen Físico"
+          filled
+          type="textarea"
+          rows="3"
+          hint="Resultados del examen físico"
+        />
+
+        <q-input
+          v-model="form.diagnostico"
           label="Diagnóstico"
           filled
           type="textarea"
           rows="3"
           :rules="[val => !!val || 'Diagnóstico requerido']"
-          hint="Diagnóstico médico basado en los síntomas"
+          hint="Diagnóstico médico basado en los datos"
         />
 
         <q-input
-          v-model="form.treatment"
+          v-model="form.tratamiento"
           label="Tratamiento"
           filled
           type="textarea"
@@ -62,21 +72,12 @@
         />
 
         <q-input
-          v-model="form.prescriptions"
-          label="Prescripciones"
+          v-model="form.observaciones"
+          label="Observaciones"
           filled
           type="textarea"
           rows="3"
-          hint="Medicamentos prescritos con dosis y frecuencia"
-        />
-
-        <q-input
-          v-model="form.notes"
-          label="Notas Adicionales"
-          filled
-          type="textarea"
-          rows="3"
-          hint="Observaciones adicionales sobre la consulta"
+          hint="Notas adicionales sobre la consulta"
         />
 
         <q-card-actions align="right" class="q-pt-md">
@@ -99,12 +100,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import type { Patient as PatientType } from 'src/types/index'
-import type { Consultation as ConsultationType } from 'src/types/index'
+import type { Consultation as ConsultationType } from 'src/types/index' // Asegúrate de usar la interfaz actualizada
 
 interface Props {
-  patient: PatientType
+  patient: PatientType;
+  consultation?: ConsultationType | null;
 }
 
 const props = defineProps<Props>()
@@ -112,20 +114,49 @@ const props = defineProps<Props>()
 const loading = ref(false)
 
 const form = reactive({
-  date: '',
-  symptoms: '',
-  diagnosis: '',
-  treatment: '',
-  prescriptions: '',
-  notes: '',
-  nextAppointment: ''
+  fechaConsulta: '', // Renombrado de 'date'
+  motivoConsulta: '', // Nuevo campo
+  anamnesis: '', // Nuevo campo
+  examenFisico: '', // Nuevo campo
+  diagnostico: '', // Renombrado de 'diagnosis'
+  tratamiento: '', // Renombrado de 'treatment'
+  observaciones: '' // Renombrado de 'notes'
 })
 
+const isEdit = computed(() => !!props.consultation && !!props.consultation.id)
+
+const populateForm = () => {
+  if (isEdit.value && props.consultation) {
+    // Populate form with existing consultation data for editing
+    form.fechaConsulta = props.consultation.fechaConsulta ? new Date(props.consultation.fechaConsulta).toISOString().slice(0, 16) : '';
+    form.motivoConsulta = props.consultation.motivoConsulta || '';
+    form.anamnesis = props.consultation.anamnesis || '';
+    form.examenFisico = props.consultation.examenFisico || '';
+    form.diagnostico = props.consultation.diagnostico || '';
+    form.tratamiento = props.consultation.tratamiento || '';
+    form.observaciones = props.consultation.observaciones || '';
+  } else {
+    // Set current date and time as default for new consultation
+    const now = new Date();
+    form.fechaConsulta = now.toISOString().slice(0, 16);
+    // Clear other fields for new consultation
+    form.motivoConsulta = '';
+    form.anamnesis = '';
+    form.examenFisico = '';
+    form.diagnostico = '';
+    form.tratamiento = '';
+    form.observaciones = '';
+  }
+};
+
 onMounted(() => {
-  // Set current date and time as default
-  const now = new Date()
-  form.date = now.toISOString().slice(0, 16)
+  populateForm();
 })
+
+watch(() => props.consultation, () => {
+  populateForm();
+}, { deep: true });
+
 
 const calculateAge = (birthDate: string): number => {
   const today = new Date()
@@ -144,11 +175,18 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
-    const consultationData: Consultation = {
-      id: `consultation_${Date.now()}`,
-      patientId: props.patient.id,
-      ...form,
-      createdAt: new Date().toISOString()
+    const consultationData: ConsultationType = {
+      id: isEdit.value && props.consultation ? props.consultation.id : `consultation_${Date.now()}`,
+      pacienteId: props.patient.id, // Mantenemos como string en el frontend
+      fechaConsulta: form.fechaConsulta,
+      motivoConsulta: form.motivoConsulta || undefined, // undefined para que no se envíen strings vacíos
+      observaciones: form.observaciones || undefined,
+      anamnesis: form.anamnesis || undefined,
+      examenFisico: form.examenFisico || undefined,
+      diagnostico: form.diagnostico || undefined,
+      tratamiento: form.tratamiento || undefined,
+      createdAt: isEdit.value && props.consultation ? props.consultation.createdAt : new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }
 
     emit('save', consultationData)
@@ -158,7 +196,7 @@ const handleSubmit = async () => {
 }
 
 const emit = defineEmits<{
-  cancel: []
-  save: [consultation: Consultation]
-}>()
+  cancel: [];
+  save: [consultation: ConsultationType];
+}>();
 </script>

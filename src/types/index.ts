@@ -55,6 +55,8 @@ export interface Consultation {
   examenFisico?: string;
   diagnostico?: string;
   tratamiento?: string;
+  createdAt?: string; // Para gestión de fechas de creación en el frontend
+  updatedAt?: string; // Para gestión de fechas de actualización en el fronten
 }
 
 export interface Doctor {

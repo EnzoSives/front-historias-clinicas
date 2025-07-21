@@ -1,6 +1,5 @@
 <template>
-  <q-layout view="hHh lpR fFf">
-    <q-header elevated class="bg-primary text-white">
+  <q-layout view="lHh Lpr fFf"> <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn
           flat
@@ -25,7 +24,10 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer
+    
+
+    <q-page-container>
+      <q-drawer
       v-model="drawerOpen"
       show-if-above
       :width="280"
@@ -87,7 +89,7 @@
               <q-icon name="people" color="primary" />
             </q-item-section>
             <q-item-section>
-              <q-item-label>{{ medicalStore.getTotalPatients() }}</q-item-label>
+              <q-item-label>{{ medicalStore.getTotalPatients }}</q-item-label>
               <q-item-label caption>Pacientes</q-item-label>
             </q-item-section>
           </q-item>
@@ -97,17 +99,15 @@
               <q-icon name="medical_services" color="secondary" />
             </q-item-section>
             <q-item-section>
-              <q-item-label>{{ medicalStore.getTotalConsultations() }}</q-item-label>
+              <q-item-label>{{ medicalStore.getTotalConsultations }}</q-item-label>
               <q-item-label caption>Consultas</q-item-label>
             </q-item-section>
           </q-item>
         </q-list>
       </q-scroll-area>
     </q-drawer>
-
-    <q-page-container>
-      <q-page class="bg-grey-1">
-        <!-- Dashboard View -->
+    
+      <q-page class="bg-grey-1 q-page-no-padding-top">
         <div v-if="currentView === 'dashboard'">
           <Dashboard
             @select-patient="selectPatient"
@@ -115,7 +115,6 @@
           />
         </div>
 
-        <!-- Patients List View -->
         <div v-else-if="currentView === 'patients'">
           <div class="q-pa-md">
             <div class="row items-center justify-between q-mb-md">
@@ -125,7 +124,7 @@
                   Pacientes
                 </div>
                 <div class="text-subtitle1 text-grey-7">
-                  {{ medicalStore.patients.length }} paciente(s) registrado(s)
+                  {{ medicalStore.getAllPatients.length }} paciente(s) registrado(s)
                 </div>
               </div>
               <div class="col-auto">
@@ -138,7 +137,6 @@
               </div>
             </div>
 
-            <!-- Search -->
             <q-input
               v-model="searchQuery"
               filled
@@ -158,7 +156,6 @@
               </template>
             </q-input>
 
-            <!-- Patients Grid -->
             <div v-if="filteredPatients.length === 0" class="text-center text-grey-6 q-pa-xl">
               <q-icon name="people" size="64px" />
               <div class="q-mt-md">No se encontraron pacientes</div>
@@ -184,7 +181,6 @@
           </div>
         </div>
 
-        <!-- Patient Form View -->
         <div v-else-if="currentView === 'patient-form'">
           <div class="flex flex-center q-pa-md">
             <PatientForm
@@ -196,7 +192,6 @@
           </div>
         </div>
 
-        <!-- Patient History View -->
         <div v-else-if="currentView === 'patient-history'">
           <PatientHistory
             :patient="selectedPatient"
@@ -207,7 +202,6 @@
           />
         </div>
 
-        <!-- Consultation Form View -->
         <div v-else-if="currentView === 'consultation-form'">
           <div class="flex flex-center q-pa-md">
             <ConsultationForm
@@ -225,7 +219,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
-import { medicalStore } from 'src/stores/medicalStore'
+import { useMedicalStore } from 'src/stores/medicalStore'
 import type { Patient as PatientType } from 'src/types/index'
 import type { Consultation as ConsultationType } from 'src/types/index'
 import Dashboard from 'src/components/Dashboard.vue'
@@ -236,21 +230,21 @@ import ConsultationForm from 'src/components/ConsultationForm.vue'
 
 const $q = useQuasar()
 
-// Reactive state
+const medicalStore = useMedicalStore()
+
 const drawerOpen = ref(false)
 const currentView = ref<'dashboard' | 'patients' | 'patient-form' | 'patient-history' | 'consultation-form'>('dashboard')
 const selectedPatient = ref<PatientType | null>(null)
 const searchQuery = ref('')
 const previousView = ref<string>('')
 
-// Computed properties
 const filteredPatients = computed(() => {
-  if (!searchQuery.value) return medicalStore.patients
+  if (!searchQuery.value) return medicalStore.getAllPatients
 
   const query = searchQuery.value.toLowerCase()
-  return medicalStore.patients.filter(patient =>
-    patient.firstName.toLowerCase().includes(query) ||
-    patient.lastName.toLowerCase().includes(query) ||
+  return medicalStore.getAllPatients.filter(patient =>
+    patient.firstName.toLowerCase().includes(query) || // Asegúrate de que 'firstName' exista en PatientType
+    patient.lastName.toLowerCase().includes(query) || // Asegúrate de que 'lastName' exista en PatientType
     patient.dni.toLowerCase().includes(query) ||
     patient.email.toLowerCase().includes(query)
   )
@@ -261,10 +255,8 @@ const patientConsultations = computed(() => {
   return medicalStore.getConsultationsByPatientId(selectedPatient.value.id)
 })
 
-// Methods
 const selectPatient = (patient: PatientType) => {
   selectedPatient.value = patient
-  medicalStore.currentPatient = patient
 }
 
 const viewPatientHistory = (patient: PatientType) => {
@@ -292,29 +284,35 @@ const showNewConsultationForm = (patient: PatientType) => {
 }
 
 const editConsultation = (consultation: ConsultationType) => {
-  // For now, just show a notification
   $q.notify({
     type: 'info',
     message: 'Función de edición de consultas en desarrollo'
   })
 }
 
-const savePatient = (patient: PatientType) => {
-  if (selectedPatient.value) {
-    medicalStore.updatePatient(patient)
+const savePatient = async (patient: PatientType) => {
+  try {
+    if (selectedPatient.value && patient.id) {
+      await medicalStore.updatePatient(patient.id, patient)
+      $q.notify({
+        type: 'positive',
+        message: 'Paciente actualizado exitosamente'
+      })
+    } else {
+      await medicalStore.addPatient(patient)
+      $q.notify({
+        type: 'positive',
+        message: 'Paciente creado exitosamente'
+      })
+    }
+    goBack()
+  } catch (error) {
+    console.error('Error saving patient:', error)
     $q.notify({
-      type: 'positive',
-      message: 'Paciente actualizado exitosamente'
-    })
-  } else {
-    medicalStore.addPatient(patient)
-    $q.notify({
-      type: 'positive',
-      message: 'Paciente creado exitosamente'
+      type: 'negative',
+      message: medicalStore.getStoreError || 'Error al guardar el paciente.'
     })
   }
-
-  goBack()
 }
 
 const saveConsultation = (consultation: ConsultationType) => {
@@ -324,7 +322,6 @@ const saveConsultation = (consultation: ConsultationType) => {
     message: 'Consulta guardada exitosamente'
   })
 
-  // Go back to patient history
   currentView.value = 'patient-history'
 }
 
@@ -336,10 +333,23 @@ const deleteConsultation = (consultationId: string) => {
   })
 }
 
-const viewConsultation = (consultation: ConsultationType) => {
-  const patient = medicalStore.getPatientById(consultation.patientId)
-  if (patient) {
-    viewPatientHistory(patient)
+const viewConsultation = async (consultation: ConsultationType) => {
+  try {
+    const patient = await medicalStore.fetchPatientById(consultation.pacienteId)
+    if (patient) {
+      viewPatientHistory(patient)
+    } else {
+      $q.notify({
+        type: 'negative',
+        message: 'No se encontró el paciente para esta consulta.'
+      })
+    }
+  } catch (error) {
+    console.error('Error fetching patient for consultation:', error)
+    $q.notify({
+      type: 'negative',
+      message: medicalStore.getStoreError || 'Error al cargar el paciente de la consulta.'
+    })
   }
 }
 
@@ -348,14 +358,16 @@ const goBack = () => {
   previousView.value = ''
 }
 
-// Lifecycle
-onMounted(() => {
-  medicalStore.loadFromStorage()
+onMounted(async () => {
+  await medicalStore.initializeStore()
 })
 </script>
 
 <style scoped>
 .q-layout {
   min-height: 100vh;
+}
+.q-page-no-padding-top {
+  padding-top: 0 !important;
 }
 </style>
