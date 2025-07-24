@@ -427,8 +427,8 @@ const form = reactive<PatientType>({
   examenFisicoSistemaMusculoEsqueletico: undefined,
   examenFisicoPielAnexos: undefined,
   primerObservacion: undefined,
-  imagen: undefined,
-  imagen2: undefined,
+  imagen: null,
+  imagen2: null,
   activo: undefined,
 });
 
@@ -522,7 +522,7 @@ const handleSubmit = async () => {
 
     if (props.isEdit && form.id) {
       await api.put(
-        `http://localhost:3003/paciente/${form.id}`,
+        `http://localhost:3000/paciente/${form.id}`,
         patientDataToSend
       );
       $q.notify({
@@ -530,7 +530,7 @@ const handleSubmit = async () => {
         message: "Paciente actualizado exitosamente!",
       });
     } else {
-      await api.post("http://localhost:3003/paciente/crear", patientDataToSend);
+      await api.post("http://localhost:3000/paciente/crear", patientDataToSend);
       $q.notify({
         type: "positive",
         message: "Paciente creado exitosamente!",

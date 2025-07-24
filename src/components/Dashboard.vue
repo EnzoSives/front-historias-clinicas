@@ -102,7 +102,7 @@
     </div>
 
     <!-- Quick Actions -->
-    <div class="row q-gutter-md q-mb-lg">
+    <div class="row q-gutter-md q-mb-md">
       <div class="col-12">
         <q-card class="quick-actions-card">
           <q-card-section class="q-pb-sm">
@@ -143,7 +143,7 @@
                   no-caps
                 />
               </div>
-              <div class="col-12 col-sm-6 col-md-3">
+              <!-- <div class="col-12 col-sm-6 col-md-3">
                 <q-btn
                   class="full-width action-btn"
                   color="info"
@@ -152,7 +152,7 @@
                   @click="$emit('view-reports')"
                   no-caps
                 />
-              </div>
+              </div> -->
             </div>
           </q-card-section>
         </q-card>
@@ -375,8 +375,8 @@ const newPatientsThisMonth = computed(() => {
   const currentYear = new Date().getFullYear();
 
   return medicalStore.getAllPatients.filter((patient) => {
-    if (!patient.createdAt) return false;
-    const patientDate = new Date(patient.createdAt);
+    if (!patient.fechaCreacion) return false;
+    const patientDate = new Date(patient.fechaCreacion);
     return (
       patientDate.getMonth() === currentMonth &&
       patientDate.getFullYear() === currentYear
@@ -422,8 +422,8 @@ const lastConsultationDate = computed(() => {
 const recentPatients = computed(() => {
   return medicalStore.getAllPatients
     .sort((a, b) => {
-      const dateA = new Date(a.createdAt || "").getTime();
-      const dateB = new Date(b.createdAt || "").getTime();
+      const dateA = new Date(a.fechaCreacion || "").getTime();
+      const dateB = new Date(b.fechaCreacion || "").getTime();
       return dateB - dateA;
     })
     .slice(0, 5);
@@ -486,7 +486,7 @@ const hasRecentConsultation = (patientId: string): boolean => {
 
   return medicalStore.consultations.some(
     (consultation) =>
-      consultation.patientId === patientId &&
+      consultation.pacienteId === patientId &&
       new Date(consultation.fechaConsulta || "") > thirtyDaysAgo
   );
 };
@@ -543,6 +543,7 @@ const getConsultationStatusColor = (consultation: ConsultationType): string => {
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(0, 0, 0, 0.06);
+  width: 90%;
 }
 
 .action-btn {

@@ -74,7 +74,7 @@ const handleSubmit = async () => {
 
   try {
     const response = await api.post<LoginResponse>(
-      "http://localhost:3003/auth/login",
+      "http://localhost:3000/auth/login",
       form
     );
 

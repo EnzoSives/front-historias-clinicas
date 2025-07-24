@@ -102,7 +102,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import type { Patient as PatientType } from 'src/types/index'
-import type { Consultation as ConsultationType } from 'src/types/index' // Asegúrate de usar la interfaz actualizada
+import type { Consultation as ConsultationType } from 'src/types/index' 
 
 interface Props {
   patient: PatientType;

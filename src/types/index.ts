@@ -39,9 +39,10 @@ export interface Patient {
   examenFisicoSistemaMusculoEsqueletico?: string | undefined;
   examenFisicoPielAnexos?: string | undefined;
   primerObservacion?: string | undefined;
-  imagen?: string | undefined;
-  imagen2?: string | undefined;
+  imagen?: null | undefined;
+  imagen2?: null | undefined;
   fechaCreacion?: Date | undefined;
+  activo?: boolean | undefined; // Optional field to indicate if the patient is active
   id_medico?: number | undefined; // Optional field to link to Doctor
 }
 
