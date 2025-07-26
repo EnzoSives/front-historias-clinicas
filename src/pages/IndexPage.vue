@@ -301,9 +301,9 @@ const previousView = ref<string>("");
 
 // Simulación de datos del usuario. En una app real, vendrían del login.
 const user = ref({
-  name: "Dra. Elena Rodriguez",
-  email: "e.rodriguez@clinicavida.com",
-  avatar: "https://cdn.quasar.dev/img/avatar2.jpg",
+  name: authStore.user?.username,
+  email: authStore.user?.email,
+  avatar: "public/iconDoc.jpg", // Cambia esto por la URL de tu avatar
 });
 
 const goToProfile = () => {
