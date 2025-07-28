@@ -1,31 +1,46 @@
-import { defineBoot } from "#q-app/wrappers";
-import axios, { type AxiosInstance } from "axios";
+import { defineBoot } from '#q-app/wrappers';
+import axios, { type AxiosInstance } from 'axios';
 
-declare module "vue" {
+declare module 'vue' {
   interface ComponentCustomProperties {
     $axios: AxiosInstance;
     $api: AxiosInstance;
   }
 }
 
-// Be careful when using SSR for cross-request state pollution
-// due to creating a Singleton instance here;
-// If any client changes this (global) instance, it might be a
-// good idea to move this instance creation inside of the
-// "export default () => {}" function below (which runs individually
-// for each client)
-const api = axios.create({ baseURL: "http://localhost:3003" });
+// Se crea la instancia de Axios que usará toda la app
+const api = axios.create({ baseURL: 'http://localhost:3000' });
 
-export default defineBoot(({ app }) => {
-  // for use inside Vue files (Options API) through this.$axios and this.$api
+// La lógica para añadir el token se coloca aquí, dentro de la función de boot
+export default defineBoot(({ app, router }) => {
+  // 1. Intentamos obtener el token del localStorage al cargar la app.
+  //    Asegúrate de que la clave 'authToken' sea la misma que usas al guardar el token en el login.
+  const token = localStorage.getItem('authToken');
 
+  // 2. Si encontramos un token, lo configuramos como cabecera por defecto para TODAS las peticiones.
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  }
+
+  // 3. (Opcional pero muy recomendado) Interceptor para manejar errores 401.
+  //    Esto se ejecuta si el token expira o es inválido.
+  api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response && error.response.status === 401) {
+        console.error('Error de autenticación (401). El token puede ser inválido o haber expirado.');
+        // Limpiamos el token que ya no sirve
+        localStorage.removeItem('authToken');
+        // Redirigimos al usuario a la página de login para que vuelva a autenticarse.
+        // router.push('/login'); // Descomenta esta línea si tienes una ruta de login.
+      }
+      return Promise.reject(error);
+    }
+  );
+
+  // --- El resto de tu código original se mantiene igual ---
   app.config.globalProperties.$axios = axios;
-  // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
-  //       so you won't necessarily have to import axios in each vue file
-
   app.config.globalProperties.$api = api;
-  // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
-  //       so you can easily perform requests against your app's API
 });
 
 export { api };

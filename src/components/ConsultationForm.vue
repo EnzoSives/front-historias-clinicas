@@ -99,87 +99,86 @@
   </q-card>
 </template>
 
-<script setup lang="ts">
-import { ref, reactive, onMounted, computed, watch } from 'vue'
-import type { Patient as PatientType } from 'src/types/index'
-import type { Consultation as ConsultationType } from 'src/types/index' 
+<script lang="ts" setup>
+import { ref, reactive, onMounted, computed, watch } from 'vue';
+import type { Patient as PatientType, Consultation as ConsultationType } from 'src/types/index';
+// Importa el store para obtener el ID del médico
+import { useAuthStore } from 'src/stores/authStore';
 
 interface Props {
   patient: PatientType;
   consultation?: ConsultationType | null;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
-const loading = ref(false)
+const loading = ref(false);
+const authStore = useAuthStore();
 
+// Usamos los nombres de propiedad correctos que espera tu modelo de datos
 const form = reactive({
-  fechaConsulta: '', // Renombrado de 'date'
-  motivoConsulta: '', // Nuevo campo
-  anamnesis: '', // Nuevo campo
-  examenFisico: '', // Nuevo campo
-  diagnostico: '', // Renombrado de 'diagnosis'
-  tratamiento: '', // Renombrado de 'treatment'
-  observaciones: '' // Renombrado de 'notes'
-})
+  fechaConsulta: '',
+  motivoConsulta: '',
+  anamnesis: '',
+  enfermedadActual: '', 
+  examenFisico: '',
+  diagnostico: '',
+  tratamiento: '',
+  observaciones: ''
+});
 
-const isEdit = computed(() => !!props.consultation && !!props.consultation.id)
+const isEdit = computed(() => !!props.consultation?.id);
 
 const populateForm = () => {
-  if (isEdit.value && props.consultation) {
-    // Populate form with existing consultation data for editing
-    form.fechaConsulta = props.consultation.fechaConsulta ? new Date(props.consultation.fechaConsulta).toISOString().slice(0, 16) : '';
-    form.motivoConsulta = props.consultation.motivoConsulta || '';
-    form.anamnesis = props.consultation.anamnesis || '';
-    form.examenFisico = props.consultation.examenFisico || '';
-    form.diagnostico = props.consultation.diagnostico || '';
-    form.tratamiento = props.consultation.tratamiento || '';
-    form.observaciones = props.consultation.observaciones || '';
+  const consultation = props.consultation;
+  if (isEdit.value && consultation) {
+    // Rellenar el formulario para editar
+    form.fechaConsulta = consultation.fechaConsulta ? new Date(consultation.fechaConsulta).toISOString().slice(0, 16) : '';
+    form.motivoConsulta = consultation.motivoConsulta || '';
+    form.examenFisico = consultation.examenFisico || '';
+    form.diagnostico = consultation.diagnostico || '';
+    form.tratamiento = consultation.tratamiento || '';
+    form.anamnesis = consultation.anamnesis || '';
+    form.observaciones = consultation.observaciones || '';
   } else {
-    // Set current date and time as default for new consultation
-    const now = new Date();
-    form.fechaConsulta = now.toISOString().slice(0, 16);
-    // Clear other fields for new consultation
+    // Configurar valores por defecto para una nueva consulta
+    form.fechaConsulta = new Date().toISOString().slice(0, 16);
     form.motivoConsulta = '';
-    form.anamnesis = '';
     form.examenFisico = '';
+    form.anamnesis = '';
     form.diagnostico = '';
     form.tratamiento = '';
     form.observaciones = '';
   }
 };
 
-onMounted(() => {
-  populateForm();
-})
+onMounted(populateForm);
+watch(() => props.consultation, populateForm, { deep: true, immediate: true });
 
-watch(() => props.consultation, () => {
-  populateForm();
-}, { deep: true });
-
-
-const calculateAge = (birthDate: string): number => {
-  const today = new Date()
-  const birth = new Date(birthDate)
-  let age = today.getFullYear() - birth.getFullYear()
-  const monthDiff = today.getMonth() - birth.getMonth()
+const calculateAge = (birthDate?: string): number | string => {
+  if (!birthDate) return 'N/A';
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
 
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--
+    age--;
   }
+  return age;
+};
 
-  return age
-}
-
+// ✅ **FUNCIÓN CORREGIDA**
 const handleSubmit = async () => {
-  loading.value = true
+  loading.value = true;
+  const medicoId = authStore.user?.medico?.id; // Obtener el ID del médico
 
   try {
     const consultationData: ConsultationType = {
-      id: isEdit.value && props.consultation ? props.consultation.id : `consultation_${Date.now()}`,
-      pacienteId: props.patient.id, // Mantenemos como string en el frontend
+      pacienteId: props.consultation?.pacienteId , 
+      id_medico: medicoId, // <-- AÑADIR ESTA LÍNEA
       fechaConsulta: form.fechaConsulta,
-      motivoConsulta: form.motivoConsulta || undefined, // undefined para que no se envíen strings vacíos
+      motivoConsulta: form.motivoConsulta || undefined,
       observaciones: form.observaciones || undefined,
       anamnesis: form.anamnesis || undefined,
       examenFisico: form.examenFisico || undefined,
@@ -187,16 +186,17 @@ const handleSubmit = async () => {
       tratamiento: form.tratamiento || undefined,
       createdAt: isEdit.value && props.consultation ? props.consultation.createdAt : new Date().toISOString(),
       updatedAt: new Date().toISOString()
-    }
+    };
 
-    emit('save', consultationData)
+    emit('save', consultationData);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
-
+};
 const emit = defineEmits<{
   cancel: [];
-  save: [consultation: ConsultationType];
+  // El evento ahora emite un objeto genérico, ya que la estructura completa
+  // la devolverá la API.
+  save: [consultationPayload: Record<string, any>];
 }>();
 </script>

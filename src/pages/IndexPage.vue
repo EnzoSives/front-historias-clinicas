@@ -149,7 +149,7 @@
                   Pacientes
                 </div>
                 <div class="text-subtitle1 text-grey-7">
-                  {{ medicalStore.getAllPatients.length }} paciente(s)
+                  {{ medicalStore.patients.length }} paciente(s)
                   registrado(s)
                 </div>
               </div>
@@ -329,15 +329,14 @@ const logout = () => {
 };
 
 const filteredPatients = computed(() => {
-  if (!searchQuery.value) return medicalStore.getAllPatients;
+  if (!searchQuery.value) return medicalStore.patients;
 
   const query = searchQuery.value.toLowerCase();
-  return medicalStore.getAllPatients.filter(
+  return medicalStore.patients.filter(
     (patient) =>
-      patient.firstName.toLowerCase().includes(query) || // Asegúrate de que 'firstName' exista en PatientType
-      patient.lastName.toLowerCase().includes(query) || // Asegúrate de que 'lastName' exista en PatientType
-      patient.dni.toLowerCase().includes(query) ||
-      patient.email.toLowerCase().includes(query)
+      patient.nombre.toLowerCase().includes(query) || // Asegúrate de que 'firstName' exista en PatientType
+      patient.apellido.toLowerCase().includes(query) || // Asegúrate de que 'lastName' exista en PatientType
+      patient.dni.toLowerCase().includes(query)
   );
 });
 

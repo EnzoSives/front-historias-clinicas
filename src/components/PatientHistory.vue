@@ -13,8 +13,8 @@
             </div>
             <div class="text-subtitle2 text-grey-7">
               DNI: {{ patient.dni }} •
-              {{ calculateAge(patient.fechaNacimiento) }} años •
-              {{ patient.genero }}
+              {{ patient.edad || calculateAge(patient.fechaNacimiento) }} años •
+              {{ patient.sexo }}
             </div>
           </div>
           <div class="col-auto">
@@ -29,7 +29,6 @@
       </q-card-section>
     </q-card>
 
-    <!-- Patient Details -->
     <q-card class="q-mb-md">
       <q-card-section>
         <div class="text-h6 text-primary q-mb-md">
@@ -38,127 +37,192 @@
         </div>
 
         <div class="row q-gutter-md">
-          <div class="col-12 col-md-6">
-            <q-list>
+          <div class="col-12 col-md">
+            <q-list separator>
+              <q-item>
+                <q-item-section avatar>
+                  <q-icon name="cake" color="primary" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Fecha de Nacimiento</q-item-label>
+                  <q-item-label caption>{{ formatDate(patient.fechaNacimiento) }}</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item>
+                <q-item-section avatar>
+                  <q-icon name="public" color="primary" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>Lugar de Nacimiento</q-item-label>
+                  <q-item-label caption>{{ patient.lugarNacimiento || "No especificado" }}</q-item-label>
+                </q-item-section>
+              </q-item>
               <q-item>
                 <q-item-section avatar>
                   <q-icon name="phone" color="primary" />
                 </q-item-section>
                 <q-item-section>
-                  <q-item-label>Teléfono</q-item-label>
-                  <q-item-label caption>{{ patient.phone }}</q-item-label>
+                  <q-item-label>Teléfono Celular</q-item-label>
+                  <q-item-label caption>{{ patient.telefonoCelular || "No especificado" }}</q-item-label>
+                </q-item-section>
+                 <q-item-section>
+                  <q-item-label>Teléfono Fijo</q-item-label>
+                  <q-item-label caption>{{ patient.telefonoFijo || "No especificado" }}</q-item-label>
                 </q-item-section>
               </q-item>
-
-              <q-item>
-                <q-item-section avatar>
-                  <q-icon name="email" color="primary" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>Email</q-item-label>
-                  <q-item-label caption>{{
-                    patient.email || "No especificado"
-                  }}</q-item-label>
-                </q-item-section>
-              </q-item>
-
               <q-item>
                 <q-item-section avatar>
                   <q-icon name="location_on" color="primary" />
                 </q-item-section>
                 <q-item-section>
                   <q-item-label>Dirección</q-item-label>
-                  <q-item-label caption>{{ patient.address }}</q-item-label>
+                  <q-item-label caption>{{ patient.direccion || "No especificada" }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
           </div>
-
-          <div class="col-12 col-md-6">
-            <q-list>
-              <q-item>
-                <q-item-section avatar>
-                  <q-icon name="bloodtype" color="red" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>Tipo de Sangre</q-item-label>
-                  <q-item-label caption>{{ patient.bloodType }}</q-item-label>
-                </q-item-section>
-              </q-item>
-
-              <q-item>
-                <q-item-section avatar>
-                  <q-icon name="emergency" color="orange" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>Contacto de Emergencia</q-item-label>
-                  <q-item-label caption
-                    >{{ patient.emergencyContact }} -
-                    {{ patient.emergencyPhone }}</q-item-label
-                  >
-                </q-item-section>
-              </q-item>
-
-              <q-item>
-                <q-item-section avatar>
-                  <q-icon name="calendar_today" color="primary" />
-                </q-item-section>
-                <q-item-section>
-                  <q-item-label>Registrado</q-item-label>
-                  <q-item-label caption>{{
-                    formatDate(patient.createdAt)
-                  }}</q-item-label>
-                </q-item-section>
-              </q-item>
+          <div class="col-12 col-md">
+            <q-list separator>
+                <q-item>
+                    <q-item-section avatar>
+                        <q-icon name="work" color="primary" />
+                    </q-item-section>
+                    <q-item-section>
+                        <q-item-label>Ocupación</q-item-label>
+                        <q-item-label caption>{{ patient.ocupacion || "No especificada" }}</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item>
+                    <q-item-section avatar>
+                        <q-icon name="favorite" color="primary" />
+                    </q-item-section>
+                    <q-item-section>
+                        <q-item-label>Estado Civil</q-item-label>
+                        <q-item-label caption>{{ patient.estadoCivil || "No especificado" }}</q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-item>
+                    <q-item-section avatar>
+                        <q-icon name="shield" color="primary" />
+                    </q-item-section>
+                    <q-item-section>
+                        <q-item-label>Obra Social</q-item-label>
+                        <q-item-label caption>{{ patient.obraSocial || "No especificada" }}</q-item-label>
+                    </q-item-section>
+                     <q-item-section>
+                        <q-item-label>Nº Afiliado</q-item-label>
+                        <q-item-label caption>{{ patient.afiliadoObraSocial || "No especificado" }}</q-item-label>
+                    </q-item-section>
+                </q-item>
+                 <q-item>
+                    <q-item-section avatar>
+                        <q-icon name="calendar_today" color="primary" />
+                    </q-item-section>
+                    <q-item-section>
+                        <q-item-label>Fecha de Creación</q-item-label>
+                        <q-item-label caption>{{ formatDate(patient.fechaCreacion) }}</q-item-label>
+                    </q-item-section>
+                </q-item>
             </q-list>
           </div>
         </div>
       </q-card-section>
     </q-card>
 
-    <!-- Medical Information -->
     <q-card class="q-mb-md">
-      <q-card-section>
-        <div class="text-h6 text-primary q-mb-md">
-          <q-icon name="medical_information" class="q-mr-sm" />
-          Información Médica
-        </div>
-
-        <div class="row q-gutter-md">
-          <div class="col-12 col-md-6">
-            <q-card flat bordered>
-              <q-card-section>
-                <div class="text-weight-medium text-negative">
-                  <q-icon name="warning" class="q-mr-sm" />
-                  Alergias
+        <q-card-section>
+            <div class="text-h6 text-primary q-mb-md">
+                <q-icon name="medical_information" class="q-mr-sm" />
+                Información Médica y Antecedentes
+            </div>
+             <div class="q-gutter-y-md">
+                <q-card flat bordered>
+                    <q-card-section>
+                        <div class="text-weight-medium"><q-icon name="history" class="q-mr-sm" />Antecedentes Personales Médicos</div>
+                        <div class="q-mt-sm text-caption">{{ patient.antecedentesPersonalesMedicos || "No se reportan." }}</div>
+                    </q-card-section>
+                </q-card>
+                 <q-card flat bordered>
+                    <q-card-section>
+                        <div class="text-weight-medium"><q-icon name="healing" class="q-mr-sm" />Antecedentes Quirúrgicos</div>
+                        <div class="q-mt-sm text-caption">{{ patient.antecedentesQuirurgicos || "No se reportan." }}</div>
+                    </q-card-section>
+                </q-card>
+                 <q-card flat bordered>
+                    <q-card-section>
+                        <div class="text-weight-medium"><q-icon name="family_restroom" class="q-mr-sm" />Antecedentes Heredo-Familiares</div>
+                        <div class="q-mt-sm text-caption">{{ patient.antecedentesHeredoFamiliares || "No se reportan." }}</div>
+                    </q-card-section>
+                </q-card>
+                <div class="row q-gutter-md">
+                    <div class="col-12 col-md">
+                        <q-card flat bordered>
+                            <q-card-section>
+                                <div class="text-weight-medium text-negative"><q-icon name="warning" class="q-mr-sm" />Alergias</div>
+                                <div class="q-mt-sm text-caption">{{ patient.alergias || "No se reportan alergias." }}</div>
+                            </q-card-section>
+                        </q-card>
+                    </div>
+                    <div class="col-12 col-md">
+                        <q-card flat bordered>
+                            <q-card-section>
+                                <div class="text-weight-medium text-info"><q-icon name="medication" class="q-mr-sm" />Medicación Habitual</div>
+                                <div class="q-mt-sm text-caption">{{ patient.medicacionHabitual || "No toma medicamentos actualmente." }}</div>
+                            </q-card-section>
+                        </q-card>
+                    </div>
+                    <div class="col-12 col-md">
+                        <q-card flat bordered>
+                            <q-card-section>
+                                <div class="text-weight-medium text-orange"><q-icon name="smoking_rooms" class="q-mr-sm" />Hábitos Tóxicos</div>
+                                <div class="q-mt-sm text-caption">{{ patient.habitosToxicos || "No se reportan." }}</div>
+                            </q-card-section>
+                        </q-card>
+                    </div>
                 </div>
-                <div class="q-mt-sm">
-                  {{ patient.allergies || "No se reportan alergias" }}
-                </div>
-              </q-card-section>
-            </q-card>
-          </div>
-
-          <div class="col-12 col-md-6">
-            <q-card flat bordered>
-              <q-card-section>
-                <div class="text-weight-medium text-info">
-                  <q-icon name="medication" class="q-mr-sm" />
-                  Medicamentos Actuales
-                </div>
-                <div class="q-mt-sm">
-                  {{
-                    patient.medications || "No toma medicamentos actualmente"
-                  }}
-                </div>
-              </q-card-section>
-            </q-card>
-          </div>
-        </div>
-      </q-card-section>
+            </div>
+        </q-card-section>
     </q-card>
 
-    <!-- Consultations History -->
+    <q-card class="q-mb-md">
+        <q-card-section>
+            <div class="text-h6 text-primary q-mb-md">
+                <q-icon name="accessibility_new" class="q-mr-sm" />
+                Examen Físico
+            </div>
+            <div class="row q-col-gutter-sm q-mb-md text-center">
+                <div class="col-4 col-sm-2"><q-item-label>Peso</q-item-label><q-item-label caption>{{ patient.examenFisicoPeso || 'N/A' }} kg</q-item-label></div>
+                <div class="col-4 col-sm-2"><q-item-label>Talla</q-item-label><q-item-label caption>{{ patient.examenFisicoTalla || 'N/A' }} m</q-item-label></div>
+                <div class="col-4 col-sm-2"><q-item-label>IMC</q-item-label><q-item-label caption>{{ patient.examenFisicoIMC || 'N/A' }}</q-item-label></div>
+                <div class="col-4 col-sm-2"><q-item-label>TA</q-item-label><q-item-label caption>{{ patient.examenFisicoTA || 'N/A' }}</q-item-label></div>
+                <div class="col-4 col-sm-2"><q-item-label>FC</q-item-label><q-item-label caption>{{ patient.examenFisicoFC || 'N/A' }}</q-item-label></div>
+                <div class="col-4 col-sm-2"><q-item-label>FR</q-item-label><q-item-label caption>{{ patient.examenFisicoFR || 'N/A' }}</q-item-label></div>
+            </div>
+            <q-list bordered>
+                <q-expansion-item
+                    expand-separator
+                    icon="list"
+                    label="Revisión Detallada por Sistemas"
+                    header-class="text-primary"
+                >
+                    <q-card>
+                        <q-card-section>
+                            <p><strong>Sistema Nervioso:</strong> {{ patient.examenFisicoSistemaNervioso || "Sin particularidades." }}</p>
+                            <p><strong>AP Cardiovascular:</strong> {{ patient.examenFisicoAPCardiovascular || "Sin particularidades." }}</p>
+                            <p><strong>AP Respiratorio:</strong> {{ patient.examenFisicoAPRespiratorio || "Sin particularidades." }}</p>
+                            <p><strong>AP Digestivo:</strong> {{ patient.examenFisicoAPDigestivo || "Sin particularidades." }}</p>
+                            <p><strong>AP Genitourinario:</strong> {{ patient.examenFisicoAPGenitourinario || "Sin particularidades." }}</p>
+                            <p><strong>Sistema Endocrino:</strong> {{ patient.examenFisicoSistemaEndocrino || "Sin particularidades." }}</p>
+                            <p><strong>Sistema Hematopoyético:</strong> {{ patient.examenFisicoSistemaHematopoyetico || "Sin particularidades." }}</p>
+                            <p><strong>Sistema Musculoesquelético:</strong> {{ patient.examenFisicoSistemaMusculoEsqueletico || "Sin particularidades." }}</p>
+                            <p><strong>Piel y Anexos:</strong> {{ patient.examenFisicoPielAnexos || "Sin particularidades." }}</p>
+                        </q-card-section>
+                    </q-card>
+                </q-expansion-item>
+            </q-list>
+        </q-card-section>
+    </q-card>
+
     <q-card>
       <q-card-section>
         <div class="row items-center justify-between">
@@ -178,19 +242,11 @@
           </div>
         </div>
       </q-card-section>
-
       <q-card-section class="q-pt-none">
-        <div
-          v-if="consultations.length === 0"
-          class="text-center text-grey-6 q-pa-lg"
-        >
+        <div v-if="consultations.length === 0" class="text-center text-grey-6 q-pa-lg">
           <q-icon name="medical_services" size="64px" />
           <div class="q-mt-md">No hay consultas registradas</div>
-          <div class="text-caption">
-            Las consultas aparecerán aquí una vez que sean creadas
-          </div>
         </div>
-
         <div v-else>
           <ConsultationCard
             v-for="consultation in sortedConsultations"

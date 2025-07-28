@@ -48,7 +48,8 @@ export interface Patient {
 
 export interface Consultation {
   id: number; // Kept as it is likely a system identifier
-  pacienteId: string; // Kept as it is likely a system identifier to link to Patient
+  pacienteId: number; // Kept as it is likely a system identifier to link to Patient
+  id_medico?: number;
   motivoConsulta?: string;
   observaciones?: string;
   fechaConsulta: Date;

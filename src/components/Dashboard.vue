@@ -374,7 +374,8 @@ const newPatientsThisMonth = computed(() => {
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
 
-  return medicalStore.getAllPatients.filter((patient) => {
+  // ✅ CORRECCIÓN: Se añade la guardia (|| [])
+  return (medicalStore.getAllPatients || []).filter((patient) => {
     if (!patient.fechaCreacion) return false;
     const patientDate = new Date(patient.fechaCreacion);
     return (
@@ -418,9 +419,10 @@ const lastConsultationDate = computed(() => {
   return formatRelativeDate(lastConsultation.fechaConsulta);
 });
 
-// Listas mejoradas
+
 const recentPatients = computed(() => {
-  return medicalStore.getAllPatients
+  // ✅ CORRECCIÓN: Se añade la guardia (|| []) antes de .sort()
+  return (medicalStore.patients || [])
     .sort((a, b) => {
       const dateA = new Date(a.fechaCreacion || "").getTime();
       const dateB = new Date(b.fechaCreacion || "").getTime();
@@ -428,7 +430,6 @@ const recentPatients = computed(() => {
     })
     .slice(0, 5);
 });
-
 const recentConsultations = computed(() => {
   return medicalStore.consultations
     .sort((a, b) => {

@@ -1,63 +1,71 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { AuthUser, Doctor } from 'src/types/index'; // Import AuthUser and Doctor interfaces
+import { AuthUser } from 'src/types/index';
+// ✅ **PASO 1: Importar la instancia de Axios**
+import { api } from 'src/boot/axios';
 
 export const useAuthStore = defineStore('auth', () => {
   // Estado reactivo
   const token = ref<string | null>(null);
-  const user = ref<AuthUser | null>(null); // Changed 'doctor' to 'user' of type AuthUser
+  const user = ref<AuthUser | null>(null);
   const isAuthenticated = computed(() => !!token.value && !!user.value);
 
-  // Acción para establecer los datos de login
-  const setLoginData = (userData: AuthUser, authToken: string) => { // Expects AuthUser object and token
+  // ✅ **PASO 2: Acción de login MODIFICADA**
+  const setLoginData = (userData: AuthUser, authToken: string) => {
     user.value = userData;
     token.value = authToken;
 
     // Guarda en localStorage para persistencia
     localStorage.setItem('auth_token', authToken);
-    localStorage.setItem('auth_user', JSON.stringify(userData)); // Store the whole user object
+    localStorage.setItem('auth_user', JSON.stringify(userData));
+
+    // **LÍNEA CRÍTICA: Configura Axios para que use el token**
+    api.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
   };
 
-  // Acción para cerrar sesión
+  // ✅ **PASO 3: Acción de logout MODIFICADA**
   const logout = () => {
     user.value = null;
     token.value = null;
 
     // Limpia localStorage
     localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user'); // Corrected key to match 'auth_user'
+    localStorage.removeItem('auth_user');
+
+    // **LÍNEA CRÍTICA: Elimina el token de Axios**
+    delete api.defaults.headers.common['Authorization'];
   };
 
-  // Acción para restaurar datos desde localStorage
+  // ✅ **PASO 4: Acción de restaurar MODIFICADA**
   const restoreFromStorage = () => {
     const storedToken = localStorage.getItem('auth_token');
-    const storedUser = localStorage.getItem('auth_user'); // Corrected key to match 'auth_user'
+    const storedUser = localStorage.getItem('auth_user');
 
-    if (storedToken) {
+    if (storedToken && storedUser) {
       token.value = storedToken;
-    }
-
-    if (storedUser) {
       try {
-        user.value = JSON.parse(storedUser); // Parse into user object
+        user.value = JSON.parse(storedUser);
+        // **LÍNEA CRÍTICA: Configura Axios si se restaura la sesión**
+        api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
       } catch (error) {
-        console.error('Error parsing stored user data:', error);
-        localStorage.removeItem('auth_user'); // Clear corrupted data
+        console.error('Error al restaurar datos de usuario, limpiando sesión:', error);
+        logout(); // Si los datos están corruptos, cierra sesión.
       }
     }
   };
 
-  // Getters
+  // Getters (sin cambios)
   const getUserId = computed(() => user.value?.id || null);
-  const getUserUsername = computed(() => user.value?.username || ''); // Access username from user object
-  const getUserEmail = computed(() => user.value?.email || ''); // Access email from user object
+  const getUserUsername = computed(() => user.value?.username || '');
+  const getUserEmail = computed(() => user.value?.email || '');
   const getToken = computed(() => token.value);
-  const getDoctorData = computed(() => user.value?.medico || null); // Provides access to the nested 'medico' object if it exists
+  // Este getter es clave para obtener el ID del médico
+  const getMedicoId = computed(() => user.value?.medico?.id || null);
 
   return {
     // Estado
     token,
-    user, // Expose user instead of doctor
+    user,
     isAuthenticated,
 
     // Acciones
@@ -70,9 +78,6 @@ export const useAuthStore = defineStore('auth', () => {
     getUserUsername,
     getUserEmail,
     getToken,
-    getDoctorData // New getter for the nested doctor data
+    getMedicoId, // Getter corregido para el ID del médico
   };
 });
-
-// Call restoreFromStorage when the store is initialized (e.g., in App.vue's onMounted or a boot file)
-useAuthStore().restoreFromStorage();
