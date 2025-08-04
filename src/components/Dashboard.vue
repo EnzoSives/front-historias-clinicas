@@ -408,6 +408,7 @@ const nextAppointmentDate = computed(() => {
 
 const lastConsultationDate = computed(() => {
   const consultations = medicalStore.consultations;
+  console.log("Consultas:", consultations);
   if (consultations.length === 0) return "N/A";
 
   const lastConsultation = consultations.sort(
@@ -481,7 +482,7 @@ const truncateText = (text: string, maxLength: number): string => {
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
 
-const hasRecentConsultation = (patientId: string): boolean => {
+const hasRecentConsultation = (patientId: number): boolean => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 

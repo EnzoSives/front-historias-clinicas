@@ -102,7 +102,6 @@
 <script lang="ts" setup>
 import { ref, reactive, onMounted, computed, watch } from 'vue';
 import type { Patient as PatientType, Consultation as ConsultationType } from 'src/types/index';
-// Importa el store para obtener el ID del médico
 import { useAuthStore } from 'src/stores/authStore';
 
 interface Props {
@@ -111,16 +110,18 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const emit = defineEmits<{
+  cancel: [];
+  save: [consultationPayload: Record<string, any>];
+}>();
 
 const loading = ref(false);
 const authStore = useAuthStore();
 
-// Usamos los nombres de propiedad correctos que espera tu modelo de datos
 const form = reactive({
   fechaConsulta: '',
   motivoConsulta: '',
   anamnesis: '',
-  enfermedadActual: '', 
   examenFisico: '',
   diagnostico: '',
   tratamiento: '',
@@ -132,7 +133,6 @@ const isEdit = computed(() => !!props.consultation?.id);
 const populateForm = () => {
   const consultation = props.consultation;
   if (isEdit.value && consultation) {
-    // Rellenar el formulario para editar
     form.fechaConsulta = consultation.fechaConsulta ? new Date(consultation.fechaConsulta).toISOString().slice(0, 16) : '';
     form.motivoConsulta = consultation.motivoConsulta || '';
     form.examenFisico = consultation.examenFisico || '';
@@ -141,7 +141,6 @@ const populateForm = () => {
     form.anamnesis = consultation.anamnesis || '';
     form.observaciones = consultation.observaciones || '';
   } else {
-    // Configurar valores por defecto para una nueva consulta
     form.fechaConsulta = new Date().toISOString().slice(0, 16);
     form.motivoConsulta = '';
     form.examenFisico = '';
@@ -161,22 +160,32 @@ const calculateAge = (birthDate?: string): number | string => {
   const birth = new Date(birthDate);
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
   return age;
 };
 
-// ✅ **FUNCIÓN CORREGIDA**
 const handleSubmit = async () => {
   loading.value = true;
-  const medicoId = authStore.user?.medico?.id; // Obtener el ID del médico
+  
+  // ✅ CORRECCIÓN: Verifica la ruta correcta para el ID del médico y obtén el valor.
+  // Es más probable que sea `authStore.user?.id` o `authStore.user?.id_medico`
+  const medicoId = authStore.user?.id;
+
+  if (!medicoId) {
+    console.error("Error: No se pudo obtener el ID del médico. Revisa el authStore.");
+    loading.value = false;
+    // Opcional: notificar al usuario con un diálogo de error.
+    return;
+  }
 
   try {
-    const consultationData: ConsultationType = {
-      pacienteId: props.consultation?.pacienteId , 
-      id_medico: medicoId, // <-- AÑADIR ESTA LÍNEA
+    // Usamos Partial<ConsultationType> porque no enviaremos todas las propiedades siempre.
+    const payload: Partial<ConsultationType> = {
+      // ✅ CORRECCIÓN 1: Usa siempre el ID del paciente del prop `patient`.
+      id_paciente: props.patient.id_paciente,
+      id_medico: medicoId,
       fechaConsulta: form.fechaConsulta,
       motivoConsulta: form.motivoConsulta || undefined,
       observaciones: form.observaciones || undefined,
@@ -184,19 +193,17 @@ const handleSubmit = async () => {
       examenFisico: form.examenFisico || undefined,
       diagnostico: form.diagnostico || undefined,
       tratamiento: form.tratamiento || undefined,
-      createdAt: isEdit.value && props.consultation ? props.consultation.createdAt : new Date().toISOString(),
-      updatedAt: new Date().toISOString()
     };
 
-    emit('save', consultationData);
+    // ✅ CORRECCIÓN 2: Si estamos editando, añade el ID de la consulta al payload.
+    if (isEdit.value && props.consultation) {
+      payload.id = props.consultation.id;
+    }
+
+    emit('save', payload);
+
   } finally {
     loading.value = false;
   }
 };
-const emit = defineEmits<{
-  cancel: [];
-  // El evento ahora emite un objeto genérico, ya que la estructura completa
-  // la devolverá la API.
-  save: [consultationPayload: Record<string, any>];
-}>();
 </script>

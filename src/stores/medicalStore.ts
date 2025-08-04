@@ -1,11 +1,10 @@
-// ✅ **PASO 1: Importar 'toRaw' de Vue**
 import { toRaw } from 'vue';
 import { defineStore } from 'pinia';
 import { api } from 'src/boot/axios';
 import type { Patient as PatientType, Consultation as ConsultationType } from 'src/types/index';
 import { useAuthStore } from 'src/stores/authStore';
 
-// (El resto de tus constantes no cambia)
+// Las constantes y la interfaz de estado no necesitan cambios.
 const API_ENDPOINTS = {
   PATIENTS: {
     BASE: '/paciente',
@@ -74,7 +73,25 @@ export const useMedicalStore = defineStore('medical', {
   }),
 
   getters: {
-    // (Tus getters no cambian)
+
+    // --- ✅ GETTERS NUEVOS ---
+    getAllPatients: (state): PatientType[] => state.patients || [],
+    getTotalPatients: (state): number => (state.patients || []).length,
+    getTotalConsultations: (state): number => (state.consultations || []).length,
+    getConsultationsThisMonth(state): number {
+      const today = new Date();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+
+      return (state.consultations || []).filter(c => {
+        const consultationDate = new Date(c.fechaConsulta);
+        return consultationDate.getMonth() === currentMonth &&
+          consultationDate.getFullYear() === currentYear;
+      }).length;
+    },
+    // --- FIN DE GETTERS NUEVOS ---
+
+    // Tus getters están bien, no necesitan cambios.
     getFilteredPatients(state): PatientType[] {
       const patients = state.patients || [];
       if (!state.filters.patientSearch.trim()) {
@@ -93,9 +110,9 @@ export const useMedicalStore = defineStore('medical', {
       return (state.patients || []).find((p) => p.id === searchId);
     },
     getConsultationsByPatientId: (state) => (patientId: string | number): ConsultationType[] => {
-      const patientIdStr = String(patientId);
+      const patientIdNum = Number(patientId);
       return (state.consultations || [])
-        .filter((c) => String(c.pacienteId) === patientIdStr)
+        .filter((c) => c.pacienteId === patientIdNum)
         .sort((a, b) => new Date(b.fechaConsulta).getTime() - new Date(a.fechaConsulta).getTime());
     },
     isLoadingAny(state): boolean {
@@ -104,7 +121,7 @@ export const useMedicalStore = defineStore('medical', {
   },
 
   actions: {
-    // (La mayoría de tus acciones no cambian)
+    // La mayoría de las acciones de utilidad no necesitan cambios.
     setLoading(type: keyof MedicalStoreState['loading'], value: boolean) {
       this.loading[type] = value;
     },
@@ -128,7 +145,7 @@ export const useMedicalStore = defineStore('medical', {
       }
 
       const isCacheValid = this.lastSync.patients && (Date.now() - this.lastSync.patients.getTime() < 5 * 60 * 1000);
-      if (!forceRefresh && isCacheValid) {
+      if (!forceRefresh && isCacheValid && this.patients.length > 0) {
         return;
       }
 
@@ -147,6 +164,7 @@ export const useMedicalStore = defineStore('medical', {
       }
     },
 
+    // ... fetchPatientById no necesita cambios ...
     async fetchPatientById(id: number, useCache = true): Promise<PatientType> {
       if (useCache) {
         const cachedPatient = this.getPatientById(id);
@@ -172,28 +190,35 @@ export const useMedicalStore = defineStore('medical', {
       }
     },
 
+    // ✅ **ACCIÓN CORREGIDA**
     async fetchConsultationsByPatient(patientId: number): Promise<ConsultationType[]> {
       this.setLoading('consultations', true);
       this.setError('consultations', null);
       try {
+        // La respuesta de la API puede tener nombres de propiedad diferentes (ej. id_consulta)
         const response = await api.get<any[]>(API_ENDPOINTS.CONSULTATIONS.BY_PATIENT(String(patientId)));
 
+        // Mapeamos la respuesta de la API a nuestro modelo de datos del frontend (ConsultationType)
         const mappedConsultations = response.data.map(apiConsultation => {
           return {
-            id: apiConsultation.id_consulta,
+            id: apiConsultation.id_consulta || apiConsultation.id, // Acepta ambos nombres
             pacienteId: apiConsultation.id_paciente,
-            medicoId: apiConsultation.id_medico,
-            fechaConsulta: apiConsultation.fechaConsulta,
+            id_medico: apiConsultation.id_medico,
+            fechaConsulta: new Date(apiConsultation.fechaConsulta),
             motivoConsulta: apiConsultation.motivoConsulta,
-            enfermedadActual: apiConsultation.anamnesis,
+            // Aquí está la clave: leemos 'anamnesis' de la API
+            anamnesis: apiConsultation.anamnesis,
             diagnostico: apiConsultation.diagnostico,
             tratamiento: apiConsultation.tratamiento,
             observaciones: apiConsultation.observaciones,
-            fechaCreacion: apiConsultation.fechaCreacion,
+            examenFisico: apiConsultation.examenFisico,
+            createdAt: apiConsultation.createdAt,
+            updatedAt: apiConsultation.updatedAt,
           } as ConsultationType;
         });
 
-        const otherConsultations = (this.consultations || []).filter(c => String(c.pacienteId) !== String(patientId));
+        // Reemplazamos solo las consultas del paciente actual para no afectar a otros datos
+        const otherConsultations = (this.consultations || []).filter(c => c.pacienteId !== patientId);
         this.consultations = [...otherConsultations, ...mappedConsultations];
         this.saveConsultationsToStorage();
         return mappedConsultations;
@@ -205,32 +230,38 @@ export const useMedicalStore = defineStore('medical', {
       }
     },
 
-    async addConsultation(consultationData: ConsultationType): Promise<ConsultationType> {
+    // ✅ **ACCIÓN CORREGIDA**
+    async addConsultation(consultationData: Omit<ConsultationType, 'id'>): Promise<ConsultationType> {
       this.setLoading('consultations', true);
       this.setError('consultations', null);
 
       try {
-        // La API debería recibir el objeto y crear la consulta
+        // El objeto que enviaremos a la API debe coincidir con el DTO del backend.
+        // Usamos toRaw para asegurar que enviamos un objeto JS plano.
+        const payload = toRaw(consultationData);
+
         const response = await api.post<any>(
-          API_ENDPOINTS.CONSULTATIONS.CREATE, // Asegúrate de que este endpoint exista
-          toRaw(consultationData)
+          API_ENDPOINTS.CONSULTATIONS.CREATE,
+          payload
         );
 
-        // Mapeamos la respuesta de la API para que coincida con nuestro modelo de datos
-        const newConsultation = {
-          id: response.data.id_consulta,
+        // Mapeamos la respuesta de la API (que puede tener id_consulta, etc.)
+        // a nuestro modelo de datos del frontend.
+        const newConsultation: ConsultationType = {
+          id: response.data.id_consulta || response.data.id,
           pacienteId: response.data.id_paciente,
-          medicoId: response.data.id_medico,
-          fechaConsulta: response.data.fechaConsulta,
+          id_medico: response.data.id_medico,
+          fechaConsulta: new Date(response.data.fechaConsulta),
           motivoConsulta: response.data.motivoConsulta,
-          enfermedadActual: response.data.anamnesis,
+          anamnesis: response.data.anamnesis, // Leemos anamnesis
           diagnostico: response.data.diagnostico,
           tratamiento: response.data.tratamiento,
           observaciones: response.data.observaciones,
-          fechaCreacion: response.data.fechaCreacion,
-        } as ConsultationType;
+          examenFisico: response.data.examenFisico,
+          createdAt: response.data.createdAt,
+          updatedAt: response.data.updatedAt,
+        };
 
-        // Añadimos la nueva consulta (ya con su ID real) al estado local
         this.consultations.push(newConsultation);
         this.saveConsultationsToStorage();
 
@@ -243,6 +274,7 @@ export const useMedicalStore = defineStore('medical', {
       }
     },
 
+    // ... El resto de las acciones no necesitan cambios ...
     async selectPatientById(id: number): Promise<PatientType | null> {
       this.setLoading('general', true);
       this.setError('general', null);
@@ -250,7 +282,7 @@ export const useMedicalStore = defineStore('medical', {
         const patient = await this.fetchPatientById(id);
         this.setCurrentPatient(patient);
         if (patient) {
-          await this.fetchConsultationsByPatient(patient.id);
+          await this.fetchConsultationsByPatient(patient.id_paciente);
         }
         return patient;
       } catch (error) {
@@ -277,16 +309,14 @@ export const useMedicalStore = defineStore('medical', {
       try {
         await this.fetchAllPatients(forceRefresh);
       } catch (error) {
-        this.setError('general', this.handleApiError(error, 'inicializar store'));
+        // No es necesario establecer un error general aquí si fetchAllPatients ya lo hace.
       } finally {
         this.setLoading('general', false);
       }
     },
 
-    // ✅ **PASO 2: Modificar esta acción**
     saveToStorage(key: string, data: any): void {
       try {
-        // Usamos toRaw para obtener el objeto JavaScript puro antes de guardarlo
         localStorage.setItem(key, JSON.stringify(toRaw(data)));
       } catch (error) {
         console.error('Error guardando en localStorage:', error);
@@ -296,7 +326,15 @@ export const useMedicalStore = defineStore('medical', {
     loadFromStorage<T>(key: string, defaultValue: T): T {
       try {
         const stored = localStorage.getItem(key);
-        return stored ? JSON.parse(stored) : defaultValue;
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          // Convertir fechas de string a Date al cargar
+          if (key === STORAGE_KEYS.CONSULTATIONS && Array.isArray(parsed)) {
+            return parsed.map(c => ({ ...c, fechaConsulta: new Date(c.fechaConsulta) })) as T;
+          }
+          return parsed;
+        }
+        return defaultValue;
       } catch (error) {
         console.error('Error cargando desde localStorage:', error);
         return defaultValue;

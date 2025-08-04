@@ -1,6 +1,6 @@
 // src/types/index.ts
 export interface Patient {
-  id: number; // Kept as it is likely a system identifier
+  id_paciente: number; // Kept as it is likely a system identifier
   nombre?: string | undefined;
   apellido?: string | undefined;
   dni?: string | undefined;
@@ -46,19 +46,22 @@ export interface Patient {
   id_medico?: number | undefined; // Optional field to link to Doctor
 }
 
+// src/types/index.ts
+
 export interface Consultation {
-  id: number; // Kept as it is likely a system identifier
-  pacienteId: number; // Kept as it is likely a system identifier to link to Patient
+  id: number;
+  pacienteId: number;
   id_medico?: number;
   motivoConsulta?: string;
   observaciones?: string;
   fechaConsulta: Date;
+  // ASEGÚRATE DE QUE ESTA LÍNEA USE 'anamnesis'
   anamnesis?: string;
   examenFisico?: string;
   diagnostico?: string;
   tratamiento?: string;
-  createdAt?: string; // Para gestión de fechas de creación en el frontend
-  updatedAt?: string; // Para gestión de fechas de actualización en el fronten
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Doctor {

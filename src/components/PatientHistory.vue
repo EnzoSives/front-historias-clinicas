@@ -228,9 +228,9 @@
         <div class="row items-center justify-between">
           <div class="col">
             <div class="text-h6 text-primary">
-              <q-icon name="history_edu" class="q-mr-sm" />
-              Historial de Consultas ({{ consultations.length }})
-            </div>
+  <q-icon name="history_edu" class="q-mr-sm" />
+  Historial de Consultas ({{ sortedConsultations.length }})
+</div>
           </div>
           <div class="col-auto">
             <q-btn-toggle
@@ -243,7 +243,7 @@
         </div>
       </q-card-section>
       <q-card-section class="q-pt-none">
-        <div v-if="consultations.length === 0" class="text-center text-grey-6 q-pa-lg">
+        <div v-if="sortedConsultations.length === 0" class="text-center text-grey-6 q-pa-lg">
           <q-icon name="medical_services" size="64px" />
           <div class="q-mt-md">No hay consultas registradas</div>
         </div>
@@ -262,14 +262,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import type { Patient as PatientType } from "src/types/index";
-import type { Consultation as ConsultationType } from "src/types/index";
+import { computed, ref, onMounted, watch } from "vue";
+import type { Patient as PatientType, Consultation as ConsultationType } from "src/types/index";
 import ConsultationCard from "src/components/ConsultationCard.vue";
+import { useMedicalStore } from "src/stores/medicalStore";
 
+// 1. La prop 'consultations' ya no es necesaria.
 interface Props {
   patient: PatientType;
-  consultations: ConsultationType[];
 }
 
 const props = defineProps<Props>();
@@ -280,24 +280,56 @@ defineEmits<{
   "delete-consultation": [consultationId: string];
 }>();
 
+const medicalStore = useMedicalStore();
 const sortOrder = ref("newest");
+const loading = ref(false); // Para un futuro indicador de carga
+
+// 2. Llama a la acción para obtener las consultas
+const loadConsultations = async () => {
+  if (!props.patient?.id_paciente) return;
+  loading.value = true;
+  try {
+    await medicalStore.fetchConsultationsByPatient(props.patient.id_paciente);
+  } catch (error) {
+    console.error("Error al cargar las consultas:", error);
+    // Aquí podrías mostrar una notificación de error al usuario
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 3. Carga las consultas cuando el componente se monta
+onMounted(() => {
+  loadConsultations();
+});
+
+// 4. Observa si el paciente cambia, para recargar sus consultas
+watch(() => props.patient.id_paciente, (newId, oldId) => {
+  if (newId !== oldId) {
+    loadConsultations();
+  }
+});
 
 const sortOptions = [
   { label: "Más reciente", value: "newest" },
   { label: "Más antiguo", value: "oldest" },
 ];
 
+// 5. La propiedad computada ahora filtra las consultas del store
 const sortedConsultations = computed(() => {
-  const sorted = [...props.consultations];
+  // Obtenemos todas las consultas y las filtramos por el ID del paciente actual
+  const patientConsultations = (medicalStore.consultations || []).filter(
+    (c) => c.pacienteId === props.patient.id_paciente
+  );
 
   if (sortOrder.value === "newest") {
-    return sorted.sort(
+    return [...patientConsultations].sort(
       (a, b) =>
         new Date(b.fechaConsulta).getTime() -
         new Date(a.fechaConsulta).getTime()
     );
   } else {
-    return sorted.sort(
+    return [...patientConsultations].sort(
       (a, b) =>
         new Date(a.fechaConsulta).getTime() -
         new Date(b.fechaConsulta).getTime()
@@ -314,7 +346,6 @@ const calculateAge = (birthDate: string): number => {
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
-
   return age;
 };
 
