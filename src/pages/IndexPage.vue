@@ -11,13 +11,7 @@
 
         <q-space />
 
-        <q-btn
-          v-if="currentView !== 'dashboard'"
-          flat
-          icon="arrow_back"
-          label="Volver"
-          @click="goBack"
-        />
+        <q-btn v-if="currentView !== 'dashboard'" flat icon="arrow_back" label="Volver" @click="goBack" />
 
         <q-btn flat round dense>
           <q-avatar size="32px">
@@ -54,14 +48,7 @@
     </q-header>
 
     <q-page-container>
-      <q-drawer
-        v-model="drawerOpen"
-        show-if-above
-        :width="280"
-        :breakpoint="700"
-        elevated
-        class="bg-grey-2"
-      >
+      <q-drawer v-model="drawerOpen" show-if-above :width="280" :breakpoint="700" elevated class="bg-grey-2">
         <q-scroll-area class="fit">
           <q-list>
             <q-item-label header class="text-primary">
@@ -69,24 +56,14 @@
               Menú Principal
             </q-item-label>
 
-            <q-item
-              clickable
-              v-ripple
-              @click="currentView = 'dashboard'"
-              :active="currentView === 'dashboard'"
-            >
+            <q-item clickable v-ripple @click="currentView = 'dashboard'" :active="currentView === 'dashboard'">
               <q-item-section avatar>
                 <q-icon name="dashboard" />
               </q-item-section>
               <q-item-section>Dashboard</q-item-section>
             </q-item>
 
-            <q-item
-              clickable
-              v-ripple
-              @click="currentView = 'patients'"
-              :active="currentView === 'patients'"
-            >
+            <q-item clickable v-ripple @click="currentView = 'patients'" :active="currentView === 'patients'">
               <q-item-section avatar>
                 <q-icon name="people" />
               </q-item-section>
@@ -134,10 +111,9 @@
 
       <q-page class="bg-grey-1 q-page-no-padding-top">
         <div v-if="currentView === 'dashboard'">
-          <Dashboard
-            @select-patient="selectPatient"
-            @view-consultation="viewConsultation"
-          />
+          <Dashboard @select-patient="selectPatient" @view-consultation="viewConsultation"
+            @new-patient="showNewPatientForm" @new-consultation="showNewConsultationForm(selectedPatient)"
+            @search-patient="currentView = 'patients'" />
         </div>
 
         <div v-else-if="currentView === 'patients'">
@@ -154,38 +130,20 @@
                 </div>
               </div>
               <div class="col-auto">
-                <q-btn
-                  color="primary"
-                  icon="person_add"
-                  label="Nuevo Paciente"
-                  @click="showNewPatientForm"
-                />
+                <q-btn color="primary" icon="person_add" label="Nuevo Paciente" @click="showNewPatientForm" />
               </div>
             </div>
 
-            <q-input
-              v-model="searchQuery"
-              filled
-              placeholder="Buscar por nombre, DNI o email..."
-              class="q-mb-md"
-            >
+            <q-input v-model="searchQuery" filled placeholder="Buscar por nombre, DNI o email..." class="q-mb-md">
               <template v-slot:prepend>
                 <q-icon name="search" />
               </template>
               <template v-slot:append>
-                <q-icon
-                  v-if="searchQuery"
-                  name="close"
-                  @click="searchQuery = ''"
-                  class="cursor-pointer"
-                />
+                <q-icon v-if="searchQuery" name="close" @click="searchQuery = ''" class="cursor-pointer" />
               </template>
             </q-input>
 
-            <div
-              v-if="filteredPatients.length === 0"
-              class="text-center text-grey-6 q-pa-xl"
-            >
+            <div v-if="filteredPatients.length === 0" class="text-center text-grey-6 q-pa-xl">
               <q-icon name="people" size="64px" />
               <div class="q-mt-md">No se encontraron pacientes</div>
               <div class="text-caption">
@@ -198,17 +156,9 @@
             </div>
 
             <div v-else class="row">
-              <div
-                v-for="patient in filteredPatients"
-                :key="patient.id"
-                class="col-12 col-md-6 col-lg-4"
-              >
-                <PatientCard
-                  :patient="patient"
-                  @select-patient="selectPatient"
-                  @view-history="viewPatientHistory"
-                  @new-consultation="showNewConsultationForm"
-                />
+              <div v-for="patient in filteredPatients" :key="patient.id" class="col-12 col-md-6 col-lg-4">
+                <PatientCard :patient="patient" @select-patient="selectPatient" @view-history="viewPatientHistory"
+                  @new-consultation="showNewConsultationForm" />
               </div>
             </div>
           </div>
@@ -216,32 +166,19 @@
 
         <div v-else-if="currentView === 'patient-form'">
           <div class="flex flex-center q-pa-md">
-            <PatientForm
-              :patient="selectedPatient"
-              :is-edit="!!selectedPatient"
-              @save="savePatient"
-              @cancel="goBack"
-            />
+            <PatientForm :patient="selectedPatient" :is-edit="!!selectedPatient" @save="savePatient" @cancel="goBack" />
           </div>
         </div>
 
         <div v-else-if="currentView === 'patient-history'">
-          <PatientHistory
-            :patient="selectedPatient"
-            :consultations="patientConsultations"
-            @new-consultation="showNewConsultationForm"
-            @edit-consultation="editConsultation"
-            @delete-consultation="deleteConsultation"
-          />
+          <PatientHistory :patient="selectedPatient" :consultations="patientConsultations"
+            @new-consultation="showNewConsultationForm" @edit-consultation="editConsultation"
+            @delete-consultation="deleteConsultation" />
         </div>
 
         <div v-else-if="currentView === 'consultation-form'">
           <div class="flex flex-center q-pa-md">
-            <ConsultationForm
-              :patient="selectedPatient"
-              @save="saveConsultation"
-              @cancel="goBack"
-            />
+            <ConsultationForm :patient="selectedPatient" @save="saveConsultation" @cancel="goBack" />
           </div>
         </div>
 
@@ -253,11 +190,7 @@
               </q-avatar>
               <h4 class="q-mt-md q-mb-xs">{{ user.name }}</h4>
               <p class="text-grey-7">{{ user.email }}</p>
-              <q-btn
-                color="primary"
-                label="Editar Perfil"
-                @click="$q.notify('Función en desarrollo')"
-              />
+              <q-btn color="primary" label="Editar Perfil" @click="$q.notify('Función en desarrollo')" />
             </div>
           </div>
         </div>
@@ -461,6 +394,7 @@ onMounted(async () => {
 .q-layout {
   min-height: 100vh;
 }
+
 .q-page-no-padding-top {
   padding-top: 0 !important;
 }

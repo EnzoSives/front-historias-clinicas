@@ -16,6 +16,7 @@ const API_ENDPOINTS = {
   },
   CONSULTATIONS: {
     BASE: '/consulta',
+    ALL: '/consulta/all', // --- NUEVO --- Endpoint para todas las consultas
     CREATE: '/consulta/crear',
     BY_PATIENT: (patientId: string) => `/consulta/paciente/${patientId}`,
   },
@@ -23,6 +24,7 @@ const API_ENDPOINTS = {
 
 const STORAGE_KEYS = {
   CONSULTATIONS: 'medical_consultations',
+  CONSULTATIONS_ALL: 'medical_consultations_all', // --- NUEVO --- Clave de storage
   PATIENTS_CACHE: 'medical_patients_cache',
   LAST_SYNC: 'medical_last_sync',
 } as const;
@@ -30,15 +32,18 @@ const STORAGE_KEYS = {
 interface MedicalStoreState {
   patients: PatientType[];
   consultations: ConsultationType[];
+  consultationsAll: ConsultationType[]; // Para almacenar todas las consultas
   currentPatient: PatientType | null;
   loading: {
     patients: boolean;
     consultations: boolean;
+    consultationsAll: boolean; // --- NUEVO --- Estado de carga para todas las consultas
     general: boolean;
   };
   errors: {
     patients: string | null;
     consultations: string | null;
+    consultationsAll: string | null; // --- NUEVO --- Estado de error
     general: string | null;
   };
   lastSync: {
@@ -53,15 +58,18 @@ export const useMedicalStore = defineStore('medical', {
   state: (): MedicalStoreState => ({
     patients: [],
     consultations: [],
+    consultationsAll: [], // Para almacenar todas las consultas
     currentPatient: null,
     loading: {
       patients: false,
       consultations: false,
+      consultationsAll: false, // --- NUEVO ---
       general: false,
     },
     errors: {
       patients: null,
       consultations: null,
+      consultationsAll: null, // --- NUEVO ---
       general: null,
     },
     lastSync: {
@@ -73,17 +81,18 @@ export const useMedicalStore = defineStore('medical', {
   }),
 
   getters: {
-
-    // --- ✅ GETTERS NUEVOS ---
+    // --- GETTERS NUEVOS ---
     getAllPatients: (state): PatientType[] => state.patients || [],
+    getAllConsultations: (state): ConsultationType[] => state.consultationsAll || [], // --- NUEVO ---
     getTotalPatients: (state): number => (state.patients || []).length,
-    getTotalConsultations: (state): number => (state.consultations || []).length,
+    getTotalConsultations: (state): number => (state.consultationsAll || []).length, // Modificado para usar todas las consultas
     getConsultationsThisMonth(state): number {
       const today = new Date();
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
 
-      return (state.consultations || []).filter(c => {
+      // Usamos consultationsAll para tener una vista global
+      return (state.consultationsAll || []).filter(c => {
         const consultationDate = new Date(c.fechaConsulta);
         return consultationDate.getMonth() === currentMonth &&
           consultationDate.getFullYear() === currentYear;
@@ -91,7 +100,6 @@ export const useMedicalStore = defineStore('medical', {
     },
     // --- FIN DE GETTERS NUEVOS ---
 
-    // Tus getters están bien, no necesitan cambios.
     getFilteredPatients(state): PatientType[] {
       const patients = state.patients || [];
       if (!state.filters.patientSearch.trim()) {
@@ -107,7 +115,7 @@ export const useMedicalStore = defineStore('medical', {
     },
     getPatientById: (state) => (id: string | number): PatientType | undefined => {
       const searchId = typeof id === 'string' ? parseInt(id, 10) : id;
-      return (state.patients || []).find((p) => p.id === searchId);
+      return (state.patients || []).find((p) => p.id_paciente === searchId);
     },
     getConsultationsByPatientId: (state) => (patientId: string | number): ConsultationType[] => {
       const patientIdNum = Number(patientId);
@@ -116,12 +124,11 @@ export const useMedicalStore = defineStore('medical', {
         .sort((a, b) => new Date(b.fechaConsulta).getTime() - new Date(a.fechaConsulta).getTime());
     },
     isLoadingAny(state): boolean {
-      return state.loading.patients || state.loading.consultations || state.loading.general;
+      return state.loading.patients || state.loading.consultations || state.loading.general || state.loading.consultationsAll;
     },
   },
 
   actions: {
-    // La mayoría de las acciones de utilidad no necesitan cambios.
     setLoading(type: keyof MedicalStoreState['loading'], value: boolean) {
       this.loading[type] = value;
     },
@@ -133,6 +140,32 @@ export const useMedicalStore = defineStore('medical', {
       console.error(`API Error en ${context}:`, error);
       return message;
     },
+
+    // --- ✅ ACCIÓN NUEVA ---
+    /**
+     * Obtiene todas las consultas del médico desde la API.
+     */
+    async fetchAllConsultations(forceRefresh = false) {
+      this.setLoading('consultationsAll', true);
+      this.setError('consultationsAll', null);
+      try {
+        const response = await api.get<ConsultationType[]>(API_ENDPOINTS.CONSULTATIONS.ALL);
+        // Mapeamos por si la API devuelve nombres de campo diferentes
+        this.consultationsAll = response.data.map(c => ({
+          ...c,
+          id: c.id || c.id,
+          pacienteId: c.pacienteId,
+          fechaConsulta: new Date(c.fechaConsulta)
+        }));
+        this.saveToStorage(STORAGE_KEYS.CONSULTATIONS_ALL, this.consultationsAll);
+      } catch (error: any) {
+        this.setError('consultationsAll', this.handleApiError(error, 'cargar todas las consultas'));
+        throw error;
+      } finally {
+        this.setLoading('consultationsAll', false);
+      }
+    },
+    // --- FIN DE ACCIÓN NUEVA ---
 
     async fetchAllPatients(forceRefresh = false) {
       const authStore = useAuthStore();
@@ -164,7 +197,6 @@ export const useMedicalStore = defineStore('medical', {
       }
     },
 
-    // ... fetchPatientById no necesita cambios ...
     async fetchPatientById(id: number, useCache = true): Promise<PatientType> {
       if (useCache) {
         const cachedPatient = this.getPatientById(id);
@@ -175,7 +207,7 @@ export const useMedicalStore = defineStore('medical', {
       try {
         const response = await api.get<PatientType>(API_ENDPOINTS.PATIENTS.BY_ID(id));
         const patients = this.patients || [];
-        const existingIndex = patients.findIndex((p) => p.id === id);
+        const existingIndex = patients.findIndex((p) => p.id_paciente === id);
         if (existingIndex !== -1) {
           this.patients[existingIndex] = response.data;
         } else {
@@ -190,23 +222,18 @@ export const useMedicalStore = defineStore('medical', {
       }
     },
 
-    // ✅ **ACCIÓN CORREGIDA**
     async fetchConsultationsByPatient(patientId: number): Promise<ConsultationType[]> {
       this.setLoading('consultations', true);
       this.setError('consultations', null);
       try {
-        // La respuesta de la API puede tener nombres de propiedad diferentes (ej. id_consulta)
         const response = await api.get<any[]>(API_ENDPOINTS.CONSULTATIONS.BY_PATIENT(String(patientId)));
-
-        // Mapeamos la respuesta de la API a nuestro modelo de datos del frontend (ConsultationType)
         const mappedConsultations = response.data.map(apiConsultation => {
           return {
-            id: apiConsultation.id_consulta || apiConsultation.id, // Acepta ambos nombres
+            id: apiConsultation.id_consulta || apiConsultation.id,
             pacienteId: apiConsultation.id_paciente,
             id_medico: apiConsultation.id_medico,
             fechaConsulta: new Date(apiConsultation.fechaConsulta),
             motivoConsulta: apiConsultation.motivoConsulta,
-            // Aquí está la clave: leemos 'anamnesis' de la API
             anamnesis: apiConsultation.anamnesis,
             diagnostico: apiConsultation.diagnostico,
             tratamiento: apiConsultation.tratamiento,
@@ -217,7 +244,6 @@ export const useMedicalStore = defineStore('medical', {
           } as ConsultationType;
         });
 
-        // Reemplazamos solo las consultas del paciente actual para no afectar a otros datos
         const otherConsultations = (this.consultations || []).filter(c => c.pacienteId !== patientId);
         this.consultations = [...otherConsultations, ...mappedConsultations];
         this.saveConsultationsToStorage();
@@ -230,30 +256,24 @@ export const useMedicalStore = defineStore('medical', {
       }
     },
 
-    // ✅ **ACCIÓN CORREGIDA**
     async addConsultation(consultationData: Omit<ConsultationType, 'id'>): Promise<ConsultationType> {
       this.setLoading('consultations', true);
       this.setError('consultations', null);
 
       try {
-        // El objeto que enviaremos a la API debe coincidir con el DTO del backend.
-        // Usamos toRaw para asegurar que enviamos un objeto JS plano.
         const payload = toRaw(consultationData);
-
         const response = await api.post<any>(
           API_ENDPOINTS.CONSULTATIONS.CREATE,
           payload
         );
 
-        // Mapeamos la respuesta de la API (que puede tener id_consulta, etc.)
-        // a nuestro modelo de datos del frontend.
         const newConsultation: ConsultationType = {
           id: response.data.id_consulta || response.data.id,
           pacienteId: response.data.id_paciente,
           id_medico: response.data.id_medico,
           fechaConsulta: new Date(response.data.fechaConsulta),
           motivoConsulta: response.data.motivoConsulta,
-          anamnesis: response.data.anamnesis, // Leemos anamnesis
+          anamnesis: response.data.anamnesis,
           diagnostico: response.data.diagnostico,
           tratamiento: response.data.tratamiento,
           observaciones: response.data.observaciones,
@@ -263,7 +283,9 @@ export const useMedicalStore = defineStore('medical', {
         };
 
         this.consultations.push(newConsultation);
+        this.consultationsAll.push(newConsultation); // También la agregamos a la lista global
         this.saveConsultationsToStorage();
+        this.saveToStorage(STORAGE_KEYS.CONSULTATIONS_ALL, this.consultationsAll);
 
         return newConsultation;
       } catch (error: any) {
@@ -274,7 +296,6 @@ export const useMedicalStore = defineStore('medical', {
       }
     },
 
-    // ... El resto de las acciones no necesitan cambios ...
     async selectPatientById(id: number): Promise<PatientType | null> {
       this.setLoading('general', true);
       this.setError('general', null);
@@ -306,10 +327,15 @@ export const useMedicalStore = defineStore('medical', {
       this.setLoading('general', true);
       this.loadPatientsFromStorage();
       this.loadConsultationsFromStorage();
+      this.loadAllConsultationsFromStorage(); // --- NUEVO ---
       try {
-        await this.fetchAllPatients(forceRefresh);
+        // Ejecutamos ambas peticiones en paralelo para mejorar el rendimiento
+        await Promise.all([
+          this.fetchAllPatients(forceRefresh),
+          this.fetchAllConsultations(forceRefresh) // --- NUEVO ---
+        ]);
       } catch (error) {
-        // No es necesario establecer un error general aquí si fetchAllPatients ya lo hace.
+        // Los errores ya se manejan en sus respectivas funciones
       } finally {
         this.setLoading('general', false);
       }
@@ -328,8 +354,7 @@ export const useMedicalStore = defineStore('medical', {
         const stored = localStorage.getItem(key);
         if (stored) {
           const parsed = JSON.parse(stored);
-          // Convertir fechas de string a Date al cargar
-          if (key === STORAGE_KEYS.CONSULTATIONS && Array.isArray(parsed)) {
+          if ((key === STORAGE_KEYS.CONSULTATIONS || key === STORAGE_KEYS.CONSULTATIONS_ALL) && Array.isArray(parsed)) {
             return parsed.map(c => ({ ...c, fechaConsulta: new Date(c.fechaConsulta) })) as T;
           }
           return parsed;
@@ -345,6 +370,9 @@ export const useMedicalStore = defineStore('medical', {
     },
     loadConsultationsFromStorage(): void {
       this.consultations = this.loadFromStorage(STORAGE_KEYS.CONSULTATIONS, []);
+    },
+    loadAllConsultationsFromStorage(): void { // --- NUEVO ---
+      this.consultationsAll = this.loadFromStorage(STORAGE_KEYS.CONSULTATIONS_ALL, []);
     },
     loadPatientsFromStorage(): void {
       this.patients = this.loadFromStorage(STORAGE_KEYS.PATIENTS_CACHE, []);
