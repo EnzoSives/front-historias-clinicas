@@ -4,7 +4,6 @@ import { api } from 'src/boot/axios';
 import type { Patient as PatientType, Consultation as ConsultationType } from 'src/types/index';
 import { useAuthStore } from 'src/stores/authStore';
 
-// Las constantes y la interfaz de estado no necesitan cambios.
 const API_ENDPOINTS = {
   PATIENTS: {
     BASE: '/paciente',
@@ -16,7 +15,8 @@ const API_ENDPOINTS = {
   },
   CONSULTATIONS: {
     BASE: '/consulta',
-    ALL: '/consulta/all', // --- NUEVO --- Endpoint para todas las consultas
+    // --- MODIFICADO --- Endpoint para las consultas de un médico específico
+    BY_MEDICO: (medicoId: number) => `/consulta/medico/${medicoId}`,
     CREATE: '/consulta/crear',
     BY_PATIENT: (patientId: string) => `/consulta/paciente/${patientId}`,
   },
@@ -24,7 +24,7 @@ const API_ENDPOINTS = {
 
 const STORAGE_KEYS = {
   CONSULTATIONS: 'medical_consultations',
-  CONSULTATIONS_ALL: 'medical_consultations_all', // --- NUEVO --- Clave de storage
+  CONSULTATIONS_ALL: 'medical_consultations_all',
   PATIENTS_CACHE: 'medical_patients_cache',
   LAST_SYNC: 'medical_last_sync',
 } as const;
@@ -32,18 +32,18 @@ const STORAGE_KEYS = {
 interface MedicalStoreState {
   patients: PatientType[];
   consultations: ConsultationType[];
-  consultationsAll: ConsultationType[]; // Para almacenar todas las consultas
+  consultationsAll: ConsultationType[];
   currentPatient: PatientType | null;
   loading: {
     patients: boolean;
     consultations: boolean;
-    consultationsAll: boolean; // --- NUEVO --- Estado de carga para todas las consultas
+    consultationsAll: boolean;
     general: boolean;
   };
   errors: {
     patients: string | null;
     consultations: string | null;
-    consultationsAll: string | null; // --- NUEVO --- Estado de error
+    consultationsAll: string | null;
     general: string | null;
   };
   lastSync: {
@@ -58,18 +58,18 @@ export const useMedicalStore = defineStore('medical', {
   state: (): MedicalStoreState => ({
     patients: [],
     consultations: [],
-    consultationsAll: [], // Para almacenar todas las consultas
+    consultationsAll: [],
     currentPatient: null,
     loading: {
       patients: false,
       consultations: false,
-      consultationsAll: false, // --- NUEVO ---
+      consultationsAll: false,
       general: false,
     },
     errors: {
       patients: null,
       consultations: null,
-      consultationsAll: null, // --- NUEVO ---
+      consultationsAll: null,
       general: null,
     },
     lastSync: {
@@ -81,25 +81,21 @@ export const useMedicalStore = defineStore('medical', {
   }),
 
   getters: {
-    // --- GETTERS NUEVOS ---
     getAllPatients: (state): PatientType[] => state.patients || [],
-    getAllConsultations: (state): ConsultationType[] => state.consultationsAll || [], // --- NUEVO ---
+    getAllConsultations: (state): ConsultationType[] => state.consultationsAll || [],
     getTotalPatients: (state): number => (state.patients || []).length,
-    getTotalConsultations: (state): number => (state.consultationsAll || []).length, // Modificado para usar todas las consultas
+    getTotalConsultations: (state): number => (state.consultationsAll || []).length,
     getConsultationsThisMonth(state): number {
       const today = new Date();
       const currentMonth = today.getMonth();
       const currentYear = today.getFullYear();
 
-      // Usamos consultationsAll para tener una vista global
       return (state.consultationsAll || []).filter(c => {
         const consultationDate = new Date(c.fechaConsulta);
         return consultationDate.getMonth() === currentMonth &&
           consultationDate.getFullYear() === currentYear;
       }).length;
     },
-    // --- FIN DE GETTERS NUEVOS ---
-
     getFilteredPatients(state): PatientType[] {
       const patients = state.patients || [];
       if (!state.filters.patientSearch.trim()) {
@@ -141,20 +137,33 @@ export const useMedicalStore = defineStore('medical', {
       return message;
     },
 
-    // --- ✅ ACCIÓN NUEVA ---
     /**
      * Obtiene todas las consultas del médico desde la API.
      */
     async fetchAllConsultations(forceRefresh = false) {
+      // --- MODIFICADO ---
+      const authStore = useAuthStore();
+      // Asegúrate de que tu authStore expone el id_medico.
+      // Basado en tu backend, debería ser algo como `authStore.user?.medico?.id_medico`
+      const medicoId = authStore.user?.id;
+
+      if (!medicoId) {
+        this.setError('consultationsAll', 'No se ha identificado un médico.');
+        this.consultationsAll = [];
+        return;
+      }
+      // --- FIN MODIFICADO ---
+
       this.setLoading('consultationsAll', true);
       this.setError('consultationsAll', null);
       try {
-        const response = await api.get<ConsultationType[]>(API_ENDPOINTS.CONSULTATIONS.ALL);
-        // Mapeamos por si la API devuelve nombres de campo diferentes
+        // --- MODIFICADO --- Usamos el nuevo endpoint
+        const response = await api.get<ConsultationType[]>(API_ENDPOINTS.CONSULTATIONS.BY_MEDICO(medicoId));
+
         this.consultationsAll = response.data.map(c => ({
           ...c,
-          id: c.id || c.id,
-          pacienteId: c.pacienteId,
+          id: c.id || c.id, // Normalizamos el ID
+          pacienteId: c.pacienteId, // Normalizamos el ID del paciente
           fechaConsulta: new Date(c.fechaConsulta)
         }));
         this.saveToStorage(STORAGE_KEYS.CONSULTATIONS_ALL, this.consultationsAll);
@@ -165,10 +174,11 @@ export const useMedicalStore = defineStore('medical', {
         this.setLoading('consultationsAll', false);
       }
     },
-    // --- FIN DE ACCIÓN NUEVA ---
 
     async fetchAllPatients(forceRefresh = false) {
       const authStore = useAuthStore();
+      // --- CORREGIDO --- Se usa el id_medico en lugar del id de usuario general
+      //const medicoId = authStore.user?.medico?.id_medico; //El que va
       const medicoId = authStore.user?.id;
 
       if (!medicoId) {
@@ -283,7 +293,7 @@ export const useMedicalStore = defineStore('medical', {
         };
 
         this.consultations.push(newConsultation);
-        this.consultationsAll.push(newConsultation); // También la agregamos a la lista global
+        this.consultationsAll.push(newConsultation);
         this.saveConsultationsToStorage();
         this.saveToStorage(STORAGE_KEYS.CONSULTATIONS_ALL, this.consultationsAll);
 
@@ -327,12 +337,11 @@ export const useMedicalStore = defineStore('medical', {
       this.setLoading('general', true);
       this.loadPatientsFromStorage();
       this.loadConsultationsFromStorage();
-      this.loadAllConsultationsFromStorage(); // --- NUEVO ---
+      this.loadAllConsultationsFromStorage();
       try {
-        // Ejecutamos ambas peticiones en paralelo para mejorar el rendimiento
         await Promise.all([
           this.fetchAllPatients(forceRefresh),
-          this.fetchAllConsultations(forceRefresh) // --- NUEVO ---
+          this.fetchAllConsultations(forceRefresh)
         ]);
       } catch (error) {
         // Los errores ya se manejan en sus respectivas funciones
@@ -371,11 +380,32 @@ export const useMedicalStore = defineStore('medical', {
     loadConsultationsFromStorage(): void {
       this.consultations = this.loadFromStorage(STORAGE_KEYS.CONSULTATIONS, []);
     },
-    loadAllConsultationsFromStorage(): void { // --- NUEVO ---
+    loadAllConsultationsFromStorage(): void {
       this.consultationsAll = this.loadFromStorage(STORAGE_KEYS.CONSULTATIONS_ALL, []);
     },
     loadPatientsFromStorage(): void {
       this.patients = this.loadFromStorage(STORAGE_KEYS.PATIENTS_CACHE, []);
     },
+    clearData(): void {
+      this.patients = [];
+      this.consultations = [];
+      this.consultationsAll = [];
+      this.currentPatient = null;
+      this.errors = {
+        patients: null,
+        consultations: null,
+        consultationsAll: null,
+        general: null,
+      };
+      this.lastSync = {
+        patients: null,
+      };
+
+      localStorage.removeItem(STORAGE_KEYS.CONSULTATIONS);
+      localStorage.removeItem(STORAGE_KEYS.CONSULTATIONS_ALL);
+      localStorage.removeItem(STORAGE_KEYS.PATIENTS_CACHE);
+      localStorage.removeItem(STORAGE_KEYS.LAST_SYNC);
+    },
+
   },
 });

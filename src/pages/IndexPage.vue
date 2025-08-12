@@ -257,6 +257,7 @@ const logout = () => {
       icon: "logout",
     });
     authStore.logout();
+    medicalStore.clearData();
     router.push("/login");
   });
 };

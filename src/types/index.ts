@@ -65,7 +65,7 @@ export interface Consultation {
 }
 
 export interface Doctor {
-  id: number; // Kept as it is likely a system identifier
+  id_medico: number; // Kept as it is likely a system identifier
   nombre?: string;
   apellido?: string;
   dni?: string;
