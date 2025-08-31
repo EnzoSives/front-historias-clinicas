@@ -75,42 +75,24 @@
         </q-card>
       </div>
     </div>
-    
+
     <div class="q-mb-lg">
-        <q-card class="content-card" flat bordered>
-          <q-card-section>
-            <div class="text-h6 text-primary q-mb-sm">
-              <q-icon name="flash_on" class="q-mr-sm" />
-              Acciones Rápidas
-            </div>
-             <div class="row q-gutter-sm">
-              <q-btn
-                  class="col"
-                  color="primary"
-                  icon="person_add"
-                  label="Nuevo Paciente"
-                  @click="$emit('new-patient')"
-                  unelevated
-                />
-              <q-btn
-                  class="col"
-                  color="secondary"
-                  icon="add_circle"
-                  label="Nueva Consulta"
-                  @click="$emit('new-consultation')"
-                  unelevated
-                />
-               <q-btn
-                  class="col"
-                  color="deep-purple"
-                  icon="search"
-                  label="Buscar Paciente"
-                  @click="$emit('search-patient')"
-                  unelevated
-                />
-            </div>
-          </q-card-section>
-        </q-card>
+      <q-card class="content-card" flat bordered>
+        <q-card-section>
+          <div class="text-h6 text-primary q-mb-sm">
+            <q-icon name="flash_on" class="q-mr-sm" />
+            Acciones Rápidas
+          </div>
+          <div class="row q-gutter-sm">
+            <q-btn class="col" color="primary" icon="person_add" label="Nuevo Paciente" @click="$emit('new-patient')"
+              unelevated />
+            <q-btn class="col" color="secondary" icon="add_circle" label="Nueva Consulta"
+              @click="$emit('new-consultation')" unelevated />
+            <q-btn class="col" color="deep-purple" icon="search" label="Buscar Paciente"
+              @click="$emit('search-patient')" unelevated />
+          </div>
+        </q-card-section>
+      </q-card>
     </div>
 
 
@@ -127,13 +109,8 @@
           <q-separator />
 
           <q-list separator v-if="recentPatients.length > 0">
-            <q-item
-              v-for="patient in recentPatients"
-              :key="patient.id_paciente"
-              clickable
-              v-ripple
-              @click="$emit('select-patient', patient)"
-            >
+            <q-item v-for="patient in recentPatients" :key="patient.id_paciente" clickable v-ripple
+              @click="$emit('select-patient', patient)">
               <q-item-section avatar>
                 <q-avatar :color="getPatientAvatarColor(patient)" text-color="white">
                   {{ getPatientInitials(patient) }}
@@ -167,28 +144,24 @@
           </q-card-section>
           <q-separator />
           <q-list separator v-if="recentConsultations.length > 0">
-            <q-item
-              v-for="consultation in recentConsultations"
-              :key="consultation.id"
-              clickable
-              v-ripple
-              @click="$emit('view-consultation', consultation)"
-            >
+            <q-item v-for="consultation in recentConsultations" :key="consultation.id" clickable v-ripple
+              @click="$emit('view-consultation', consultation)">
               <q-item-section avatar>
-                 <q-avatar color="secondary" text-color="white">
-                    <q-icon name="medical_services" />
-                  </q-avatar>
+                <q-avatar color="secondary" text-color="white">
+                  <q-icon name="medical_services" />
+                </q-avatar>
               </q-item-section>
               <q-item-section>
-                <q-item-label lines="1">{{ getPatientName(consultation.pacienteId) }}</q-item-label>
-                <q-item-label caption lines="1">{{ truncateText(consultation.motivoConsulta, 40) }}</q-item-label>
+                <q-item-label lines="1">{{ getPatientName(consultation.id_paciente) }}</q-item-label>
+                <q-item-label caption lines="1">{{ truncateText(consultation.motivoConsulta ?? undefined, 40)
+                }}</q-item-label>
               </q-item-section>
               <q-item-section side top>
                 <q-item-label caption>{{ formatRelativeDate(consultation.fechaConsulta) }}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
-           <div v-else class="text-center q-pa-lg text-grey">
+          <div v-else class="text-center q-pa-lg text-grey">
             <q-icon name="history_edu" size="48px" />
             <p class="q-mt-md">No hay consultas recientes.</p>
           </div>
@@ -261,7 +234,7 @@ const formatRelativeDate = (dateString?: Date | string): string => {
   if (diffDays === 0) return "Hoy";
   if (diffDays === 1) return "Ayer";
   if (diffDays < 7) return `Hace ${diffDays} días`;
-  
+
   return date.toLocaleDateString("es-ES", { year: 'numeric', month: 'short', day: 'numeric' });
 };
 

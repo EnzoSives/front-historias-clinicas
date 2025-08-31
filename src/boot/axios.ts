@@ -12,7 +12,7 @@ declare module 'vue' {
 const api = axios.create({ baseURL: 'http://localhost:3000' });
 
 // La lógica para añadir el token se coloca aquí, dentro de la función de boot
-export default defineBoot(({ app, router }) => {
+export default defineBoot(({ app }) => {
   // 1. Intentamos obtener el token del localStorage al cargar la app.
   //    Asegúrate de que la clave 'authToken' sea la misma que usas al guardar el token en el login.
   const token = localStorage.getItem('authToken');

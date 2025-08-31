@@ -1,5 +1,5 @@
 <template>
-  <q-card class="q-ma-md" style="max-width: 800px">
+  <q-card class="q-ma-md full-width">
     <q-card-section>
       <div class="text-h6 text-primary">
         <q-icon name="person_add" class="q-mr-sm" />
@@ -126,11 +126,11 @@
 import { ref, reactive, watch } from "vue";
 import { useQuasar } from "quasar";
 import { api } from "src/boot/axios";
-import { useAuthStore } from "src/stores/authStore"; // Import the auth store
-import type { Patient as PatientType } from "src/types/index"; // Import the Patient interface
+import { useAuthStore } from "src/stores/authStore";
+import type { Patient as PatientType } from "src/types/index";
 
 interface Props {
-  patient?: PatientType;
+  patient?: PatientType | null;
   isEdit?: boolean;
 }
 
@@ -138,7 +138,7 @@ const props = defineProps<Props>();
 
 const $q = useQuasar();
 const loading = ref(false);
-const authStore = useAuthStore(); // Use the auth store
+const authStore = useAuthStore();
 
 const genderOptions = [
   { label: "Masculino", value: "Masculino" },
@@ -146,9 +146,10 @@ const genderOptions = [
   { label: "Otro", value: "Otro" },
 ];
 
+// El estado del formulario se mantiene igual
 const form = reactive<PatientType>({
-  id_paciente: 0, // Ensure ID is initialized, or handle its generation/assignment appropriately
-  id_medico: undefined, // Initialize id_medico
+  id_paciente: 0,
+  id_medico: undefined,
   nombre: undefined,
   apellido: undefined,
   dni: undefined,
@@ -192,131 +193,106 @@ const form = reactive<PatientType>({
   activo: undefined,
 });
 
+
 watch(
   () => props.patient,
   (newPatient) => {
     if (newPatient) {
-      Object.keys(form).forEach((key) => {
-        const value = (newPatient as any)[key];
-        if (key === "fechaNacimiento" && value instanceof Date) {
-          (form as any)[key] = value.toISOString().slice(0, 10);
-        } else {
-          (form as any)[key] = value;
-        }
-      });
-      // Ensure id_medico is populated if it exists in the patient data (for editing)
-      form.id_medico = newPatient.id_medico;
+      Object.assign(form, newPatient);
+      if (newPatient.fechaNacimiento) {
+        form.fechaNacimiento = new Date(newPatient.fechaNacimiento).toISOString().slice(0, 10) as any;
+      }
     } else {
-      // Clear form for new patient
-      Object.keys(form).forEach((key) => {
-        (form as any)[key] = undefined;
-      });
-      // Set id_medico for new patient from authStore
+      Object.keys(form).forEach(key => (form as any)[key] = undefined);
+      form.id_paciente = 0;
+      form.imagen = null;
+      form.imagen2 = null;
       form.id_medico = authStore.user?.medico?.id_medico;
     }
   },
-  { immediate: true }
+  { immediate: true, deep: true }
 );
 
+// --- FUNCIÓN handleSubmit CORREGIDA Y REFINADA ---
 const handleSubmit = async () => {
   loading.value = true;
+  const medicoId = authStore.user?.medico?.id_medico;
+  const formData = new FormData();
 
-  // Get medicoId from authStore for the current user
-  const medicoId = authStore.user?.medico?.id_medico;;
+  // Itera sobre el objeto 'form' y añade cada campo al FormData
+  // si no es nulo o indefinido. Esto es más limpio y robusto.
+  for (const key in form) {
+    const value = (form as any)[key];
+    if (value !== null && value !== undefined) {
+      // Si el valor es un objeto File, lo añade tal cual.
+      // Si es una fecha, la convierte a ISO string.
+      // Si es cualquier otra cosa, la añade como texto.
+      if (value instanceof File) {
+        formData.append(key, value);
+      } else if (key === 'fechaNacimiento' && value) {
+        formData.append(key, new Date(value).toISOString());
+      } else if (key !== 'imagen' && key !== 'imagen2') {
+        // Evita añadir las propiedades de imagen si no son un archivo
+        formData.append(key, String(value));
+      }
+    }
+  }
+
+  // Asegúrate de que el id_medico esté presente
+  if (medicoId) {
+    formData.set('id_medico', String(medicoId)); // 'set' para sobrescribir si ya existe
+  }
+
+  // Elimina campos que el backend no debe recibir al crear
+  if (!props.isEdit) {
+    formData.delete('id_paciente');
+  }
+
 
   try {
-    const patientDataToSend: Partial<PatientType> = {
-      nombre: form.nombre || undefined,
-      apellido: form.apellido || undefined,
-      dni: form.dni || undefined,
-      sexo: form.sexo || undefined,
-      fechaNacimiento: form.fechaNacimiento
-        ? new Date(form.fechaNacimiento)
-        : undefined,
-      lugarNacimiento: form.lugarNacimiento || undefined,
-      direccion: form.direccion || undefined,
-      telefonoFijo: form.telefonoFijo || undefined,
-      telefonoCelular: form.telefonoCelular || undefined,
-      ocupacion: form.ocupacion || undefined,
-      estadoCivil: form.estadoCivil || undefined,
-      obraSocial: form.obraSocial || undefined,
-      afiliadoObraSocial: form.afiliadoObraSocial || undefined,
-      antecedentesPersonalesMedicos:
-        form.antecedentesPersonalesMedicos || undefined,
-      antecedentesQuirurgicos: form.antecedentesQuirurgicos || undefined,
-      alergias: form.alergias || undefined,
-      antecedentesHeredoFamiliares:
-        form.antecedentesHeredoFamiliares || undefined,
-      habitosToxicos: form.habitosToxicos || undefined,
-      medicacionHabitual: form.medicacionHabitual || undefined,
-      examenFisicoHabito: form.examenFisicoHabito || undefined,
-      examenFisicoPeso: form.examenFisicoPeso || undefined,
-      examenFisicoTalla: form.examenFisicoTalla || undefined,
-      examenFisicoIMC: form.examenFisicoIMC || undefined,
-      examenFisicoTA: form.examenFisicoTA || undefined,
-      examenFisicoFC: form.examenFisicoFC || undefined,
-      examenFisicoFR: form.examenFisicoFR || undefined,
-      examenFisicoTemperatura: form.examenFisicoTemperatura || undefined,
-      examenFisicoSistemaNervioso:
-        form.examenFisicoSistemaNervioso || undefined,
-      examenFisicoAPCardiovascular:
-        form.examenFisicoAPCardiovascular || undefined,
-      examenFisicoAPRespiratorio: form.examenFisicoAPRespiratorio || undefined,
-      examenFisicoAPDigestivo: form.examenFisicoAPDigestivo || undefined,
-      examenFisicoAPGenitourinario:
-        form.examenFisicoAPGenitourinario || undefined,
-      examenFisicoSistemaEndocrino:
-        form.examenFisicoSistemaEndocrino || undefined,
-      examenFisicoSistemaHematopoyetico:
-        form.examenFisicoSistemaHematopoyetico || undefined,
-      examenFisicoSistemaMusculoEsqueletico:
-        form.examenFisicoSistemaMusculoEsqueletico || undefined,
-      examenFisicoPielAnexos: form.examenFisicoPielAnexos || undefined,
-      primerObservacion: form.primerObservacion || undefined,
-      imagen: form.imagen || undefined,
-      imagen2: form.imagen2 || undefined,
-      activo: form.activo || undefined,
-      // Add medicoId to the payload
-      id_medico: medicoId, //
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     };
 
     if (props.isEdit && form.id_paciente) {
+      // Para las actualizaciones, Multer puede requerir el método PUT/PATCH.
+      // Usamos POST con un campo _method si el servidor lo soporta, o simplemente PUT.
       await api.put(
-        `http://localhost:3000/paciente/${form.id_paciente}`,
-        patientDataToSend
+        `http://localhost:3000/paciente/actualizar/${form.id_paciente}`,
+        formData,
+        config
       );
       $q.notify({
-        type: "positive",
-        message: "Paciente actualizado exitosamente!",
+        type: 'positive',
+        message: 'Paciente actualizado exitosamente!',
       });
     } else {
-      await api.post("http://localhost:3000/paciente/crear", patientDataToSend);
+      await api.post('http://localhost:3000/paciente/crear', formData, config);
       $q.notify({
-        type: "positive",
-        message: "Paciente creado exitosamente!",
+        type: 'positive',
+        message: 'Paciente creado exitosamente!',
       });
     }
 
-    emit("saved");
+    emit('saved');
   } catch (error: any) {
-    console.error("Error saving patient:", error.response || error);
+    console.error('Error saving patient:', error.response || error);
     $q.notify({
-      type: "negative",
+      type: 'negative',
       message:
         error.response?.data?.message ||
-        "Error al guardar el paciente. Intente nuevamente.",
+        'Error al guardar el paciente. Intente nuevamente.',
     });
   } finally {
     loading.value = false;
   }
 };
 
+
 const emit = defineEmits<{
   cancel: [];
   saved: [];
 }>();
 </script>
-
-<style scoped>
-/* Add any specific styles for PatientForm here if needed */
-</style>

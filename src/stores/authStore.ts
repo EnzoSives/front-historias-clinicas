@@ -60,7 +60,7 @@ export const useAuthStore = defineStore('auth', () => {
   const getUserEmail = computed(() => user.value?.email || '');
   const getToken = computed(() => token.value);
   // Este getter es clave para obtener el ID del médico
-  const getMedicoId = computed(() => user.value?.medico?.id || null);
+  const getMedicoId = computed(() => user.value?.medico?.id_medico || null);
 
   return {
     // Estado

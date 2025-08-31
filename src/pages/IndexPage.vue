@@ -112,7 +112,7 @@
       <q-page class="bg-grey-1 q-page-no-padding-top">
         <div v-if="currentView === 'dashboard'">
           <Dashboard @select-patient="selectPatient" @view-consultation="viewConsultation"
-            @new-patient="showNewPatientForm" @new-consultation="showNewConsultationForm(selectedPatient)"
+            @new-patient="showNewPatientForm" @new-consultation="showNewConsultationForm(selectedPatient!)"
             @search-patient="currentView = 'patients'" />
         </div>
 
@@ -156,7 +156,7 @@
             </div>
 
             <div v-else class="row">
-              <div v-for="patient in filteredPatients" :key="patient.id" class="col-12 col-md-6 col-lg-4">
+              <div v-for="patient in filteredPatients" :key="patient.id_paciente" class="col-12 col-md-6 col-lg-4">
                 <PatientCard :patient="patient" @select-patient="selectPatient" @view-history="viewPatientHistory"
                   @new-consultation="showNewConsultationForm" />
               </div>
@@ -268,15 +268,15 @@ const filteredPatients = computed(() => {
   const query = searchQuery.value.toLowerCase();
   return medicalStore.patients.filter(
     (patient) =>
-      patient.nombre.toLowerCase().includes(query) || // Asegúrate de que 'firstName' exista en PatientType
-      patient.apellido.toLowerCase().includes(query) || // Asegúrate de que 'lastName' exista en PatientType
-      patient.dni.toLowerCase().includes(query)
+      patient.nombre?.toLowerCase().includes(query) || // Asegúrate de que 'firstName' exista en PatientType
+      patient.apellido?.toLowerCase().includes(query) || // Asegúrate de que 'lastName' exista en PatientType
+      patient.dni?.toLowerCase().includes(query)
   );
 });
 
 const patientConsultations = computed(() => {
   if (!selectedPatient.value) return [];
-  return medicalStore.getConsultationsByPatientId(selectedPatient.value.id);
+  return medicalStore.getConsultationsByPatientId(selectedPatient.value.id_paciente);
 });
 
 const selectPatient = (patient: PatientType) => {
@@ -316,8 +316,8 @@ const editConsultation = (consultation: ConsultationType) => {
 
 const savePatient = async (patient: PatientType) => {
   try {
-    if (selectedPatient.value && patient.id) {
-      await medicalStore.updatePatient(patient.id, patient);
+    if (selectedPatient.value && patient.id_paciente) {
+      await medicalStore.updatePatient(patient.id_paciente, patient);
       $q.notify({
         type: "positive",
         message: "Paciente actualizado exitosamente",
@@ -334,7 +334,7 @@ const savePatient = async (patient: PatientType) => {
     console.error("Error saving patient:", error);
     $q.notify({
       type: "negative",
-      message: medicalStore.getStoreError || "Error al guardar el paciente.",
+      message: "Error al guardar el paciente.",
     });
   }
 };
@@ -349,7 +349,7 @@ const saveConsultation = (consultation: ConsultationType) => {
   currentView.value = "patient-history";
 };
 
-const deleteConsultation = (consultationId: string) => {
+const deleteConsultation = (consultationId: number) => {
   medicalStore.deleteConsultation(consultationId);
   $q.notify({
     type: "positive",
@@ -360,7 +360,7 @@ const deleteConsultation = (consultationId: string) => {
 const viewConsultation = async (consultation: ConsultationType) => {
   try {
     const patient = await medicalStore.fetchPatientById(
-      consultation.pacienteId
+      consultation.id_paciente
     );
     if (patient) {
       viewPatientHistory(patient);
@@ -375,14 +375,13 @@ const viewConsultation = async (consultation: ConsultationType) => {
     $q.notify({
       type: "negative",
       message:
-        medicalStore.getStoreError ||
         "Error al cargar el paciente de la consulta.",
     });
   }
 };
 
 const goBack = () => {
-  currentView.value = previousView.value || "dashboard";
+  currentView.value = (["dashboard", "patients", "patient-form", "patient-history", "consultation-form", "profile"].includes(previousView.value) ? previousView.value : "dashboard") as typeof currentView.value;
   previousView.value = "";
 };
 

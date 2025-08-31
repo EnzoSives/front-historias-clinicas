@@ -39,54 +39,62 @@ export interface Patient {
   examenFisicoSistemaMusculoEsqueletico?: string | undefined;
   examenFisicoPielAnexos?: string | undefined;
   primerObservacion?: string | undefined;
-  imagen?: null | undefined;
-  imagen2?: null | undefined;
+  imagen?: File | null | undefined;
+  imagen2?: File | null | undefined;
+  imagenes?: PatientImage[] | null | undefined; // Updated to match backend response
   fechaCreacion?: Date | undefined;
   activo?: boolean | undefined; // Optional field to indicate if the patient is active
   id_medico?: number | undefined; // Optional field to link to Doctor
+}
+
+// Interfaz para un objeto de imagen individual
+export interface PatientImage {
+  id: number;
+  filename: string;
+  path: string;
 }
 
 // src/types/index.ts
 
 export interface Consultation {
   id: number;
-  pacienteId: number;
+  id_paciente: number;
   id_medico?: number;
-  motivoConsulta?: string;
-  observaciones?: string;
+  motivoConsulta?: string | undefined | null;
+  observaciones?: string | undefined | null;
   fechaConsulta: Date;
   // ASEGÚRATE DE QUE ESTA LÍNEA USE 'anamnesis'
-  anamnesis?: string;
-  examenFisico?: string;
-  diagnostico?: string;
-  tratamiento?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  anamnesis?: string | undefined | null;
+  examenFisico?: string | undefined | null;
+  diagnostico?: string | undefined | null;
+  tratamiento?: string | undefined | null;
+  createdAt?: string | undefined | null;
+  updatedAt?: string | undefined | null;
 }
 
 export interface Doctor {
   id_medico: number; // Kept as it is likely a system identifier
-  nombre?: string;
-  apellido?: string;
-  dni?: string;
-  telefono?: string;
-  especialidad?: string;
-  matricula?: string;
-  colegioMedico?: string;
-  direccionConsultorio?: string;
-  telefonoConsultorio?: string;
-  horarioAtencion?: string;
-  obrasSocialesAcepta?: string;
-  biografia?: string;
-  foto?: string;
-  activo?: boolean;
+  nombre?: string | undefined | null;
+  apellido?: string | undefined | null;
+  dni?: string | undefined | null;
+  telefono?: string | undefined | null;
+  especialidad?: string | undefined | null;
+  matricula?: string | undefined | null;
+  colegioMedico?: string | undefined | null;
+  direccionConsultorio?: string | undefined | null;
+  telefonoConsultorio?: string | undefined | null;
+  horarioAtencion?: string | undefined | null;
+  obrasSocialesAcepta?: string | undefined | null;
+  biografia?: string | undefined | null;
+  foto?: string | undefined | null;
+  activo?: boolean | undefined | null;
 }
 
 // Interface to match the 'user' object from the login response
 export interface AuthUser {
   id: number;
-  username: string;
-  email: string;
-  role: string;
+  username: string | undefined | null;
+  email: string | undefined | null;
+  role: string | undefined | null;
   medico: Doctor | null;
 }

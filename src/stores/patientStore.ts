@@ -81,7 +81,7 @@ export const usePatientStore = defineStore("patient", {
           patientData
         ); //
         // Actualiza el paciente en la lista local
-        const index = this.patients.findIndex((p) => p.id === id);
+        const index = this.patients.findIndex((p) => p.id_paciente === id);
         if (index !== -1) {
           this.patients[index] = response.data;
         }
@@ -103,7 +103,7 @@ export const usePatientStore = defineStore("patient", {
       try {
         await api.delete(`http://localhost:3000/paciente/eliminar/${id}`); //
         // Elimina el paciente de la lista local
-        this.patients = this.patients.filter((p) => p.id !== id);
+        this.patients = this.patients.filter((p) => p.id_paciente !== id);
       } catch (err: any) {
         console.error("Error deleting patient:", err);
         this.error =

@@ -116,7 +116,7 @@ export const useMedicalStore = defineStore('medical', {
     getConsultationsByPatientId: (state) => (patientId: string | number): ConsultationType[] => {
       const patientIdNum = Number(patientId);
       return (state.consultations || [])
-        .filter((c) => c.pacienteId === patientIdNum)
+        .filter((c) => c.id_paciente === patientIdNum)
         .sort((a, b) => new Date(b.fechaConsulta).getTime() - new Date(a.fechaConsulta).getTime());
     },
     isLoadingAny(state): boolean {
@@ -140,12 +140,13 @@ export const useMedicalStore = defineStore('medical', {
     /**
      * Obtiene todas las consultas del médico desde la API.
      */
-    async fetchAllConsultations(forceRefresh = false) {
+    async fetchAllConsultations(_forceRefresh = false) {
       // --- MODIFICADO ---
       const authStore = useAuthStore();
       // Asegúrate de que tu authStore expone el id_medico.
       // Basado en tu backend, debería ser algo como `authStore.user?.medico?.id_medico`
-      const medicoId = authStore.user?.id;
+      // const medicoId = authStore.user?.id;
+      const medicoId = authStore.user?.medico?.id_medico; //El que va
 
       if (!medicoId) {
         this.setError('consultationsAll', 'No se ha identificado un médico.');
@@ -163,7 +164,7 @@ export const useMedicalStore = defineStore('medical', {
         this.consultationsAll = response.data.map(c => ({
           ...c,
           id: c.id || c.id, // Normalizamos el ID
-          pacienteId: c.pacienteId, // Normalizamos el ID del paciente
+          id_paciente: c.id_paciente, // Normalizamos el ID del paciente
           fechaConsulta: new Date(c.fechaConsulta)
         }));
         this.saveToStorage(STORAGE_KEYS.CONSULTATIONS_ALL, this.consultationsAll);
@@ -178,8 +179,8 @@ export const useMedicalStore = defineStore('medical', {
     async fetchAllPatients(forceRefresh = false) {
       const authStore = useAuthStore();
       // --- CORREGIDO --- Se usa el id_medico en lugar del id de usuario general
-      //const medicoId = authStore.user?.medico?.id_medico; //El que va
-      const medicoId = authStore.user?.id;
+      const medicoId = authStore.user?.medico?.id_medico; //El que va
+      // const medicoId = authStore.user?.id;
 
       if (!medicoId) {
         this.setError('patients', 'No se ha identificado un médico.');
@@ -240,7 +241,7 @@ export const useMedicalStore = defineStore('medical', {
         const mappedConsultations = response.data.map(apiConsultation => {
           return {
             id: apiConsultation.id_consulta || apiConsultation.id,
-            pacienteId: apiConsultation.id_paciente,
+            id_paciente: apiConsultation.id_paciente,
             id_medico: apiConsultation.id_medico,
             fechaConsulta: new Date(apiConsultation.fechaConsulta),
             motivoConsulta: apiConsultation.motivoConsulta,
@@ -254,7 +255,7 @@ export const useMedicalStore = defineStore('medical', {
           } as ConsultationType;
         });
 
-        const otherConsultations = (this.consultations || []).filter(c => c.pacienteId !== patientId);
+        const otherConsultations = (this.consultations || []).filter(c => c.id_paciente !== patientId);
         this.consultations = [...otherConsultations, ...mappedConsultations];
         this.saveConsultationsToStorage();
         return mappedConsultations;
@@ -271,17 +272,27 @@ export const useMedicalStore = defineStore('medical', {
       this.setError('consultations', null);
 
       try {
-        const payload = toRaw(consultationData);
+        // Create a mutable payload from the original data
+        const payload: Record<string, any> = toRaw(consultationData);
+
+        // Format the date specifically for the API call
+        if (payload.fechaConsulta) {
+          const date = new Date(payload.fechaConsulta);
+          // Format to 'YYYY-MM-DD HH:MM:SS' which is MySQL-friendly
+          payload.fechaConsulta = date.toISOString().slice(0, 19).replace('T', ' ');
+        }
+
         const response = await api.post<any>(
           API_ENDPOINTS.CONSULTATIONS.CREATE,
-          payload
+          payload // Send the payload with the formatted date string
         );
 
+        // When we receive the data back, we create a proper ConsultationType object
         const newConsultation: ConsultationType = {
           id: response.data.id_consulta || response.data.id,
-          pacienteId: response.data.id_paciente,
+          id_paciente: response.data.id_paciente,
           id_medico: response.data.id_medico,
-          fechaConsulta: new Date(response.data.fechaConsulta),
+          fechaConsulta: new Date(response.data.fechaConsulta), // Convert back to a Date object
           motivoConsulta: response.data.motivoConsulta,
           anamnesis: response.data.anamnesis,
           diagnostico: response.data.diagnostico,
@@ -305,6 +316,7 @@ export const useMedicalStore = defineStore('medical', {
         this.setLoading('consultations', false);
       }
     },
+
 
     async selectPatientById(id: number): Promise<PatientType | null> {
       this.setLoading('general', true);

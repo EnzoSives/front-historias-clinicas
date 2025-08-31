@@ -1,10 +1,5 @@
 <template>
-  <q-card
-    class="patient-card q-ma-sm"
-    flat
-    bordered
-    @click="$emit('select-patient', patient)"
-  >
+  <q-card class="patient-card q-ma-sm" flat bordered @click="$emit('select-patient', patient)">
     <q-card-section class="row items-center">
       <q-avatar color="primary" text-color="white" size="50px" class="q-mr-md">
         <q-icon name="person" size="24px" />
@@ -16,46 +11,32 @@
         </div>
         <div class="text-subtitle2 text-grey-7">DNI: {{ patient.dni }}</div>
         <div class="text-caption text-grey-6">
-          {{ calculateAge(patient.fechaNacimiento) }} años •
-          {{ patient.genero }}
+          {{ calculateAge(patient.fechaNacimiento ? patient.fechaNacimiento.toString() : "") }} años •
+          {{ patient.sexo }}
         </div>
       </div>
 
       <div class="column items-end">
-        <q-chip
-          :color="getBloodTypeColor(patient.bloodType)"
-          text-color="white"
-          size="sm"
-        >
+        <q-chip :color="getBloodTypeColor(patient.bloodType)" text-color="white" size="sm">
           {{ patient.bloodType }}
         </q-chip>
         <div class="text-caption text-grey-6 q-mt-xs">
-          {{ formatDate(patient.fechaCreacion) }}
+          {{ formatDate(patient.fechaCreacion ? patient.fechaCreacion.toString() : "") }}
         </div>
       </div>
     </q-card-section>
 
     <q-card-actions align="right">
-      <q-btn
-        flat
-        color="primary"
-        icon="visibility"
-        label="Ver Historial"
-        @click.stop="$emit('view-history', patient)"
-      />
-      <q-btn
-        flat
-        color="secondary"
-        icon="add"
-        label="Nueva Consulta"
-        @click.stop="$emit('new-consultation', patient)"
-      />
+      <q-btn flat color="primary" icon="visibility" label="Ver Historial"
+        @click.stop="$emit('view-history', patient)" />
+      <q-btn flat color="secondary" icon="add" label="Nueva Consulta"
+        @click.stop="$emit('new-consultation', patient)" />
     </q-card-actions>
   </q-card>
 </template>
 
 <script setup lang="ts">
-import type { Patient as PatientType } from "src/types/index";
+import type { Patient, Patient as PatientType } from "src/types/index";
 
 interface Props {
   patient: PatientType;
@@ -70,6 +51,7 @@ defineEmits<{
 }>();
 
 const calculateAge = (birthDate: string): number => {
+  if (!birthDate) return 0;
   const today = new Date();
   const birth = new Date(birthDate);
   let age = today.getFullYear() - birth.getFullYear();
