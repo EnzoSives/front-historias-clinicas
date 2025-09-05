@@ -19,6 +19,7 @@ const API_ENDPOINTS = {
     BY_MEDICO: (medicoId: number) => `/consulta/medico/${medicoId}`,
     CREATE: '/consulta/crear',
     BY_PATIENT: (patientId: string) => `/consulta/paciente/${patientId}`,
+    DELETE: (id: number) => `/consulta/eliminar/${id}`,
   },
 } as const;
 
@@ -312,6 +313,62 @@ export const useMedicalStore = defineStore('medical', {
       } catch (error: any) {
         this.setError('consultations', this.handleApiError(error, 'crear consulta'));
         throw error;
+      } finally {
+        this.setLoading('consultations', false);
+      }
+    },
+    async addPatient(patientData: Partial<PatientType>) {
+      this.setLoading('patients', true);
+      this.setError('patients', null);
+      try {
+        const response = await api.post<PatientType>(
+          API_ENDPOINTS.PATIENTS.CREATE,
+          patientData
+        );
+        this.patients.push(response.data);
+        this.saveToStorage(STORAGE_KEYS.PATIENTS_CACHE, this.patients);
+        return response.data;
+      } catch (err: any) {
+        this.setError('patients', this.handleApiError(err, 'añadir paciente'));
+        throw err;
+      } finally {
+        this.setLoading('patients', false);
+      }
+    },
+
+    async updatePatient(id: number, patientData: Partial<PatientType>) {
+      this.setLoading('patients', true);
+      this.setError('patients', null);
+      try {
+        const response = await api.put<PatientType>(
+          API_ENDPOINTS.PATIENTS.UPDATE(id),
+          patientData
+        );
+        const index = this.patients.findIndex((p) => p.id_paciente === id);
+        if (index !== -1) {
+          this.patients[index] = response.data;
+        }
+        this.saveToStorage(STORAGE_KEYS.PATIENTS_CACHE, this.patients);
+        return response.data;
+      } catch (err: any) {
+        this.setError('patients', this.handleApiError(err, 'actualizar paciente'));
+        throw err;
+      } finally {
+        this.setLoading('patients', false);
+      }
+    },
+    async deleteConsultation(id: number) {
+      this.setLoading('consultations', true);
+      this.setError('consultations', null);
+      try {
+        await api.delete(API_ENDPOINTS.CONSULTATIONS.DELETE(id));
+        this.consultations = this.consultations.filter((c) => c.id !== id);
+        this.consultationsAll = this.consultationsAll.filter((c) => c.id !== id);
+        this.saveConsultationsToStorage();
+        this.saveToStorage(STORAGE_KEYS.CONSULTATIONS_ALL, this.consultationsAll);
+      } catch (err: any) {
+        this.setError('consultations', this.handleApiError(err, 'eliminar consulta'));
+        throw err;
       } finally {
         this.setLoading('consultations', false);
       }
