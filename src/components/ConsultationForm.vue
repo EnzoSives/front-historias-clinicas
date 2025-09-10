@@ -1,44 +1,105 @@
 <template>
-  <q-card class="q-ma-md" style="max-width: 800px">
-    <q-card-section>
-      <div class="text-h6 text-primary">
+  <q-card class="q-ma-md" style="max-width: 900px; width: 100%;">
+    <q-card-section class="bg-primary text-white">
+      <div class="text-h6">
         <q-icon name="medical_services" class="q-mr-sm" />
-        {{ isEdit ? 'Editar Consulta' : 'Nueva Consulta' }} - {{ patient?.nombre }} {{ patient?.apellido }}
+        {{ isEdit ? 'Editar Consulta' : 'Nueva Consulta' }}
       </div>
-      <div class="text-subtitle2 text-grey-7">
-        DNI: {{ patient?.dni ?? 'N/A' }} • {{ calculateAge(patient?.fechaNacimiento?.toString()) }} años
+      <div class="text-subtitle2" v-if="patient || selectedPatient">
+        Paciente: {{ (patient || selectedPatient)?.nombre }} {{ (patient || selectedPatient)?.apellido }} (DNI: {{
+          (patient || selectedPatient)?.dni ?? 'N/A' }})
+      </div>
+      <div class="text-subtitle2" v-else>
+        Seleccione un paciente para continuar
       </div>
     </q-card-section>
 
+    <q-separator />
+
     <q-card-section>
       <q-form @submit="handleSubmit" class="q-gutter-md">
-        <div class="row q-gutter-md">
-          <q-input v-model="form.fechaConsulta" label="Fecha de Consulta" filled type="datetime-local" class="col"
-            :rules="[val => !!val || 'Fecha de consulta requerida']" />
+        <div v-if="!patient">
+          <q-select filled v-model="selectedPatient" use-input hide-selected fill-input input-debounce="0"
+            :options="patientOptions" @filter="filterPatients" label="Buscar Paciente por Nombre o DNI"
+            :rules="[val => !!val || 'Debe seleccionar un paciente']" emit-value map-options>
+            <template v-slot:prepend>
+              <q-icon name="search" />
+            </template>
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  No se encontraron resultados
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
         </div>
 
-        <q-input v-model="form.motivoConsulta" label="Motivo de Consulta" filled type="textarea" rows="2"
-          :rules="[val => !!val || 'Motivo de consulta requerido']"
-          hint="Describa el motivo principal de la consulta" />
+        <div class="row q-col-gutter-md">
+          <div class="col-12 col-sm-6">
+            <q-input v-model="form.fechaConsulta" label="Fecha de Consulta" filled type="datetime-local"
+              :rules="[val => !!val || 'La fecha es requerida']">
+              <template v-slot:prepend>
+                <q-icon name="event" />
+              </template>
+            </q-input>
+          </div>
+          <div class="col-12 col-sm-6">
+            <q-input v-model="form.motivoConsulta" label="Motivo de Consulta" filled
+              :rules="[val => !!val || 'El motivo es requerido']" hint="Motivo principal de la visita">
+              <template v-slot:prepend>
+                <q-icon name="live_help" />
+              </template>
+            </q-input>
+          </div>
+        </div>
 
-        <q-input v-model="form.anamnesis" label="Anamnesis" filled type="textarea" rows="4"
-          hint="Historial clínico y detalles del padecimiento actual" />
+        <q-card flat bordered class="q-my-md">
+          <q-card-section>
+            <div class="text-subtitle1 text-primary q-mb-sm">
+              <q-icon name="description" /> Anamnesis y Examen Físico
+            </div>
+            <q-input v-model="form.anamnesis" label="Anamnesis" filled type="textarea" autogrow
+              hint="Historial clínico y detalles del padecimiento actual" />
+            <q-input v-model="form.examenFisico" label="Examen Físico" filled type="textarea" autogrow class="q-mt-md"
+              hint="Resultados relevantes del examen físico" />
+          </q-card-section>
+        </q-card>
 
-        <q-input v-model="form.examenFisico" label="Examen Físico" filled type="textarea" rows="3"
-          hint="Resultados del examen físico" />
+        <q-card flat bordered>
+          <q-card-section>
+            <div class="text-subtitle1 text-primary q-mb-sm">
+              <q-icon name="assignment_turned_in" /> Diagnóstico y Tratamiento
+            </div>
+            <q-input v-model="form.diagnostico" label="Diagnóstico" filled type="textarea" autogrow
+              :rules="[val => !!val || 'El diagnóstico es requerido']" hint="Diagnóstico médico basado en los datos" />
+            <q-input v-model="form.tratamiento" label="Tratamiento" filled type="textarea" autogrow class="q-mt-md"
+              :rules="[val => !!val || 'El tratamiento es requerido']"
+              hint="Describa el tratamiento y las indicaciones recomendadas" />
+          </q-card-section>
+        </q-card>
 
-        <q-input v-model="form.diagnostico" label="Diagnóstico" filled type="textarea" rows="3"
-          :rules="[val => !!val || 'Diagnóstico requerido']" hint="Diagnóstico médico basado en los datos" />
+        <q-input v-model="form.observaciones" label="Observaciones Adicionales" filled type="textarea" autogrow
+          hint="Notas adicionales sobre la consulta, si las hubiera">
+          <template v-slot:prepend>
+            <q-icon name="speaker_notes" />
+          </template>
+        </q-input>
 
-        <q-input v-model="form.tratamiento" label="Tratamiento" filled type="textarea" rows="4"
-          :rules="[val => !!val || 'Tratamiento requerido']" hint="Describa el tratamiento recomendado" />
-
-        <q-input v-model="form.observaciones" label="Observaciones" filled type="textarea" rows="3"
-          hint="Notas adicionales sobre la consulta" />
+        <q-card flat bordered class="q-my-md">
+          <q-card-section>
+            <div class="text-subtitle1 text-primary q-mb-sm">
+              <q-icon name="image" /> Imágenes de la Consulta
+            </div>
+            <q-uploader url="" label="Seleccionar Imágenes" multiple batch accept=".jpg, image/*" @added="onFilesAdded"
+              @removed="onFilesRemoved" style="width: 100%;" />
+          </q-card-section>
+        </q-card>
 
         <q-card-actions align="right" class="q-pt-md">
           <q-btn flat color="grey-7" label="Cancelar" @click="$emit('cancel')" />
-          <q-btn type="submit" color="primary" label="Guardar Consulta" :loading="loading" />
+          <q-btn type="submit" color="primary" :label="isEdit ? 'Actualizar Consulta' : 'Guardar Consulta'"
+            :loading="loading" icon="save" unelevated />
         </q-card-actions>
       </q-form>
     </q-card-section>
@@ -49,6 +110,7 @@
 import { ref, reactive, onMounted, computed, watch } from 'vue';
 import type { Patient as PatientType, Consultation as ConsultationType } from 'src/types/index';
 import { useAuthStore } from 'src/stores/authStore';
+import { useMedicalStore } from 'src/stores/medicalStore';
 
 interface Props {
   patient: PatientType | null;
@@ -58,11 +120,16 @@ interface Props {
 const props = defineProps<Props>();
 const emit = defineEmits<{
   cancel: [];
-  save: [consultationPayload: Record<string, any>];
+  save: [consultationPayload: FormData]; // Se emite un FormData
 }>();
 
 const loading = ref(false);
 const authStore = useAuthStore();
+const medicalStore = useMedicalStore();
+
+const selectedPatient = ref<PatientType | null>(null);
+const patientOptions = ref<{ label: string; value: PatientType }[]>([]);
+const uploadedFiles = ref<File[]>([]); // Para almacenar los archivos seleccionados
 
 const form = reactive({
   fechaConsulta: '',
@@ -97,62 +164,112 @@ const populateForm = () => {
   }
 };
 
-onMounted(populateForm);
+onMounted(() => {
+  populateForm();
+  if (!props.patient) {
+    patientOptions.value = medicalStore.patients.map(p => ({
+      label: `${p.nombre} ${p.apellido} - DNI: ${p.dni}`,
+      value: p
+    }));
+  }
+});
+
 watch(() => props.consultation, populateForm, { deep: true, immediate: true });
 
-const calculateAge = (birthDate?: string): number | string => {
-  if (!birthDate) return 'N/A';
-  const today = new Date();
-  const birth = new Date(birthDate);
-  let age = today.getFullYear() - birth.getFullYear();
-  const monthDiff = today.getMonth() - birth.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-    age--;
+const filterPatients = (val: string, update: (callbackFn: () => void) => void) => {
+  if (val === '') {
+    update(() => {
+      patientOptions.value = medicalStore.patients.map(p => ({
+        label: `${p.nombre} ${p.apellido} - DNI: ${p.dni}`,
+        value: p
+      }));
+    });
+    return;
   }
-  return age;
+
+  update(() => {
+    const needle = val.toLowerCase();
+    const filtered = medicalStore.patients.filter(
+      p =>
+        p.nombre?.toLowerCase().includes(needle) ||
+        p.apellido?.toLowerCase().includes(needle) ||
+        p.dni?.includes(needle)
+    );
+    patientOptions.value = filtered.map(p => ({
+      label: `${p.nombre} ${p.apellido} - DNI: ${p.dni}`,
+      value: p
+    }));
+  });
+};
+
+// MANEJO DE ARCHIVOS
+const onFilesAdded = (files: readonly File[]) => {
+  uploadedFiles.value.push(...files);
+};
+
+const onFilesRemoved = (files: readonly File[]) => {
+  for (const file of files) {
+    const index = uploadedFiles.value.findIndex(f => f.name === file.name);
+    if (index > -1) {
+      uploadedFiles.value.splice(index, 1);
+    }
+  }
 };
 
 const handleSubmit = async () => {
   loading.value = true;
-
-  // ✅ CORRECCIÓN: Verifica la ruta correcta para el ID del médico y obtén el valor.
-  // Es más probable que sea `authStore.user?.id` o `authStore.user?.id_medico`
   const medicoId = authStore.user?.medico?.id_medico;
 
   if (!medicoId) {
     console.error("Error: No se pudo obtener el ID del médico. Revisa el authStore.");
     loading.value = false;
-    // Opcional: notificar al usuario con un diálogo de error.
     return;
   }
 
   try {
-    // Usamos Partial<ConsultationType> porque no enviaremos todas las propiedades siempre.
-    const payload: Partial<ConsultationType> = {
-      id_medico: medicoId,
-      fechaConsulta: new Date(form.fechaConsulta),
-      motivoConsulta: form.motivoConsulta || undefined,
-      observaciones: form.observaciones || undefined,
-      anamnesis: form.anamnesis || undefined,
-      examenFisico: form.examenFisico || undefined,
-      diagnostico: form.diagnostico || undefined,
-      tratamiento: form.tratamiento || undefined,
-    };
+    const formData = new FormData();
+    const patientToAssign = props.patient || selectedPatient.value;
 
-    // Solo agrega id_paciente si está definido
-    if (props.patient?.id_paciente !== undefined) {
-      (payload as any).id_paciente = props.patient.id_paciente;
+    if (!patientToAssign) {
+      loading.value = false;
+      return;
     }
 
-    // ✅ CORRECCIÓN 2: Si estamos editando, añade el ID de la consulta al payload.
+    formData.append('id_paciente', patientToAssign.id_paciente.toString());
+    formData.append('id_medico', medicoId.toString());
+    formData.append('fechaConsulta', new Date(form.fechaConsulta).toISOString());
+    formData.append('motivoConsulta', form.motivoConsulta || '');
+    formData.append('observaciones', form.observaciones || '');
+    formData.append('anamnesis', form.anamnesis || '');
+    formData.append('examenFisico', form.examenFisico || '');
+    formData.append('diagnostico', form.diagnostico || '');
+    formData.append('tratamiento', form.tratamiento || '');
+
+    // Adjuntar archivos
+    for (const file of uploadedFiles.value) {
+      formData.append('files', file);
+    }
+
     if (isEdit.value && props.consultation) {
-      payload.id = props.consultation.id;
+      // En un caso de edición, necesitarías un endpoint diferente que maneje la actualización
+      // de los datos y, opcionalmente, la adición/eliminación de imágenes.
+      // Por simplicidad, este ejemplo se enfoca en la creación.
     }
 
-    emit('save', payload);
+    emit('save', formData);
 
   } finally {
     loading.value = false;
   }
 };
 </script>
+
+<style scoped>
+.q-card {
+  border-radius: 8px;
+}
+
+.q-card__section--bordered {
+  border-color: rgba(0, 0, 0, 0.05);
+}
+</style>

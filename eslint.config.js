@@ -1,83 +1,90 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import pluginVue from 'eslint-plugin-vue'
-import pluginQuasar from '@quasar/app-vite/eslint'
-import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript'
+ import js from '@eslint/js';
+import globals from 'globals';
+import pluginVue from 'eslint-plugin-vue';
+import pluginQuasar from '@quasar/app-vite/eslint';
+import tseslint from 'typescript-eslint';
 
-export default defineConfigWithVueTs(
+/**
+ * Esta es la nueva forma de configurar ESLint, conocida como "flat config".
+ * Es un array de objetos de configuración. ESLint los fusiona en orden,
+ * por lo que las reglas en los últimos objetos tienen prioridad sobre los primeros.
+ */
+export default tseslint.config(
+  // 1. Archivos y carpetas a ignorar globalmente
   {
-    /**
-     * Ignore the following files.
-     * Please note that pluginQuasar.configs.recommended() already ignores
-     * the "node_modules" folder for you (and all other Quasar project
-     * relevant folders and files).
-     *
-     * ESLint requires "ignores" key to be the only one in this object
-     */
-    // ignores: []
+    ignores: [
+      'node_modules/',
+      '.quasar/',
+      'dist/',
+      'src-pwa/',
+      'src-capacitor/',
+      'src-ssr/',
+      'src-cordova/',
+      // otros archivos que quieras ignorar...
+    ],
   },
 
-  pluginQuasar.configs.recommended(),
+  // 2. Configuraciones base recomendadas (se aplican a todos los archivos)
   js.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  ...pluginVue.configs['flat/recommended'], // Incluye essential, strongly-recommended y recommended
+  pluginQuasar.configs.recommended(),
 
-  /**
-   * https://eslint.vuejs.org
-   *
-   * pluginVue.configs.base
-   *   -> Settings and rules to enable correct ESLint parsing.
-   * pluginVue.configs[ 'flat/essential']
-   *   -> base, plus rules to prevent errors or unintended behavior.
-   * pluginVue.configs["flat/strongly-recommended"]
-   *   -> Above, plus rules to considerably improve code readability and/or dev experience.
-   * pluginVue.configs["flat/recommended"]
-   *   -> Above, plus rules to enforce subjective community defaults to ensure consistency.
-   */
-  pluginVue.configs[ 'flat/essential' ],
-
+  // 3. Configuración principal para tus archivos de proyecto (Vue y TypeScript)
   {
-    files: ['**/*.ts', '**/*.vue'],
+    files: ['src/**/*.{ts,vue}'],
+    languageOptions: {
+      // Es crucial especificar el parser para TypeScript aquí
+      parserOptions: {
+        parser: tseslint.parser,
+        project: ['./tsconfig.app.json', './tsconfig.node.json'],
+        tsconfigRootDir: import.meta.dirname,
+        extraFileExtensions: ['.vue'],
+      },
+    },
     rules: {
+      // Tus reglas personalizadas para TypeScript y Vue
       '@typescript-eslint/consistent-type-imports': [
         'error',
-        { prefer: 'type-imports' }
+        { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
       ],
-    }
-  },
-  // https://github.com/vuejs/eslint-config-typescript
-  vueTsConfigs.recommendedTypeChecked,
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
 
+      // Reglas de Vue
+      'vue/multi-word-component-names': 'off', // Muy común desactivarla para archivos como `index.vue` o `_id.vue`
+    },
+  },
+
+  // 4. Configuración general y reglas personalizadas para todo el proyecto
   {
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
-
       globals: {
         ...globals.browser,
-        ...globals.node, // SSR, Electron, config files
-        process: 'readonly', // process.env.*
-        ga: 'readonly', // Google Analytics
+        ...globals.node,
+        process: 'readonly',
+        ga: 'readonly',
         cordova: 'readonly',
         Capacitor: 'readonly',
-        chrome: 'readonly', // BEX related
-        browser: 'readonly' // BEX related
-      }
+        chrome: 'readonly',
+        browser: 'readonly',
+      },
     },
-
-    // add your custom rules here
     rules: {
+      // Tus reglas generales personalizadas
       'prefer-promise-reject-errors': 'off',
-
-      // allow debugger during development only
-      'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
-    }
+      'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    },
   },
 
+  // 5. Configuración específica para el service worker (si lo usas)
   {
-    files: [ 'src-pwa/custom-service-worker.ts' ],
+    files: ['src-pwa/custom-service-worker.ts'],
     languageOptions: {
       globals: {
-        ...globals.serviceworker
-      }
-    }
+        ...globals.serviceworker,
+      },
+    },
   }
-)
+);

@@ -48,12 +48,12 @@
     </q-header>
 
     <q-page-container>
-      <q-drawer v-model="drawerOpen" show-if-above :width="280" :breakpoint="700" elevated class="bg-grey-2">
+      <q-drawer v-model="drawerOpen" :width="280" :breakpoint="700" elevated class="bg-grey-2">
         <q-scroll-area class="fit">
           <q-list>
-            <q-item-label header class="text-primary">
-              <q-icon name="menu" class="q-mr-sm" />
-              Menú Principal
+            <q-item-label header class="flex items-center text-primary q-mb-sm">
+
+              <span class="text-h6">Menú</span>
             </q-item-label>
 
             <q-item clickable v-ripple @click="currentView = 'dashboard'" :active="currentView === 'dashboard'">
@@ -68,6 +68,13 @@
                 <q-icon name="people" />
               </q-item-section>
               <q-item-section>Pacientes</q-item-section>
+            </q-item>
+
+            <q-item clickable v-ripple @click="currentView = 'consultations'" :active="currentView === 'consultations'">
+              <q-item-section avatar>
+                <q-icon name="history_edu" />
+              </q-item-section>
+              <q-item-section>Consultas</q-item-section>
             </q-item>
 
             <q-item clickable v-ripple @click="showNewPatientForm">
@@ -116,6 +123,62 @@
             @search-patient="currentView = 'patients'" />
         </div>
 
+        <div v-else-if="currentView === 'consultations'">
+          <div class="q-pa-md">
+            <div class="row items-center justify-between q-mb-md">
+              <div class="col">
+                <div class="text-h4 text-primary">
+                  <q-icon name="history_edu" class="q-mr-sm" />
+                  Historial de Consultas
+                </div>
+                <div class="text-subtitle1 text-grey-7">
+                  {{ filteredConsultations.length }} consulta(s) encontrada(s)
+                </div>
+              </div>
+              <div class="col-auto">
+                <q-btn color="primary" icon="add" label="Nueva Consulta" @click="showNewConsultationForm(null)" />
+              </div>
+            </div>
+
+            <q-card class="q-mb-md" flat bordered>
+              <q-card-section>
+                <div class="row q-col-gutter-md items-center">
+                  <div class="col-12 col-md-8">
+                    <q-input v-model="consultationSearchQuery" filled
+                      placeholder="Buscar por paciente, DNI o diagnóstico..." dense>
+                      <template v-slot:prepend>
+                        <q-icon name="search" />
+                      </template>
+                      <template v-slot:append>
+                        <q-icon v-if="consultationSearchQuery" name="close" @click="consultationSearchQuery = ''"
+                          class="cursor-pointer" />
+                      </template>
+                    </q-input>
+                  </div>
+                  <div class="col-12 col-md-4 text-right">
+                    <q-btn-toggle v-model="consultationSortOrder"
+                      :options="[{ label: 'Recientes', value: 'newest' }, { label: 'Antiguas', value: 'oldest' }]"
+                      toggle-color="primary" flat dense />
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+
+            <div v-if="filteredConsultations.length > 0" class="row q-col-gutter-md">
+              <div v-for="consultation in filteredConsultations" :key="consultation.id"
+                class="col-12 col-md-6 col-lg-4">
+                <ConsultationCard :consultation="consultation" :patient="getPatientById(consultation.id_paciente)"
+                  @edit="editConsultation" @delete="deleteConsultation"
+                  @view-patient="viewPatientHistoryById(consultation.id_paciente)" />
+              </div>
+            </div>
+            <div v-else class="text-center text-grey-6 q-pa-xl">
+              <q-icon name="search_off" size="64px" />
+              <div class="q-mt-md text-h6">No se encontraron consultas</div>
+            </div>
+          </div>
+        </div>
+
         <div v-else-if="currentView === 'patients'">
           <div class="q-pa-md">
             <div class="row items-center justify-between q-mb-md">
@@ -125,8 +188,7 @@
                   Pacientes
                 </div>
                 <div class="text-subtitle1 text-grey-7">
-                  {{ medicalStore.patients.length }} paciente(s)
-                  registrado(s)
+                  {{ medicalStore.patients.length }} paciente(s) registrado(s)
                 </div>
               </div>
               <div class="col-auto">
@@ -134,31 +196,27 @@
               </div>
             </div>
 
-            <q-input v-model="searchQuery" filled placeholder="Buscar por nombre, DNI o email..." class="q-mb-md">
+            <q-input v-model="patientSearchQuery" filled placeholder="Buscar por nombre, DNI o email..."
+              class="q-mb-md">
               <template v-slot:prepend>
                 <q-icon name="search" />
               </template>
               <template v-slot:append>
-                <q-icon v-if="searchQuery" name="close" @click="searchQuery = ''" class="cursor-pointer" />
+                <q-icon v-if="patientSearchQuery" name="close" @click="patientSearchQuery = ''"
+                  class="cursor-pointer" />
               </template>
             </q-input>
 
             <div v-if="filteredPatients.length === 0" class="text-center text-grey-6 q-pa-xl">
               <q-icon name="people" size="64px" />
               <div class="q-mt-md">No se encontraron pacientes</div>
-              <div class="text-caption">
-                {{
-                  searchQuery
-                    ? "Prueba con otros términos de búsqueda"
-                    : "Comienza agregando un nuevo paciente"
-                }}
-              </div>
             </div>
 
             <div v-else class="row">
               <div v-for="patient in filteredPatients" :key="patient.id_paciente" class="col-12 col-md-6 col-lg-4">
                 <PatientCard :patient="patient" @select-patient="selectPatient" @view-history="viewPatientHistory"
-                  @new-consultation="showNewConsultationForm" />
+                  @new-consultation="showNewConsultationForm" @edit-patient="showEditPatientForm"
+                  @delete-patient="confirmDeletePatient" />
               </div>
             </div>
           </div>
@@ -166,33 +224,25 @@
 
         <div v-else-if="currentView === 'patient-form'">
           <div class="flex flex-center q-pa-md">
-            <PatientForm :patient="selectedPatient" :is-edit="!!selectedPatient" @save="savePatient" @cancel="goBack" />
+            <PatientForm :patient="selectedPatient" :is-edit="!!selectedPatient" @saved="savePatient"
+              @cancel="goBack" />
           </div>
         </div>
 
         <div v-else-if="currentView === 'patient-history'">
           <PatientHistory :patient="selectedPatient" :consultations="patientConsultations"
             @new-consultation="showNewConsultationForm" @edit-consultation="editConsultation"
-            @delete-consultation="deleteConsultation" />
+            @delete-consultation="deleteConsultation" @edit-patient="showEditPatientForm" />
         </div>
 
         <div v-else-if="currentView === 'consultation-form'">
           <div class="flex flex-center q-pa-md">
-            <ConsultationForm :patient="selectedPatient" @save="saveConsultation" @cancel="goBack" />
+            <ConsultationForm :patient="selectedPatient" :consultation="selectedConsultation" @save="saveConsultation"
+              @cancel="goBack" />
           </div>
         </div>
 
         <div v-else-if="currentView === 'profile'">
-          <div class="flex flex-center q-pa-xl">
-            <div class="text-center">
-              <q-avatar size="150px">
-                <img :src="user.avatar" />
-              </q-avatar>
-              <h4 class="q-mt-md q-mb-xs">{{ user.name }}</h4>
-              <p class="text-grey-7">{{ user.email }}</p>
-              <q-btn color="primary" label="Editar Perfil" @click="$q.notify('Función en desarrollo')" />
-            </div>
-          </div>
         </div>
       </q-page>
     </q-page-container>
@@ -205,13 +255,13 @@ import { useQuasar } from "quasar";
 import { useRouter } from "vue-router";
 import { useMedicalStore } from "src/stores/medicalStore";
 import { useAuthStore } from "src/stores/authStore";
-import type { Patient as PatientType } from "src/types/index";
-import type { Consultation as ConsultationType } from "src/types/index";
+import type { Patient as PatientType, Consultation as ConsultationType } from "src/types/index";
 import Dashboard from "src/components/Dashboard.vue";
 import PatientCard from "src/components/PatientCard.vue";
 import PatientForm from "src/components/PatientForm.vue";
 import PatientHistory from "src/components/PatientHistory.vue";
 import ConsultationForm from "src/components/ConsultationForm.vue";
+import ConsultationCard from "src/components/ConsultationCard.vue";
 
 const $q = useQuasar();
 const router = useRouter();
@@ -219,24 +269,27 @@ const medicalStore = useMedicalStore();
 const authStore = useAuthStore();
 
 const drawerOpen = ref(false);
-// Reemplaza tu línea actual de currentView con esta
 const currentView = ref<
   | "dashboard"
   | "patients"
+  | "consultations"
   | "patient-form"
   | "patient-history"
   | "consultation-form"
   | "profile"
 >("dashboard");
+
 const selectedPatient = ref<PatientType | null>(null);
-const searchQuery = ref("");
+const selectedConsultation = ref<ConsultationType | null>(null);
+const patientSearchQuery = ref("");
+const consultationSearchQuery = ref("");
+const consultationSortOrder = ref("newest");
 const previousView = ref<string>("");
 
-// Simulación de datos del usuario. En una app real, vendrían del login.
 const user = ref({
   name: authStore.user?.username,
   email: authStore.user?.email,
-  avatar: "public/iconDoc.jpg", // Cambia esto por la URL de tu avatar
+  avatar: "iconDoc.jpg",
 });
 
 const goToProfile = () => {
@@ -251,11 +304,6 @@ const logout = () => {
     cancel: true,
     persistent: true,
   }).onOk(() => {
-    $q.notify({
-      type: "info",
-      message: "Has cerrado la sesión.",
-      icon: "logout",
-    });
     authStore.logout();
     medicalStore.clearData();
     router.push("/login");
@@ -263,15 +311,42 @@ const logout = () => {
 };
 
 const filteredPatients = computed(() => {
-  if (!searchQuery.value) return medicalStore.patients;
-
-  const query = searchQuery.value.toLowerCase();
+  if (!patientSearchQuery.value) return medicalStore.patients;
+  const query = patientSearchQuery.value.toLowerCase();
   return medicalStore.patients.filter(
-    (patient) =>
-      patient.nombre?.toLowerCase().includes(query) || // Asegúrate de que 'firstName' exista en PatientType
-      patient.apellido?.toLowerCase().includes(query) || // Asegúrate de que 'lastName' exista en PatientType
-      patient.dni?.toLowerCase().includes(query)
+    (p) =>
+      p.nombre?.toLowerCase().includes(query) ||
+      p.apellido?.toLowerCase().includes(query) ||
+      p.dni?.toLowerCase().includes(query)
   );
+});
+
+const getPatientById = (patientId: number): PatientType | undefined => {
+  return medicalStore.getPatientById(patientId);
+};
+
+const getPatientName = (patientId: number): string => {
+  const patient = medicalStore.getPatientById(patientId);
+  return patient ? `${patient.nombre} ${patient.apellido}` : 'Paciente Desconocido';
+};
+
+const filteredConsultations = computed(() => {
+  let consultations = [...medicalStore.consultationsAll];
+  if (consultationSearchQuery.value) {
+    const query = consultationSearchQuery.value.toLowerCase();
+    consultations = consultations.filter(c => {
+      const patientName = getPatientName(c.id_paciente).toLowerCase();
+      const patientDNI = medicalStore.getPatientById(c.id_paciente)?.dni?.toLowerCase() || '';
+      const diagnosis = c.diagnostico?.toLowerCase() || '';
+      return patientName.includes(query) || patientDNI.includes(query) || diagnosis.includes(query);
+    });
+  }
+  consultations.sort((a, b) => {
+    const dateA = new Date(a.fechaConsulta).getTime();
+    const dateB = new Date(b.fechaConsulta).getTime();
+    return consultationSortOrder.value === 'newest' ? dateB - dateA : dateA - dateB;
+  });
+  return consultations;
 });
 
 const patientConsultations = computed(() => {
@@ -289,6 +364,13 @@ const viewPatientHistory = (patient: PatientType) => {
   currentView.value = "patient-history";
 };
 
+const viewPatientHistoryById = (patientId: number) => {
+  const patient = medicalStore.getPatientById(patientId);
+  if (patient) {
+    viewPatientHistory(patient);
+  }
+};
+
 const showNewPatientForm = () => {
   previousView.value = currentView.value;
   selectedPatient.value = null;
@@ -301,88 +383,96 @@ const showEditPatientForm = (patient: PatientType) => {
   currentView.value = "patient-form";
 };
 
-const showNewConsultationForm = (patient: PatientType) => {
+const showNewConsultationForm = (patient: PatientType | null) => {
   previousView.value = currentView.value;
   selectedPatient.value = patient;
+  selectedConsultation.value = null;
   currentView.value = "consultation-form";
 };
 
 const editConsultation = (consultation: ConsultationType) => {
-  $q.notify({
-    type: "info",
-    message: "Función de edición de consultas en desarrollo",
-  });
+  previousView.value = currentView.value;
+  selectedPatient.value = medicalStore.getPatientById(consultation.id_paciente) || null;
+  selectedConsultation.value = consultation;
+  currentView.value = "consultation-form";
 };
 
-const savePatient = async (patient: PatientType) => {
+const savePatient = async () => {
+  await medicalStore.fetchAllPatients(true);
+  goBack();
+};
+
+// ✅ --- CORRECCIÓN --- ✅
+const saveConsultation = async (consultationPayload: any) => {
   try {
-    if (selectedPatient.value && patient.id_paciente) {
-      await medicalStore.updatePatient(patient.id_paciente, patient);
-      $q.notify({
-        type: "positive",
-        message: "Paciente actualizado exitosamente",
-      });
+    await medicalStore.addConsultation(consultationPayload);
+    $q.notify({
+      type: "positive",
+      message: "Consulta guardada exitosamente",
+    });
+    await medicalStore.fetchAllConsultations(true); // Recargar la lista de consultas
+    if (previousView.value === 'patient-history') {
+      currentView.value = 'patient-history';
     } else {
-      await medicalStore.addPatient(patient);
-      $q.notify({
-        type: "positive",
-        message: "Paciente creado exitosamente",
-      });
+      currentView.value = 'consultations';
     }
-    goBack();
   } catch (error) {
-    console.error("Error saving patient:", error);
     $q.notify({
       type: "negative",
-      message: "Error al guardar el paciente.",
+      message: "Error al guardar la consulta",
     });
   }
 };
 
-const saveConsultation = (consultation: ConsultationType) => {
-  medicalStore.addConsultation(consultation);
-  $q.notify({
-    type: "positive",
-    message: "Consulta guardada exitosamente",
-  });
 
-  currentView.value = "patient-history";
+const confirmDeletePatient = (patientId: number) => {
+  $q.dialog({
+    title: "Confirmar Eliminación",
+    message: "Esta acción es irreversible. ¿Está seguro?",
+    cancel: true,
+    persistent: true,
+  }).onOk(() => {
+    deletePatient(patientId);
+  });
+};
+
+const deletePatient = async (patientId: number) => {
+  try {
+    await medicalStore.deletePatient(patientId);
+    $q.notify({ type: "positive", message: "Paciente eliminado." });
+    if (currentView.value === 'patient-history') {
+      currentView.value = 'patients';
+    }
+  } catch (error) {
+    $q.notify({ type: "negative", message: "Error al eliminar el paciente." });
+  }
 };
 
 const deleteConsultation = (consultationId: number) => {
-  medicalStore.deleteConsultation(consultationId);
-  $q.notify({
-    type: "positive",
-    message: "Consulta eliminada exitosamente",
+  $q.dialog({
+    title: "Confirmar Eliminación",
+    message: "¿Eliminar esta consulta?",
+    cancel: true,
+  }).onOk(async () => {
+    try {
+      // await medicalStore.deleteConsultation(consultationId);
+      $q.notify({ type: 'positive', message: 'Consulta eliminada.' });
+    } catch (error) {
+      $q.notify({ type: 'negative', message: 'Error al eliminar la consulta.' });
+    }
   });
 };
 
 const viewConsultation = async (consultation: ConsultationType) => {
-  try {
-    const patient = await medicalStore.fetchPatientById(
-      consultation.id_paciente
-    );
-    if (patient) {
-      viewPatientHistory(patient);
-    } else {
-      $q.notify({
-        type: "negative",
-        message: "No se encontró el paciente para esta consulta.",
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching patient for consultation:", error);
-    $q.notify({
-      type: "negative",
-      message:
-        "Error al cargar el paciente de la consulta.",
-    });
-  }
+  viewPatientHistoryById(consultation.id_paciente);
 };
 
 const goBack = () => {
-  currentView.value = (["dashboard", "patients", "patient-form", "patient-history", "consultation-form", "profile"].includes(previousView.value) ? previousView.value : "dashboard") as typeof currentView.value;
+  const validViews = ["dashboard", "patients", "consultations", "patient-history"];
+  currentView.value = (validViews.includes(previousView.value) ? previousView.value : "dashboard") as any;
   previousView.value = "";
+  selectedPatient.value = null;
+  selectedConsultation.value = null;
 };
 
 onMounted(async () => {

@@ -18,6 +18,8 @@
             </div>
           </div>
           <div class="col-auto">
+            <q-btn color="orange" icon="edit" label="Editar Paciente" class="q-mr-sm" :disable="!patient"
+              @click="patient && $emit('edit-patient', patient)" />
             <q-btn color="primary" icon="add" label="Nueva Consulta" :disable="!patient"
               @click="patient && $emit('new-consultation', patient)" />
           </div>
@@ -334,6 +336,7 @@ defineEmits<{
   "new-consultation": [patient: PatientType];
   "edit-consultation": [consultation: ConsultationType];
   "delete-consultation": [consultationId: number];
+  "edit-patient": [patient: PatientType];
 }>();
 
 const medicalStore = useMedicalStore();

@@ -136,6 +136,11 @@ interface Props {
 
 const props = defineProps<Props>();
 
+const emit = defineEmits<{
+  cancel: [];
+  saved: [];
+}>();
+
 const $q = useQuasar();
 const loading = ref(false);
 const authStore = useAuthStore();
@@ -146,7 +151,6 @@ const genderOptions = [
   { label: "Otro", value: "Otro" },
 ];
 
-// El estado del formulario se mantiene igual
 const form = reactive<PatientType>({
   id_paciente: 0,
   id_medico: undefined,
@@ -190,6 +194,7 @@ const form = reactive<PatientType>({
   primerObservacion: undefined,
   imagen: null,
   imagen2: null,
+  imagenes: [],
   activo: undefined,
 });
 
@@ -207,46 +212,46 @@ watch(
       form.id_paciente = 0;
       form.imagen = null;
       form.imagen2 = null;
+      form.imagenes = [];
       form.id_medico = authStore.user?.medico?.id_medico;
     }
   },
   { immediate: true, deep: true }
 );
 
-// --- FUNCIÓN handleSubmit CORREGIDA Y REFINADA ---
 const handleSubmit = async () => {
   loading.value = true;
   const medicoId = authStore.user?.medico?.id_medico;
   const formData = new FormData();
 
-  // Itera sobre el objeto 'form' y añade cada campo al FormData
-  // si no es nulo o indefinido. Esto es más limpio y robusto.
   for (const key in form) {
+    if (key === 'imagenes') continue;
+
+    // ✅ --- CORRECCIÓN APLICADA --- ✅
+    // No incluimos el ID en el cuerpo del formulario para las actualizaciones,
+    // ya que se pasa a través de la URL.
+    if (props.isEdit && key === 'id_paciente') continue;
+
     const value = (form as any)[key];
     if (value !== null && value !== undefined) {
-      // Si el valor es un objeto File, lo añade tal cual.
-      // Si es una fecha, la convierte a ISO string.
-      // Si es cualquier otra cosa, la añade como texto.
       if (value instanceof File) {
         formData.append(key, value);
       } else if (key === 'fechaNacimiento' && value) {
         formData.append(key, new Date(value).toISOString());
       } else if (key !== 'imagen' && key !== 'imagen2') {
-        // Evita añadir las propiedades de imagen si no son un archivo
         formData.append(key, String(value));
       }
     }
   }
 
-  // Asegúrate de que el id_medico esté presente
   if (medicoId) {
-    formData.set('id_medico', String(medicoId)); // 'set' para sobrescribir si ya existe
+    formData.set('id_medico', String(medicoId));
   }
 
-  // Elimina campos que el backend no debe recibir al crear
-  if (!props.isEdit) {
-    formData.delete('id_paciente');
-  }
+  // Ya no es necesaria esta línea gracias al cambio en el bucle
+  // if (!props.isEdit) {
+  //   formData.delete('id_paciente');
+  // }
 
 
   try {
@@ -257,9 +262,7 @@ const handleSubmit = async () => {
     };
 
     if (props.isEdit && form.id_paciente) {
-      // Para las actualizaciones, Multer puede requerir el método PUT/PATCH.
-      // Usamos POST con un campo _method si el servidor lo soporta, o simplemente PUT.
-      await api.put(
+      await api.patch(
         `http://localhost:3000/paciente/actualizar/${form.id_paciente}`,
         formData,
         config
@@ -289,10 +292,4 @@ const handleSubmit = async () => {
     loading.value = false;
   }
 };
-
-
-const emit = defineEmits<{
-  cancel: [];
-  saved: [];
-}>();
 </script>

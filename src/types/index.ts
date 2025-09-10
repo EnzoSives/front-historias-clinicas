@@ -68,6 +68,7 @@ export interface Consultation {
   examenFisico?: string | undefined | null;
   diagnostico?: string | undefined | null;
   tratamiento?: string | undefined | null;
+  imagenes?: string | null | undefined; // Changed to string to match backend response
   createdAt?: string | undefined | null;
   updatedAt?: string | undefined | null;
 }
