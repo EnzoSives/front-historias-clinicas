@@ -301,7 +301,7 @@
         </div>
         <div v-else>
           <ConsultationCard v-for="consultation in sortedConsultations" :key="consultation.id"
-            :consultation="consultation" @edit="$emit('edit-consultation', consultation)"
+            :consultation="consultation" :patient="patient" @edit="$emit('edit-consultation', consultation)"
             @delete="$emit('delete-consultation', consultation.id)" />
         </div>
       </q-card-section>

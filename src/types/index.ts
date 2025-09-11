@@ -53,6 +53,11 @@ export interface PatientImage {
   filename: string;
   path: string;
 }
+export interface ConsultationImage {
+  id: number;
+  filename: string;
+  path: string;
+}
 
 // src/types/index.ts
 
@@ -68,9 +73,10 @@ export interface Consultation {
   examenFisico?: string | undefined | null;
   diagnostico?: string | undefined | null;
   tratamiento?: string | undefined | null;
-  imagenes?: string | null | undefined; // Changed to string to match backend response
+  imagenes?: ConsultationImage[] | null | undefined; // Changed to ConsultationImage[] to match backend response
   createdAt?: string | undefined | null;
   updatedAt?: string | undefined | null;
+
 }
 
 export interface Doctor {

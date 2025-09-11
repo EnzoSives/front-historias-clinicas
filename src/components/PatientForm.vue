@@ -19,7 +19,8 @@
         <div class="row q-gutter-md">
           <q-input v-model="form.dni" label="DNI/Cédula" filled class="col"
             :rules="[(val) => !!val || 'DNI requerido']" />
-          <q-input v-model="form.fechaNacimiento" label="Fecha de Nacimiento" filled type="date" class="col"
+
+          <q-input v-model="fechaNacimientoModel" label="Fecha de Nacimiento" filled type="date" class="col"
             :rules="[(val) => !!val || 'Fecha de nacimiento requerida']" />
         </div>
 
@@ -123,7 +124,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from "vue";
+import { ref, reactive, watch, computed } from "vue"; // ✅ 1. Importar 'computed'
 import { useQuasar } from "quasar";
 import { api } from "src/boot/axios";
 import { useAuthStore } from "src/stores/authStore";
@@ -159,7 +160,7 @@ const form = reactive<PatientType>({
   dni: undefined,
   sexo: undefined,
   edad: undefined,
-  fechaNacimiento: undefined,
+  fechaNacimiento: undefined, // Este valor se mantendrá como Date o undefined
   lugarNacimiento: undefined,
   direccion: undefined,
   telefonoFijo: undefined,
@@ -198,14 +199,39 @@ const form = reactive<PatientType>({
   activo: undefined,
 });
 
+// ✅ 2. Crear la propiedad computada para la fecha
+const fechaNacimientoModel = computed({
+  get() {
+    if (!form.fechaNacimiento) return '';
+    try {
+      const date = new Date(form.fechaNacimiento);
+      // Corregir el problema de la zona horaria que puede restar un día
+      const offset = date.getTimezoneOffset();
+      const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+      return adjustedDate.toISOString().split('T')[0];
+    } catch (e) {
+      return '';
+    }
+  },
+  set(newValue: string) {
+    if (!newValue) {
+      form.fechaNacimiento = undefined;
+    } else {
+      // El nuevo valor del input (string) se convierte a un objeto Date
+      form.fechaNacimiento = new Date(newValue);
+    }
+  }
+});
+
 
 watch(
   () => props.patient,
   (newPatient) => {
     if (newPatient) {
       Object.assign(form, newPatient);
+      // ✅ 3. Simplificar el watch: solo asignamos el objeto Date
       if (newPatient.fechaNacimiento) {
-        form.fechaNacimiento = new Date(newPatient.fechaNacimiento).toISOString().slice(0, 10) as any;
+        form.fechaNacimiento = new Date(newPatient.fechaNacimiento);
       }
     } else {
       Object.keys(form).forEach(key => (form as any)[key] = undefined);
@@ -226,18 +252,15 @@ const handleSubmit = async () => {
 
   for (const key in form) {
     if (key === 'imagenes') continue;
-
-    // ✅ --- CORRECCIÓN APLICADA --- ✅
-    // No incluimos el ID en el cuerpo del formulario para las actualizaciones,
-    // ya que se pasa a través de la URL.
     if (props.isEdit && key === 'id_paciente') continue;
 
     const value = (form as any)[key];
     if (value !== null && value !== undefined) {
       if (value instanceof File) {
         formData.append(key, value);
-      } else if (key === 'fechaNacimiento' && value) {
-        formData.append(key, new Date(value).toISOString());
+      } else if (key === 'fechaNacimiento' && value instanceof Date) {
+        // Aseguramos que se envíe en formato ISO
+        formData.append(key, value.toISOString());
       } else if (key !== 'imagen' && key !== 'imagen2') {
         formData.append(key, String(value));
       }
@@ -247,12 +270,6 @@ const handleSubmit = async () => {
   if (medicoId) {
     formData.set('id_medico', String(medicoId));
   }
-
-  // Ya no es necesaria esta línea gracias al cambio en el bucle
-  // if (!props.isEdit) {
-  //   formData.delete('id_paciente');
-  // }
-
 
   try {
     const config = {

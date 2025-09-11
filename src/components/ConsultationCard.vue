@@ -58,8 +58,8 @@
         <q-icon name="image" class="q-mr-xs" size="xs" /> Imágenes:
       </div>
       <div class="row q-gutter-sm">
-        <div v-for="(imagen, index) in consultation.imagenes" :key="imagen.consultaIdConsulta"
-          class="col-auto cursor-pointer" @click="openImageDialog(index)">
+        <div v-for="(imagen, index) in consultation.imagenes" :key="imagen.filename" class="col-auto cursor-pointer"
+          @click="openImageDialog(index)">
           <q-img :src="getImageUrl(imagen.filename)" spinner-color="primary"
             style="height: 50px; width: 50px; border-radius: 4px;">
             <q-tooltip>Ver imagen</q-tooltip>
@@ -76,7 +76,7 @@
     <q-dialog v-model="imageDialog">
       <q-carousel v-model="slide" animated arrows navigation infinite control-color="white"
         class="bg-black rounded-borders" style="width: 90vw; max-width: 90vw; height: 90vh;">
-        <q-carousel-slide v-for="(imagen, index) in consultation.imagenes" :key="imagen.id_consulta" :name="index"
+        <q-carousel-slide v-for="(imagen, index) in consultation.imagenes" :key="imagen.filename" :name="index"
           :img-src="getImageUrl(imagen.filename)" style="background-size: contain; background-repeat: no-repeat;" />
       </q-carousel>
     </q-dialog>
@@ -92,7 +92,7 @@ import ConsultationDetail from 'src/components/ConsultationDetail.vue'
 
 interface Props {
   consultation: ConsultationType;
-  patient?: PatientType;
+  patient: PatientType | null;
 }
 
 const props = defineProps<Props>();
@@ -186,6 +186,7 @@ const confirmDelete = () => {
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 </style>

@@ -167,9 +167,9 @@
             <div v-if="filteredConsultations.length > 0" class="row q-col-gutter-md">
               <div v-for="consultation in filteredConsultations" :key="consultation.id"
                 class="col-12 col-md-6 col-lg-4">
-                <ConsultationCard :consultation="consultation" :patient="getPatientById(consultation.id_paciente)"
-                  @edit="editConsultation" @delete="deleteConsultation"
-                  @view-patient="viewPatientHistoryById(consultation.id_paciente)" />
+                <ConsultationCard :consultation="consultation"
+                  :patient="getPatientById(consultation.id_paciente) ?? null" @edit="editConsultation"
+                  @delete="deleteConsultation" @view-patient="viewPatientHistoryById(consultation.id_paciente)" />
               </div>
             </div>
             <div v-else class="text-center text-grey-6 q-pa-xl">
