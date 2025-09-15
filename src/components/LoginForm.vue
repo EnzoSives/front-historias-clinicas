@@ -1,37 +1,35 @@
 <template>
-  <q-card class="q-ma-md" style="max-width: 400px; width: 100%">
-    <q-card-section>
-      <div class="text-h6 text-primary">Iniciar Sesión</div>
-      <div class="text-subtitle1 text-grey-7">Acceda a su cuenta</div>
-    </q-card-section>
+  <q-layout>
+    <q-page-container>
+      <q-page class="flex flex-center bg-grey-2">
+        <q-card class="q-pa-md shadow-2 my_card" bordered>
+          <q-card-section class="text-center">
+            <div class="text-grey-9 text-h5 text-weight-bold">Iniciar Sesión</div>
+            <div class="text-grey-8">Accede a tu cuenta</div>
+          </q-card-section>
+          <q-card-section>
+            <q-form @submit="handleSubmit" class="q-gutter-md">
+              <q-input filled v-model="form.username" label="Usuario" lazy-rules
+                :rules="[(val: string) => (val && val.length > 0) || 'Este campo es requerido']" />
 
-    <q-card-section>
-      <q-form @submit="handleSubmit" class="q-gutter-md">
-        <q-input
-          v-model="form.username"
-          label="Email o Username"
-          filled
-          :rules="[(val) => !!val || 'Este campo es requerido']"
-        />
-        <q-input
-          v-model="form.password"
-          label="Contraseña"
-          filled
-          type="password"
-          :rules="[(val) => !!val || 'La contraseña es requerida']"
-        />
+              <q-input filled v-model="form.password" type="password" label="Contraseña" lazy-rules
+                :rules="[(val: string) => (val && val.length > 0) || 'La contraseña es requerida']" />
 
-        <q-card-actions align="right" class="q-pt-md">
-          <q-btn
-            type="submit"
-            label="Ingresar"
-            color="primary"
-            :loading="loading"
-          />
-        </q-card-actions>
-      </q-form>
-    </q-card-section>
-  </q-card>
+              <q-card-actions class="q-px-md">
+                <q-btn unelevated color="light-blue-7" size="lg" class="full-width" label="Ingresar" type="submit"
+                  :loading="loading" />
+              </q-card-actions>
+              <q-card-section class="text-center q-pa-none">
+                <p class="text-grey-6">¿No tienes una cuenta?
+                  <router-link to="/register">Regístrate</router-link>
+                </p>
+              </q-card-section>
+            </q-form>
+          </q-card-section>
+        </q-card>
+      </q-page>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script setup lang="ts">
@@ -128,5 +126,9 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* Add any specific styles for LoginForm here if needed */
+.my_card {
+  width: 25rem;
+  border-radius: 8px;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
 </style>
