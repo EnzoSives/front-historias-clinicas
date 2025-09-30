@@ -60,7 +60,7 @@
               <q-item-section avatar>
                 <q-icon name="dashboard" />
               </q-item-section>
-              <q-item-section>Dashboard</q-item-section>
+              <q-item-section>Inicio</q-item-section>
             </q-item>
 
             <q-item clickable v-ripple @click="currentView = 'patients'" :active="currentView === 'patients'">
@@ -77,12 +77,19 @@
               <q-item-section>Consultas</q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple @click="showNewPatientForm">
+            <q-item clickable v-ripple @click="currentView = 'calendar'" :active="currentView === 'calendar'">
+              <q-item-section avatar>
+                <q-icon name="event" />
+              </q-item-section>
+              <q-item-section>Turnos</q-item-section>
+            </q-item>
+
+            <!-- <q-item clickable v-ripple @click="showNewPatientForm">
               <q-item-section avatar>
                 <q-icon name="person_add" />
               </q-item-section>
               <q-item-section>Nuevo Paciente</q-item-section>
-            </q-item>
+            </q-item> -->
 
             <q-separator class="q-my-md" />
 
@@ -121,6 +128,10 @@
           <Dashboard @select-patient="selectPatient" @view-consultation="viewConsultation"
             @new-patient="showNewPatientForm" @new-consultation="showNewConsultationForm(selectedPatient!)"
             @search-patient="currentView = 'patients'" />
+        </div>
+
+        <div v-else-if="currentView === 'calendar'">
+          <CalendarView />
         </div>
 
         <div v-else-if="currentView === 'consultations'">
@@ -262,6 +273,7 @@ import PatientForm from "src/components/PatientForm.vue";
 import PatientHistory from "src/components/PatientHistory.vue";
 import ConsultationForm from "src/components/ConsultationForm.vue";
 import ConsultationCard from "src/components/ConsultationCard.vue";
+import CalendarView from "src/components/CalendarView.vue";
 
 const $q = useQuasar();
 const router = useRouter();
@@ -277,6 +289,7 @@ const currentView = ref<
   | "patient-history"
   | "consultation-form"
   | "profile"
+  | "calendar"
 >("dashboard");
 
 const selectedPatient = ref<PatientType | null>(null);

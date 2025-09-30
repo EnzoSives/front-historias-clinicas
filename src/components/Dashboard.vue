@@ -65,7 +65,7 @@
                 <div class="text-h4 text-weight-bold">
                   {{ upcomingAppointments }}
                 </div>
-                <div class="text-subtitle2 opacity-80">Citas Pendientes</div>
+                <div class="text-subtitle2 opacity-80">Turnos del día</div>
               </div>
               <div class="col-auto">
                 <q-icon name="event_available" size="40px" class="opacity-50" />
