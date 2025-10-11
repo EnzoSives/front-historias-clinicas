@@ -38,7 +38,7 @@
 
     <q-separator inset />
 
-    <q-card-section class="q-pt-sm q-pb-md">
+    <q-card-section class="q-pt-sm q-pb-md" style="flex-grow: 1;">
       <div class="text-subtitle2 text-grey-9 q-mb-xs">
         <q-icon name="priority_high" class="q-mr-xs" size="xs" /> Motivo:
       </div>
@@ -66,6 +66,9 @@
           </q-img>
         </div>
       </div>
+    </q-card-section>
+    <q-card-section v-else class="q-pt-none">
+      <div style="min-height: 70px;"></div>
     </q-card-section>
 
 
@@ -167,14 +170,24 @@ const confirmDelete = () => {
 
 <style scoped>
 .consultation-card {
-  border-radius: 8px;
-  transition: all 0.2s ease-in-out;
+  border-radius: 12px;
+  transition: all 0.3s ease-in-out;
   cursor: default;
+  background-color: #ffffff;
+  border-left: 5px solid transparent;
+  border: 1px solid #e0e0e0;
+  min-height: 250px;
+  /* Asegura una altura mínima para todas las tarjetas */
+  display: flex;
+  /* Activa Flexbox */
+  flex-direction: column;
+  /* Organiza el contenido en una columna */
 }
 
 .consultation-card.q-hoverable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12);
+  border-left-color: var(--q-primary);
 }
 
 .cursor-pointer {
@@ -188,5 +201,14 @@ const confirmDelete = () => {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
+}
+
+.text-body1.text-weight-medium {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.q-icon {
+  vertical-align: middle;
 }
 </style>

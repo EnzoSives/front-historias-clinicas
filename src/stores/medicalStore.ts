@@ -15,9 +15,9 @@ const API_ENDPOINTS = {
   },
   CONSULTATIONS: {
     BASE: '/consulta',
-    // --- MODIFICADO --- Endpoint para las consultas de un médico específico
     BY_MEDICO: (medicoId: number) => `/consulta/medico/${medicoId}`,
     CREATE: '/consulta/crear',
+    UPDATE: (id: number) => `/consulta/${id}`,
     BY_PATIENT: (patientId: string) => `/consulta/paciente/${patientId}`,
   },
 } as const;
@@ -141,30 +141,24 @@ export const useMedicalStore = defineStore('medical', {
      * Obtiene todas las consultas del médico desde la API.
      */
     async fetchAllConsultations(_forceRefresh = false) {
-      // --- MODIFICADO ---
       const authStore = useAuthStore();
-      // Asegúrate de que tu authStore expone el id_medico.
-      // Basado en tu backend, debería ser algo como `authStore.user?.medico?.id_medico`
-      // const medicoId = authStore.user?.id;
-      const medicoId = authStore.user?.medico?.id_medico; //El que va
+      const medicoId = authStore.user?.medico?.id_medico;
 
       if (!medicoId) {
         this.setError('consultationsAll', 'No se ha identificado un médico.');
         this.consultationsAll = [];
         return;
       }
-      // --- FIN MODIFICADO ---
 
       this.setLoading('consultationsAll', true);
       this.setError('consultationsAll', null);
       try {
-        // --- MODIFICADO --- Usamos el nuevo endpoint
         const response = await api.get<ConsultationType[]>(API_ENDPOINTS.CONSULTATIONS.BY_MEDICO(medicoId));
 
         this.consultationsAll = response.data.map(c => ({
           ...c,
-          id: c.id || c.id, // Normalizamos el ID
-          id_paciente: c.id_paciente, // Normalizamos el ID del paciente
+          id: c.id || c.id,
+          id_paciente: c.id_paciente,
           fechaConsulta: new Date(c.fechaConsulta)
         }));
         this.saveToStorage(STORAGE_KEYS.CONSULTATIONS_ALL, this.consultationsAll);
@@ -178,9 +172,7 @@ export const useMedicalStore = defineStore('medical', {
 
     async fetchAllPatients(forceRefresh = false) {
       const authStore = useAuthStore();
-      // --- CORREGIDO --- Se usa el id_medico en lugar del id de usuario general
-      const medicoId = authStore.user?.medico?.id_medico; //El que va
-      // const medicoId = authStore.user?.id;
+      const medicoId = authStore.user?.medico?.id_medico;
 
       if (!medicoId) {
         this.setError('patients', 'No se ha identificado un médico.');
@@ -320,32 +312,26 @@ export const useMedicalStore = defineStore('medical', {
       }
     },
 
-    async addConsultation(consultationData: Omit<ConsultationType, 'id'>): Promise<ConsultationType> {
+    async addConsultation(consultationData: FormData): Promise<ConsultationType> {
       this.setLoading('consultations', true);
       this.setError('consultations', null);
 
       try {
-        // Create a mutable payload from the original data
-        const payload: Record<string, any> = toRaw(consultationData);
-
-        // Format the date specifically for the API call
-        if (payload.fechaConsulta) {
-          const date = new Date(payload.fechaConsulta);
-          // Format to 'YYYY-MM-DD HH:MM:SS' which is MySQL-friendly
-          payload.fechaConsulta = date.toISOString().slice(0, 19).replace('T', ' ');
-        }
-
         const response = await api.post<any>(
           API_ENDPOINTS.CONSULTATIONS.CREATE,
-          payload // Send the payload with the formatted date string
+          consultationData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
         );
 
-        // When we receive the data back, we create a proper ConsultationType object
         const newConsultation: ConsultationType = {
           id: response.data.id_consulta || response.data.id,
           id_paciente: response.data.id_paciente,
           id_medico: response.data.id_medico,
-          fechaConsulta: new Date(response.data.fechaConsulta), // Convert back to a Date object
+          fechaConsulta: new Date(response.data.fechaConsulta),
           motivoConsulta: response.data.motivoConsulta,
           anamnesis: response.data.anamnesis,
           diagnostico: response.data.diagnostico,
@@ -364,6 +350,55 @@ export const useMedicalStore = defineStore('medical', {
         return newConsultation;
       } catch (error: any) {
         this.setError('consultations', this.handleApiError(error, 'crear consulta'));
+        throw error;
+      } finally {
+        this.setLoading('consultations', false);
+      }
+    },
+
+    async updateConsultation(id: number, consultationData: FormData): Promise<ConsultationType> {
+      this.setLoading('consultations', true);
+      this.setError('consultations', null);
+      try {
+        const response = await api.patch<any>(
+          API_ENDPOINTS.CONSULTATIONS.UPDATE(id),
+          consultationData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        );
+
+        const updatedConsultation: ConsultationType = {
+          id: response.data.id_consulta || response.data.id,
+          id_paciente: response.data.id_paciente,
+          id_medico: response.data.id_medico,
+          fechaConsulta: new Date(response.data.fechaConsulta),
+          motivoConsulta: response.data.motivoConsulta,
+          anamnesis: response.data.anamnesis,
+          diagnostico: response.data.diagnostico,
+          tratamiento: response.data.tratamiento,
+          observaciones: response.data.observaciones,
+          examenFisico: response.data.examenFisico,
+          createdAt: response.data.createdAt,
+          updatedAt: response.data.updatedAt,
+        };
+
+        const index = this.consultations.findIndex(c => c.id === id);
+        if (index !== -1) {
+          this.consultations[index] = updatedConsultation;
+        }
+        const allIndex = this.consultationsAll.findIndex(c => c.id === id);
+        if (allIndex !== -1) {
+          this.consultationsAll[allIndex] = updatedConsultation;
+        }
+        this.saveConsultationsToStorage();
+        this.saveToStorage(STORAGE_KEYS.CONSULTATIONS_ALL, this.consultationsAll);
+
+        return updatedConsultation;
+      } catch (error: any) {
+        this.setError('consultations', this.handleApiError(error, 'actualizar consulta'));
         throw error;
       } finally {
         this.setLoading('consultations', false);

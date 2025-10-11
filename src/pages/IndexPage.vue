@@ -416,14 +416,29 @@ const savePatient = async () => {
 };
 
 // ✅ --- CORRECCIÓN --- ✅
-const saveConsultation = async (consultationPayload: any) => {
+const saveConsultation = async (consultationPayload: FormData) => {
   try {
-    await medicalStore.addConsultation(consultationPayload);
-    $q.notify({
-      type: "positive",
-      message: "Consulta guardada exitosamente",
-    });
-    await medicalStore.fetchAllConsultations(true); // Recargar la lista de consultas
+    if (selectedConsultation.value && selectedConsultation.value.id) {
+      // --- MODO EDICIÓN ---
+      // Si hay una consulta seleccionada, llamamos a la acción de actualizar
+      await medicalStore.updateConsultation(selectedConsultation.value.id, consultationPayload);
+      $q.notify({
+        type: "positive",
+        message: "Consulta actualizada exitosamente",
+      });
+    } else {
+      // --- MODO CREACIÓN ---
+      // Si no, llamamos a la acción para añadir una nueva
+      await medicalStore.addConsultation(consultationPayload);
+      $q.notify({
+        type: "positive",
+        message: "Consulta guardada exitosamente",
+      });
+    }
+
+    // Recargar la lista de consultas y volver a la vista anterior
+    await medicalStore.fetchAllConsultations(true);
+
     if (previousView.value === 'patient-history') {
       currentView.value = 'patient-history';
     } else {

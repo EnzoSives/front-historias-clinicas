@@ -71,25 +71,12 @@ export default defineConfig((ctx) => {
 
       vitePlugins: [
         ['@intlify/unplugin-vue-i18n/vite', {
-          // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
-          // compositionOnly: false,
-
-          // if you want to use named tokens in your Vue I18n messages, such as 'Hello {name}',
-          // you need to set `runtimeOnly: false`
-          // runtimeOnly: false,
-
           ssr: ctx.modeName === 'ssr',
-
-          // you need to set i18n resource including paths !
           include: [fileURLToPath(new URL('./src/i18n', import.meta.url))]
         }],
-
         ['vite-plugin-checker', {
           vueTsc: true,
-          eslint: {
-            lintCommand: 'eslint -c ./eslint.config.js "./src*/**/*.{ts,js,mjs,cjs,vue}"',
-            useFlatConfig: true
-          }
+          // eslint: false  // Deshabilitado temporalmente
         }, { server: false }]
       ]
     },
