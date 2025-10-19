@@ -4,7 +4,7 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" @click="drawerOpen = !drawerOpen" />
 
-        <q-toolbar-title>
+        <q-toolbar-title class="gt-xs">
           <q-icon name="local_hospital" class="q-mr-sm" />
           Sistema de Historias Clínicas
         </q-toolbar-title>
@@ -63,25 +63,28 @@
               <q-item-section>Inicio</q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple @click="currentView = 'patients'" :active="currentView === 'patients'">
+            <q-item clickable v-ripple @click="currentView = 'patients'" :active="currentView === 'patients'"
+              class="modern-menu-item">
               <q-item-section avatar>
                 <q-icon name="people" />
               </q-item-section>
-              <q-item-section>Pacientes</q-item-section>
+              <q-item-section class="modern-title">Pacientes</q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple @click="currentView = 'consultations'" :active="currentView === 'consultations'">
+            <q-item clickable v-ripple @click="currentView = 'consultations'" :active="currentView === 'consultations'"
+              class="modern-menu-item">
               <q-item-section avatar>
                 <q-icon name="history_edu" />
               </q-item-section>
-              <q-item-section>Consultas</q-item-section>
+              <q-item-section class="modern-title">Consultas</q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple @click="currentView = 'calendar'" :active="currentView === 'calendar'">
+            <q-item clickable v-ripple @click="currentView = 'calendar'" :active="currentView === 'calendar'"
+              class="modern-menu-item">
               <q-item-section avatar>
                 <q-icon name="event" />
               </q-item-section>
-              <q-item-section>Turnos</q-item-section>
+              <q-item-section class="modern-title">Turnos</q-item-section>
             </q-item>
 
             <!-- <q-item clickable v-ripple @click="showNewPatientForm">
@@ -136,18 +139,19 @@
 
         <div v-else-if="currentView === 'consultations'">
           <div class="q-pa-md">
-            <div class="row items-center justify-between q-mb-md">
-              <div class="col">
-                <div class="text-h4 text-primary">
-                  <q-icon name="history_edu" class="q-mr-sm" />
-                  Historial de Consultas
+            <div class="row items-center justify-between q-mb-md q-col-gutter-sm">
+              <div class="col-12 col-sm-auto">
+                <div class="text-h4 text-weight-bold text-primary responsive-title">
+                  <!-- <q-icon name="history_edu" class="q-mr-sm" /> -->
+                  Consultas
                 </div>
                 <div class="text-subtitle1 text-grey-7">
                   {{ filteredConsultations.length }} consulta(s) encontrada(s)
                 </div>
               </div>
-              <div class="col-auto">
-                <q-btn color="primary" icon="add" label="Nueva Consulta" @click="showNewConsultationForm(null)" />
+              <div class="col-12 col-sm-auto">
+                <q-btn color="primary" icon="add" label="Nueva Consulta" @click="showNewConsultationForm(null)"
+                  class="full-width" />
               </div>
             </div>
 
@@ -169,7 +173,7 @@
                   <div class="col-12 col-md-4 text-right">
                     <q-btn-toggle v-model="consultationSortOrder"
                       :options="[{ label: 'Recientes', value: 'newest' }, { label: 'Antiguas', value: 'oldest' }]"
-                      toggle-color="primary" flat dense />
+                      toggle-color="primary" flat dense spread />
                   </div>
                 </div>
               </q-card-section>
@@ -192,18 +196,19 @@
 
         <div v-else-if="currentView === 'patients'">
           <div class="q-pa-md">
-            <div class="row items-center justify-between q-mb-md">
-              <div class="col">
-                <div class="text-h4 text-primary">
-                  <q-icon name="people" class="q-mr-sm" />
+            <div class="row items-center justify-between q-mb-md q-col-gutter-sm">
+              <div class="col-12 col-sm-auto">
+                <div class="text-h4 text-primary text-weight-bold responsive-title">
+                  <!-- <q-icon name="people" class="q-mr-sm" /> -->
                   Pacientes
                 </div>
                 <div class="text-subtitle1 text-grey-7">
                   {{ medicalStore.patients.length }} paciente(s) registrado(s)
                 </div>
               </div>
-              <div class="col-auto">
-                <q-btn color="primary" icon="person_add" label="Nuevo Paciente" @click="showNewPatientForm" />
+              <div class="col-12 col-sm-auto">
+                <q-btn color="primary" icon="person_add" label="Nuevo Paciente" @click="showNewPatientForm"
+                  class="full-width" />
               </div>
             </div>
 
@@ -254,7 +259,9 @@
         </div>
 
         <div v-else-if="currentView === 'profile'">
+          <ProfilePage />
         </div>
+
       </q-page>
     </q-page-container>
   </q-layout>
@@ -274,11 +281,14 @@ import PatientHistory from "src/components/PatientHistory.vue";
 import ConsultationForm from "src/components/ConsultationForm.vue";
 import ConsultationCard from "src/components/ConsultationCard.vue";
 import CalendarView from "src/components/CalendarView.vue";
+import { useAppointmentStore } from "src/stores/appointmentStore";
+import ProfilePage from 'src/pages/ProfilePage.vue';
 
 const $q = useQuasar();
 const router = useRouter();
 const medicalStore = useMedicalStore();
 const authStore = useAuthStore();
+const appointmentStore = useAppointmentStore();
 
 const drawerOpen = ref(false);
 const currentView = ref<
@@ -497,14 +507,20 @@ const viewConsultation = async (consultation: ConsultationType) => {
 
 const goBack = () => {
   const validViews = ["dashboard", "patients", "consultations", "patient-history"];
-  currentView.value = (validViews.includes(previousView.value) ? previousView.value : "dashboard") as any;
+  const newView = (validViews.includes(previousView.value) ? previousView.value : "dashboard") as any;
+
+  if (newView !== 'patient-history') {
+    selectedPatient.value = null;
+  }
+
+  currentView.value = newView;
   previousView.value = "";
-  selectedPatient.value = null;
   selectedConsultation.value = null;
 };
 
 onMounted(async () => {
   await medicalStore.initializeStore();
+  await appointmentStore.fetchTurnos();
 });
 </script>
 
@@ -515,5 +531,52 @@ onMounted(async () => {
 
 .q-page-no-padding-top {
   padding-top: 0 !important;
+}
+
+.responsive-title {
+  font-size: 2.125rem;
+}
+
+.modern-title {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #2c3e50;
+  transition: color 0.3s ease;
+}
+
+.modern-menu-item {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.modern-menu-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.modern-menu-item:hover .modern-title {
+  color: var(--q-primary);
+}
+
+.modern-menu-item.q-item--active {
+  background: rgba(var(--q-primary), 0.1);
+}
+
+.modern-menu-item.q-item--active .modern-title {
+  color: var(--q-primary);
+}
+
+@media (max-width: 600px) {
+  .responsive-title {
+    font-size: 1.5rem;
+  }
+
+  .modern-title {
+    font-size: 0.95rem;
+  }
+
+  .full-width {
+    width: 100%;
+  }
 }
 </style>

@@ -105,3 +105,18 @@ export interface AuthUser {
   role: string | undefined | null;
   medico: Doctor | null;
 }
+
+export interface Turno {
+  id_turno: number;
+  fechaHora: string;
+  motivo?: string;
+  estado: 'pendiente' | 'confirmado' | 'cancelado' | 'completado';
+  notas?: string;
+  paciente: {
+    id_paciente: number;
+    nombre?: string;
+    apellido?: string;
+  };
+  id_paciente: number;
+  id_medico: number;
+}

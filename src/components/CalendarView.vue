@@ -1,8 +1,8 @@
 <template>
     <div class="q-pa-md">
-        <div class="text-h4 text-primary q-mb-md">
-            <q-icon name="event" class="q-mr-sm" />
-            Calendario de Turnos
+        <div class="text-h4 text-primary text-weight-bold q-mb-md">
+            <!-- <q-icon name="event" class="q-mr-sm" /> -->
+            Turnos
         </div>
 
         <div class="row q-col-gutter-lg">
@@ -30,21 +30,24 @@
                     <q-separator />
 
                     <q-list separator>
-                        <q-item v-if="sortedAppointments.length === 0" class="text-center">
+                        <q-item v-if="appointmentsForSelectedDate.length === 0" class="text-center">
                             <q-item-section>
                                 <q-item-label header class="text-grey-7 q-pa-lg">
                                     No hay turnos para esta fecha.
                                 </q-item-label>
                             </q-item-section>
                         </q-item>
-
-                        <q-item v-for="appointment in sortedAppointments" :key="appointment.id">
+                        <q-item v-for="turno in appointmentsForSelectedDate" :key="turno.id_turno">
                             <q-item-section avatar>
-                                <q-avatar color="primary" text-color="white" icon="schedule" />
+                                <q-avatar color="primary" text-color="white" icon="person" />
                             </q-item-section>
                             <q-item-section>
-                                <q-item-label class="text-weight-bold">{{ appointment.title }}</q-item-label>
-                                <q-item-label caption><q-icon name="access_time" class="q-mr-xs" />{{ appointment.time
+                                <q-item-label class="text-weight-bold">{{ turno.paciente.nombre }} {{
+                                    turno.paciente.apellido }}</q-item-label>
+                                <q-item-label caption><q-icon name="access_time" class="q-mr-xs" />{{
+                                    formatTime(turno.fechaHora)
+                                    }}</q-item-label>
+                                <q-item-label caption v-if="turno.motivo" class="ellipsis">{{ turno.motivo
                                     }}</q-item-label>
                             </q-item-section>
                         </q-item>
@@ -54,105 +57,175 @@
         </div>
 
         <q-dialog v-model="showAddAppointmentDialog" @hide="resetForm">
-            <q-card style="width: 400px">
+            <q-card class="q-dialog-responsive">
                 <q-form @submit="addAppointment">
                     <q-card-section>
                         <div class="text-h6">Nuevo Turno para el {{ formattedDate }}</div>
                     </q-card-section>
 
-                    <q-card-section class="q-pt-none">
-                        <q-input v-model="newAppointment.title" label="Título del turno" autofocus lazy-rules
-                            :rules="[val => !!val || 'El título es obligatorio']" />
-                        <q-input class="q-mt-md" v-model="newAppointment.time" type="time" label="Hora" lazy-rules
+                    <q-card-section class="q-pt-none q-gutter-md">
+                        <q-select filled v-model="newAppointment.paciente" use-input hide-selected fill-input
+                            input-debounce="0" :options="patientOptions" @filter="filterPatients"
+                            label="Buscar Paciente" :rules="[val => !!val || 'Debe seleccionar un paciente']">
+                            <template v-slot:no-option>
+                                <q-item>
+                                    <q-item-section class="text-grey">No se encontraron pacientes</q-item-section>
+                                </q-item>
+                            </template>
+                        </q-select>
+                        <q-input v-model="newAppointment.time" type="time" label="Hora" lazy-rules
                             :rules="[val => !!val || 'La hora es obligatoria']" />
+                        <q-input v-model="newAppointment.motivo" label="Motivo (opcional)" autogrow type="textarea" />
                     </q-card-section>
 
                     <q-card-actions align="right">
                         <q-btn flat label="Cancelar" color="primary" v-close-popup />
-                        <q-btn flat label="Guardar" color="primary" type="submit" />
+                        <q-btn flat label="Guardar" color="primary" type="submit" :loading="appointmentStore.loading" />
                     </q-card-actions>
                 </q-form>
             </q-card>
         </q-dialog>
     </div>
 </template>
-<script setup lang="ts">
 
-import { ref, computed } from 'vue';
-import { useAppointmentStore } from 'src/stores/appointmentStore'; // Asumiendo que exportas el tipo Appointment
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
+import { useAppointmentStore } from 'src/stores/appointmentStore';
+import { useMedicalStore } from 'src/stores/medicalStore';
 import { date, useQuasar } from 'quasar';
-// import { type DateObject } from 'v-calendar';
+import type { Turno } from 'src/types';
 
 const appointmentStore = useAppointmentStore();
+const medicalStore = useMedicalStore();
 const $q = useQuasar();
 
 const selectedDate = ref(new Date());
 const showAddAppointmentDialog = ref(false);
-const newAppointment = ref({
-    title: '',
+
+const newAppointment = ref<{
+    paciente: { label: string, value: number } | null;
+    time: string;
+    motivo: string;
+}>({
+    paciente: null,
     time: '',
+    motivo: ''
 });
 
-const formattedDate = computed(() => {
-    return date.formatDate(selectedDate.value, 'DD [de] MMMM [de] YYYY', {
-        months: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-    });
+const patientOptions = ref<{ label: string, value: number }[]>([]);
+
+onMounted(() => {
+    appointmentStore.fetchTurnos();
+    if (medicalStore.patients.length === 0) {
+        medicalStore.fetchAllPatients();
+    }
+    patientOptions.value = medicalStore.patients.map(p => ({
+        label: `${p.nombre} ${p.apellido} (DNI: ${p.dni})`,
+        value: p.id_paciente,
+    }));
 });
 
-const calendarAttributes = computed(() => {
-    // MEJORA: Usar un Set para obtener fechas únicas y evitar duplicados
-    const appointmentDates = [...new Set(appointmentStore.appointments.map(appt => appt.date))];
+const formattedDate = computed(() => date.formatDate(
+    selectedDate.value,
+    'DD [de] MMMM [de] YYYY',
+    {
+        days: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
+        months: [
+            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+        ]
+    }
+));
 
-    return [
-        { key: 'today', highlight: true, dates: new Date() },
-        {
-            key: 'appointments',
-            dot: 'blue',
-            // Añadir T00:00:00 para evitar problemas de zona horaria al crear el objeto Date
-            dates: appointmentDates.map(d => new Date(`${d}T00:00:00`)),
-        },
-    ];
-});
+const calendarAttributes = computed(() => [
+    { key: 'today', highlight: true, dates: new Date() },
+    {
+        key: 'turnos',
+        dot: 'blue',
+        dates: appointmentStore.turnos.map(t => new Date(t.fechaHora)),
+    },
+]);
 
 const appointmentsForSelectedDate = computed(() => {
-    const formatted = date.formatDate(selectedDate.value, 'YYYY-MM-DD');
-    return appointmentStore.getAppointmentsByDate(formatted);
+    return appointmentStore.turnos
+        .filter(t => date.isSameDate(new Date(t.fechaHora), selectedDate.value, 'day'))
+        .sort((a, b) => new Date(a.fechaHora).getTime() - new Date(b.fechaHora).getTime());
 });
 
-// MEJORA: Propiedad computada para ordenar los turnos por hora
-const sortedAppointments = computed(() => {
-    // Usar slice() o [...] para crear una copia antes de ordenar, para no mutar el array original
-    return [...appointmentsForSelectedDate.value].sort((a, b) => a.time.localeCompare(b.time));
-});
+const formatTime = (isoString: string) => date.formatDate(new Date(isoString), 'HH:mm');
 
-// MEJORA: Tipado correcto para el payload del evento
 const handleDayClick = (day: any) => {
     if (day.date) {
         selectedDate.value = day.date;
     }
 };
 
-const resetForm = () => {
-    newAppointment.value = { title: '', time: '' };
+const filterPatients = (val: string, update: (callbackFn: () => void) => void) => {
+    update(() => {
+        if (!val) {
+            patientOptions.value = medicalStore.patients.map(p => ({
+                label: `${p.nombre} ${p.apellido} (DNI: ${p.dni})`,
+                value: p.id_paciente
+            }));
+        } else {
+            const needle = val.toLowerCase();
+            patientOptions.value = medicalStore.patients
+                .filter(p =>
+                    p.nombre?.toLowerCase().includes(needle) ||
+                    p.apellido?.toLowerCase().includes(needle) ||
+                    p.dni?.includes(needle)
+                )
+                .map(p => ({
+                    label: `${p.nombre} ${p.apellido} (DNI: ${p.dni})`,
+                    value: p.id_paciente
+                }));
+        }
+    });
 };
 
-const addAppointment = () => {
-    appointmentStore.addAppointment({
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9), // Genera un id único
-        title: newAppointment.value.title,
-        time: newAppointment.value.time,
-        date: date.formatDate(selectedDate.value, 'YYYY-MM-DD'),
-    });
-    showAddAppointmentDialog.value = false;
-    // resetForm se llama ahora con el evento @hide del dialog
+const resetForm = () => {
+    newAppointment.value = { paciente: null, time: '', motivo: '' };
+};
 
-    // MEJORA: Notificación de éxito para el usuario
-    $q.notify({
-        color: 'positive',
-        position: 'top',
-        icon: 'check_circle',
-        message: 'Turno guardado correctamente'
+const addAppointment = async () => {
+    if (!newAppointment.value.paciente || !newAppointment.value.time) {
+        $q.notify({
+            color: 'negative',
+            icon: 'report_problem',
+            message: 'Por favor, complete todos los campos requeridos.'
+        });
+        return;
+    }
+
+    const [hours, minutes] = newAppointment.value.time.split(':');
+    const fechaHora = new Date(selectedDate.value);
+    fechaHora.setHours(
+        parseInt(hours ?? '0', 10),
+        parseInt(minutes ?? '0', 10),
+        0,
+        0
+    );
+
+    const result = await appointmentStore.addTurno({
+        fechaHora: fechaHora.toISOString(),
+        id_paciente: newAppointment.value.paciente.value,
+        motivo: newAppointment.value.motivo,
     });
+
+    if (result) {
+        showAddAppointmentDialog.value = false;
+        $q.notify({
+            color: 'positive',
+            icon: 'check_circle',
+            message: 'Turno guardado correctamente'
+        });
+    } else {
+        $q.notify({
+            color: 'negative',
+            icon: 'report_problem',
+            message: appointmentStore.error || 'Error al guardar el turno.'
+        });
+    }
 };
 </script>
 

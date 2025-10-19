@@ -146,7 +146,9 @@ const isEdit = computed(() => !!props.consultation?.id);
 const populateForm = () => {
   const consultation = props.consultation;
   if (isEdit.value && consultation) {
-    form.fechaConsulta = consultation.fechaConsulta ? new Date(consultation.fechaConsulta).toISOString().slice(0, 16) : '';
+    const date = new Date(consultation.fechaConsulta);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    form.fechaConsulta = date.toISOString().slice(0, 16);
     form.motivoConsulta = consultation.motivoConsulta || '';
     form.examenFisico = consultation.examenFisico || '';
     form.diagnostico = consultation.diagnostico || '';
@@ -154,7 +156,9 @@ const populateForm = () => {
     form.anamnesis = consultation.anamnesis || '';
     form.observaciones = consultation.observaciones || '';
   } else {
-    form.fechaConsulta = new Date().toISOString().slice(0, 16);
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    form.fechaConsulta = now.toISOString().slice(0, 16);
     form.motivoConsulta = '';
     form.examenFisico = '';
     form.anamnesis = '';

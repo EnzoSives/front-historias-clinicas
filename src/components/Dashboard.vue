@@ -83,7 +83,7 @@
             <q-icon name="flash_on" class="q-mr-sm" />
             Acciones Rápidas
           </div>
-          <div class="row q-gutter-sm">
+          <div class="row q-gutter-sm" :class="$q.screen.lt.sm ? 'column' : ''">
             <q-btn class="col" color="primary" icon="person_add" label="Nuevo Paciente" @click="$emit('new-patient')"
               unelevated />
             <q-btn class="col" color="secondary" icon="add_circle" label="Nueva Consulta"
@@ -153,11 +153,11 @@
               </q-item-section>
               <q-item-section>
                 <q-item-label lines="1">{{ getPatientName(consultation.id_paciente) }}</q-item-label>
-                <q-item-label caption lines="1">{{ truncateText(consultation.motivoConsulta ?? undefined, 40)
-                }}</q-item-label>
+                <q-item-label caption lines="1">{{ truncateText(consultation.motivoConsulta ?? '', 40) }}</q-item-label>
               </q-item-section>
               <q-item-section side top>
-                <q-item-label caption>{{ formatRelativeDate(consultation.fechaConsulta) }}</q-item-label>
+                <q-item-label caption>{{ formatRelativeDate(consultation.fechaConsulta)
+                }}</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
@@ -174,7 +174,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useMedicalStore } from "src/stores/medicalStore";
+import { useAppointmentStore } from "src/stores/appointmentStore";
 import type { Patient as PatientType, Consultation as ConsultationType } from "src/types/index";
+
 
 defineEmits<{
   "select-patient": [patient: PatientType];
@@ -185,6 +187,7 @@ defineEmits<{
 }>();
 
 const medicalStore = useMedicalStore();
+const appointmentStore = useAppointmentStore();
 
 // --- Computed Properties for Stats ---
 const totalPatients = computed(() => medicalStore.getTotalPatients);
@@ -192,8 +195,7 @@ const totalConsultations = computed(() => medicalStore.getTotalConsultations);
 const consultationsThisMonth = computed(() => medicalStore.getConsultationsThisMonth);
 
 const upcomingAppointments = computed(() => {
-  // Lógica a implementar
-  return 0;
+  return appointmentStore.turnosHoy.length;
 });
 
 const recentPatients = computed(() => {
@@ -203,11 +205,11 @@ const recentPatients = computed(() => {
 });
 
 const recentConsultations = computed(() => {
-  return (medicalStore.consultations || [])
+  // CORRECCIÓN: Usar 'consultationsAll' en lugar de 'consultations'
+  return (medicalStore.consultationsAll || [])
     .sort((a, b) => new Date(b.fechaConsulta).getTime() - new Date(a.fechaConsulta).getTime())
     .slice(0, 5);
 });
-
 // --- Helper Functions ---
 const getPatientName = (patientId: number): string => {
   const patient = medicalStore.getPatientById(patientId);

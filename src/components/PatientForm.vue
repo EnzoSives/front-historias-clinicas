@@ -1,6 +1,6 @@
 <template>
-  <q-card class="q-ma-md full-width">
-    <q-card-section>
+  <q-card class="q-ma-sm full-width">
+    <q-card-section class="q-pb-none">
       <div class="text-h6 text-primary">
         <q-icon name="person_add" class="q-mr-sm" />
         {{ isEdit ? "Editar Paciente" : "Nuevo Paciente" }}
@@ -8,115 +8,189 @@
     </q-card-section>
 
     <q-card-section>
-      <q-form @submit="handleSubmit" class="q-gutter-md">
-        <div class="row q-gutter-md">
-          <q-input v-model="form.nombre" label="Nombres" filled class="col"
-            :rules="[(val) => !!val || 'Nombres requeridos']" />
-          <q-input v-model="form.apellido" label="Apellidos" filled class="col"
-            :rules="[(val) => !!val || 'Apellidos requeridos']" />
+      <q-form @submit="handleSubmit" class="q-gutter-sm">
+        <div class="row q-col-gutter-xs items-center">
+          <div class="col-12 col-sm-6">
+            <q-input dense outlined v-model="form.nombre" label="Nombres"
+              :rules="[(val) => !!val || 'Nombres requeridos']" />
+          </div>
+          <div class="col-12 col-sm-6">
+            <q-input dense outlined v-model="form.apellido" label="Apellidos"
+              :rules="[(val) => !!val || 'Apellidos requeridos']" />
+          </div>
         </div>
 
-        <div class="row q-gutter-md">
-          <q-input v-model="form.dni" label="DNI/Cédula" filled class="col"
-            :rules="[(val) => !!val || 'DNI requerido']" />
-
-          <q-input v-model="fechaNacimientoModel" label="Fecha de Nacimiento" filled type="date" class="col"
-            :rules="[(val) => !!val || 'Fecha de nacimiento requerida']" />
+        <div class="row q-col-gutter-xs items-center">
+          <div class="col-12 col-sm-4">
+            <q-input dense outlined v-model="form.dni" label="DNI/Cédula"
+              :rules="[(val) => !!val || 'DNI requerido']" />
+          </div>
+          <div class="col-12 col-sm-4">
+            <q-input dense outlined v-model="fechaNacimientoModel" label="Fecha de Nacimiento"
+              :rules="[(val) => !!val || 'Fecha de nacimiento requerida']" readonly hint="Seleccione una fecha">
+              <template v-slot:append>
+                <q-icon name="event" class="cursor-pointer">
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                    <q-date v-model="fechaNacimientoModel">
+                      <div class="row items-center justify-end">
+                        <q-btn v-close-popup label="Cerrar" color="primary" flat />
+                      </div>
+                    </q-date>
+                  </q-popup-proxy>
+                </q-icon>
+              </template>
+            </q-input>
+          </div>
+          <div class="col-12 col-sm-4">
+            <q-select dense outlined v-model="form.sexo" label="Sexo" :options="genderOptions"
+              :rules="[(val) => !!val || 'Sexo requerido']" emit-value map-options />
+          </div>
         </div>
 
-        <div class="row q-gutter-md">
-          <q-select v-model="form.sexo" label="Sexo" filled class="col" :options="genderOptions"
-            :rules="[(val) => !!val || 'Sexo requerido']" emit-value map-options />
-          <q-input v-model="form.lugarNacimiento" label="Lugar de Nacimiento" filled class="col" hint="Opcional" />
-        </div>
+        <q-expansion-item group="form-sections" icon="contact_mail" label="Información de Contacto" default-opened
+          dense-toggle class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
+          <div class="q-pa-sm">
+            <div class="row q-col-gutter-sm">
+              <div class="col-12">
+                <q-input dense outlined v-model="form.direccion" label="Dirección"
+                  :rules="[(val) => !!val || 'Dirección requerida']" />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-input dense outlined v-model="form.telefonoCelular" label="Teléfono Celular" hint="Opcional" />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-input dense outlined v-model="form.telefonoFijo" label="Teléfono Fijo" hint="Opcional" />
+              </div>
+            </div>
+          </div>
+        </q-expansion-item>
 
-        <q-input v-model="form.direccion" label="Dirección" filled :rules="[(val) => !!val || 'Dirección requerida']" />
+        <q-expansion-item group="form-sections" icon="person" label="Datos Personales" dense-toggle
+          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
+          <div class="q-pa-sm">
+            <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-6">
+                <q-input dense outlined v-model="form.ocupacion" label="Ocupación" hint="Opcional" />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-input dense outlined v-model="form.estadoCivil" label="Estado Civil" hint="Opcional" />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-input dense outlined v-model="form.obraSocial" label="Obra Social" hint="Opcional" />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-input dense outlined v-model="form.afiliadoObraSocial" label="Afiliado Obra Social"
+                  hint="Opcional" />
+              </div>
+            </div>
+          </div>
+        </q-expansion-item>
 
-        <div class="row q-gutter-md">
-          <q-input v-model="form.telefonoFijo" label="Teléfono Fijo" filled class="col" hint="Opcional" />
-          <q-input v-model="form.telefonoCelular" label="Teléfono Celular" filled class="col" hint="Opcional" />
-        </div>
+        <q-expansion-item group="form-sections" icon="medical_information" label="Antecedentes Médicos" dense-toggle
+          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
+          <div class="q-pa-sm">
+            <div class="row q-col-gutter-sm">
+              <div class="col-12">
+                <q-input dense outlined v-model="form.antecedentesPersonalesMedicos" label="Antecedentes Personales"
+                  type="textarea" rows="2" hint="Opcional" />
+              </div>
+              <div class="col-12">
+                <q-input dense outlined v-model="form.antecedentesQuirurgicos" label="Antecedentes Quirúrgicos"
+                  type="textarea" rows="2" hint="Opcional" />
+              </div>
+              <div class="col-12">
+                <q-input dense outlined v-model="form.alergias" label="Alergias" type="textarea" rows="2"
+                  hint="Opcional" />
+              </div>
+              <div class="col-12">
+                <q-input dense outlined v-model="form.medicacionHabitual" label="Medicamentos Habituales"
+                  type="textarea" rows="2" hint="Opcional" />
+              </div>
+            </div>
+          </div>
+        </q-expansion-item>
 
-        <div class="row q-gutter-md">
-          <q-input v-model="form.ocupacion" label="Ocupación" filled class="col" hint="Opcional" />
-          <q-input v-model="form.estadoCivil" label="Estado Civil" filled class="col" hint="Opcional" />
-        </div>
+        <q-expansion-item group="form-sections" icon="monitor_heart" label="Examen Físico" dense-toggle
+          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
+          <div class="q-pa-sm">
+            <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-3">
+                <q-input dense outlined v-model.number="form.examenFisicoPeso" label="Peso (kg)" type="number"
+                  hint="Opcional" />
+              </div>
+              <div class="col-12 col-sm-3">
+                <q-input dense outlined v-model.number="form.examenFisicoTalla" label="Talla (cm)" type="number"
+                  hint="Opcional" />
+              </div>
+              <div class="col-12 col-sm-3">
+                <q-input dense outlined v-model.number="form.examenFisicoIMC" label="IMC" type="number"
+                  hint="Opcional" />
+              </div>
+              <div class="col-12 col-sm-3">
+                <q-input dense outlined v-model="form.examenFisicoTemperatura" label="Temp. (°C)" hint="Opcional" />
+              </div>
+            </div>
 
-        <div class="row q-gutter-md">
-          <q-input v-model="form.obraSocial" label="Obra Social" filled class="col" hint="Opcional" />
-          <q-input v-model="form.afiliadoObraSocial" label="Afiliado Obra Social" filled class="col" hint="Opcional" />
-        </div>
+            <div class="row q-col-gutter-sm q-mt-sm">
+              <div class="col-12 col-sm-4">
+                <q-input dense outlined v-model="form.examenFisicoTA" label="T.A." hint="Opcional" />
+              </div>
+              <div class="col-12 col-sm-4">
+                <q-input dense outlined v-model="form.examenFisicoFC" label="F.C." hint="Opcional" />
+              </div>
+              <div class="col-12 col-sm-4">
+                <q-input dense outlined v-model="form.examenFisicoFR" label="F.R." hint="Opcional" />
+              </div>
+            </div>
 
-        <q-input v-model="form.antecedentesPersonalesMedicos" label="Antecedentes Personales Médicos" filled
-          type="textarea" rows="3" hint="Opcional: Describa antecedentes médicos personales" />
+            <q-separator class="q-my-sm" />
 
-        <q-input v-model="form.antecedentesQuirurgicos" label="Antecedentes Quirúrgicos" filled type="textarea" rows="3"
-          hint="Opcional: Describa antecedentes quirúrgicos" />
+            <q-tabs v-model="activeSystemTab" dense class="text-grey" active-color="primary" indicator-color="primary"
+              align="justify" narrow-indicator>
+              <q-tab name="nervous" label="Nervioso" />
+              <q-tab name="cardio" label="Cardiovascular" />
+              <q-tab name="respiratory" label="Respiratorio" />
+              <q-tab name="digestive" label="Digestivo" />
+            </q-tabs>
 
-        <q-input v-model="form.alergias" label="Alergias" filled type="textarea" rows="3"
-          hint="Opcional: Describa las alergias conocidas del paciente" />
+            <q-tab-panels v-model="activeSystemTab" animated>
+              <q-tab-panel name="nervous" class="q-pa-none q-pt-sm">
+                <q-input dense outlined v-model="form.examenFisicoSistemaNervioso" label="Sistema Nervioso"
+                  type="textarea" rows="2" hint="Opcional" />
+              </q-tab-panel>
+              <q-tab-panel name="cardio" class="q-pa-none q-pt-sm">
+                <q-input dense outlined v-model="form.examenFisicoAPCardiovascular" label="Sistema Cardiovascular"
+                  type="textarea" rows="2" hint="Opcional" />
+              </q-tab-panel>
+              <q-tab-panel name="respiratory" class="q-pa-none q-pt-sm">
+                <q-input dense outlined v-model="form.examenFisicoAPRespiratorio" label="Sistema Respiratorio"
+                  type="textarea" rows="2" hint="Opcional" />
+              </q-tab-panel>
+              <q-tab-panel name="digestive" class="q-pa-none q-pt-sm">
+                <q-input dense outlined v-model="form.examenFisicoAPDigestivo" label="Sistema Digestivo" type="textarea"
+                  rows="2" hint="Opcional" />
+              </q-tab-panel>
+            </q-tab-panels>
+          </div>
+        </q-expansion-item>
 
-        <q-input v-model="form.antecedentesHeredoFamiliares" label="Antecedentes Heredo Familiares" filled
-          type="textarea" rows="3" hint="Opcional: Describa antecedentes heredo familiares" />
-
-        <q-input v-model="form.habitosToxicos" label="Hábitos Tóxicos" filled type="textarea" rows="3"
-          hint="Opcional: Describa hábitos tóxicos" />
-
-        <q-input v-model="form.medicacionHabitual" label="Medicamentos Habituales" filled type="textarea" rows="3"
-          hint="Opcional: Liste los medicamentos que toma habitualmente" />
-
-        <div class="text-h6 text-secondary q-mb-md">Examen Físico</div>
-        <q-input v-model="form.examenFisicoHabito" label="Hábito" filled hint="Opcional" />
-        <div class="row q-gutter-md">
-          <q-input v-model.number="form.examenFisicoPeso" label="Peso (kg)" filled type="number" class="col"
-            hint="Opcional" />
-          <q-input v-model.number="form.examenFisicoTalla" label="Talla (cm)" filled type="number" class="col"
-            hint="Opcional" />
-          <q-input v-model.number="form.examenFisicoIMC" label="IMC" filled type="number" class="col" hint="Opcional" />
-        </div>
-
-        <div class="row q-gutter-md">
-          <q-input v-model="form.examenFisicoTA" label="Tensión Arterial (TA)" filled class="col" hint="Opcional" />
-          <q-input v-model="form.examenFisicoFC" label="Frecuencia Cardíaca (FC)" filled class="col" hint="Opcional" />
-        </div>
-
-        <div class="row q-gutter-md">
-          <q-input v-model="form.examenFisicoFR" label="Frecuencia Respiratoria (FR)" filled class="col"
-            hint="Opcional" />
-          <q-input v-model="form.examenFisicoTemperatura" label="Temperatura (°C)" filled class="col" hint="Opcional" />
-        </div>
-
-        <q-input v-model="form.examenFisicoSistemaNervioso" label="Sistema Nervioso" filled type="textarea" rows="3"
-          hint="Opcional" />
-        <q-input v-model="form.examenFisicoAPCardiovascular" label="Aparato Cardiovascular" filled type="textarea"
-          rows="3" hint="Opcional" />
-        <q-input v-model="form.examenFisicoAPRespiratorio" label="Aparato Respiratorio" filled type="textarea" rows="3"
-          hint="Opcional" />
-        <q-input v-model="form.examenFisicoAPDigestivo" label="Aparato Digestivo" filled type="textarea" rows="3"
-          hint="Opcional" />
-        <q-input v-model="form.examenFisicoAPGenitourinario" label="Aparato Genitourinario" filled type="textarea"
-          rows="3" hint="Opcional" />
-        <q-input v-model="form.examenFisicoSistemaEndocrino" label="Sistema Endocrino" filled type="textarea" rows="3"
-          hint="Opcional" />
-        <q-input v-model="form.examenFisicoSistemaHematopoyetico" label="Sistema Hematopoyético" filled type="textarea"
-          rows="3" hint="Opcional" />
-        <q-input v-model="form.examenFisicoSistemaMusculoEsqueletico" label="Sistema Músculo Esquelético" filled
-          type="textarea" rows="3" hint="Opcional" />
-        <q-input v-model="form.examenFisicoPielAnexos" label="Piel y Anexos" filled type="textarea" rows="3"
-          hint="Opcional" />
-
-        <q-input v-model="form.primerObservacion" label="Primera Observación" filled type="textarea" rows="3"
-          hint="Opcional" />
-
-        <div class="row q-gutter-md">
-          <q-file v-model="form.imagen" label="URL Imagen 1" filled class="col" hint="Opcional" />
-          <q-file v-model="form.imagen2" label="URL Imagen 2" filled class="col" hint="Opcional" />
-        </div>
+        <q-expansion-item group="form-sections" icon="attach_file" label="Archivos Adjuntos" dense-toggle
+          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
+          <div class="q-pa-sm">
+            <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-6">
+                <q-file dense outlined v-model="form.imagen" label="Imagen 1" hint="Opcional" />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-file dense outlined v-model="form.imagen2" label="Imagen 2" hint="Opcional" />
+              </div>
+            </div>
+          </div>
+        </q-expansion-item>
 
         <q-card-actions align="right" class="q-pt-md">
-          <q-btn flat color="grey-7" label="Cancelar" @click="$emit('cancel')" />
-          <q-btn type="submit" color="primary" :label="isEdit ? 'Actualizar Paciente' : 'Crear Paciente'"
-            :loading="loading" />
+          <q-btn flat dense color="grey-7" label="Cancelar" @click="$emit('cancel')" />
+          <q-btn dense type="submit" color="primary" :label="isEdit ? 'Actualizar' : 'Crear'" :loading="loading" />
         </q-card-actions>
       </q-form>
     </q-card-section>
@@ -124,7 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed } from "vue"; // ✅ 1. Importar 'computed'
+import { ref, reactive, watch, computed } from "vue";
 import { useQuasar } from "quasar";
 import { api } from "src/boot/axios";
 import { useAuthStore } from "src/stores/authStore";
@@ -145,6 +219,7 @@ const emit = defineEmits<{
 const $q = useQuasar();
 const loading = ref(false);
 const authStore = useAuthStore();
+const activeSystemTab = ref("nervous");
 
 const genderOptions = [
   { label: "Masculino", value: "Masculino" },
@@ -199,18 +274,18 @@ const form = reactive<PatientType>({
   activo: undefined,
 });
 
-// ✅ 2. Crear la propiedad computada para la fecha
+// Esta propiedad computada funciona perfecto con el nuevo QInput+QDate
 const fechaNacimientoModel = computed({
   get() {
-    if (!form.fechaNacimiento) return '';
+    if (!form.fechaNacimiento) return "";
     try {
       const date = new Date(form.fechaNacimiento);
       // Corregir el problema de la zona horaria que puede restar un día
       const offset = date.getTimezoneOffset();
-      const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
-      return adjustedDate.toISOString().split('T')[0];
+      const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
+      return adjustedDate.toISOString().split("T")[0];
     } catch (e) {
-      return '';
+      return "";
     }
   },
   set(newValue: string) {
@@ -218,23 +293,23 @@ const fechaNacimientoModel = computed({
       form.fechaNacimiento = undefined;
     } else {
       // El nuevo valor del input (string) se convierte a un objeto Date
+      // QDate y el input type="date" usan 'YYYY-MM-DD' o 'YYYY/MM/DD'
+      // new Date() maneja ambos formatos correctamente.
       form.fechaNacimiento = new Date(newValue);
     }
-  }
+  },
 });
-
 
 watch(
   () => props.patient,
   (newPatient) => {
     if (newPatient) {
       Object.assign(form, newPatient);
-      // ✅ 3. Simplificar el watch: solo asignamos el objeto Date
       if (newPatient.fechaNacimiento) {
         form.fechaNacimiento = new Date(newPatient.fechaNacimiento);
       }
     } else {
-      Object.keys(form).forEach(key => (form as any)[key] = undefined);
+      Object.keys(form).forEach((key) => ((form as any)[key] = undefined));
       form.id_paciente = 0;
       form.imagen = null;
       form.imagen2 = null;
@@ -251,30 +326,30 @@ const handleSubmit = async () => {
   const formData = new FormData();
 
   for (const key in form) {
-    if (key === 'imagenes') continue;
-    if (props.isEdit && key === 'id_paciente') continue;
+    if (key === "imagenes") continue;
+    if (props.isEdit && key === "id_paciente") continue;
 
     const value = (form as any)[key];
     if (value !== null && value !== undefined) {
       if (value instanceof File) {
         formData.append(key, value);
-      } else if (key === 'fechaNacimiento' && value instanceof Date) {
+      } else if (key === "fechaNacimiento" && value instanceof Date) {
         // Aseguramos que se envíe en formato ISO
         formData.append(key, value.toISOString());
-      } else if (key !== 'imagen' && key !== 'imagen2') {
+      } else if (key !== "imagen" && key !== "imagen2") {
         formData.append(key, String(value));
       }
     }
   }
 
   if (medicoId) {
-    formData.set('id_medico', String(medicoId));
+    formData.set("id_medico", String(medicoId));
   }
 
   try {
     const config = {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     };
 
@@ -285,28 +360,59 @@ const handleSubmit = async () => {
         config
       );
       $q.notify({
-        type: 'positive',
-        message: 'Paciente actualizado exitosamente!',
+        type: "positive",
+        message: "Paciente actualizado exitosamente!",
       });
     } else {
-      await api.post('http://localhost:3000/paciente/crear', formData, config);
+      await api.post(
+        "http://localhost:3000/paciente/crear",
+        formData,
+        config
+      );
       $q.notify({
-        type: 'positive',
-        message: 'Paciente creado exitosamente!',
+        type: "positive",
+        message: "Paciente creado exitosamente!",
       });
     }
 
-    emit('saved');
+    emit("saved");
   } catch (error: any) {
-    console.error('Error saving patient:', error.response || error);
+    console.error("Error saving patient:", error.response || error);
     $q.notify({
-      type: 'negative',
+      type: "negative",
       message:
         error.response?.data?.message ||
-        'Error al guardar el paciente. Intente nuevamente.',
+        "Error al guardar el paciente. Intente nuevamente.",
     });
   } finally {
     loading.value = false;
   }
 };
 </script>
+
+<style scoped>
+/* 4. CSS de 'compact-form' y 'mini-field' ELIMINADO */
+
+/* Estos estilos son para los QExpansionItem y QTabs, están bien */
+.expansion-style :deep(.q-expansion-item__container) {
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.expansion-style :deep(.q-expansion-item__content) {
+  background: white;
+}
+
+.expansion-style :deep(.q-tab) {
+  padding: 0 12px;
+  min-height: 32px;
+}
+
+.expansion-style :deep(.q-tab__label) {
+  font-size: 0.875rem;
+}
+
+.expansion-style :deep(.q-separator) {
+  margin: 8px 0;
+}
+</style>
