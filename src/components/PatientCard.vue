@@ -112,6 +112,7 @@ const downloadPDF = async (patientId: number) => {
   transition: all 0.3s ease-in-out;
   cursor: pointer;
   border-left: 5px solid transparent;
+  background-color: var(--app-white);
 }
 
 .patient-card:hover {

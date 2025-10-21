@@ -262,7 +262,7 @@ const saveProfile = async () => {
 }
 
 .profile-card {
-    background-color: #ffffff;
+    background-color: var(--app-white);
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease-in-out;

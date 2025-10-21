@@ -400,7 +400,7 @@ const handleSubmit = async () => {
 }
 
 .expansion-style :deep(.q-expansion-item__content) {
-  background: white;
+  background: var(--app-white);
 }
 
 .expansion-style :deep(.q-tab) {

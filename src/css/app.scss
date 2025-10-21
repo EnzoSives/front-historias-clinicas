@@ -1,1 +1,36 @@
 // app global css in SCSS form
+
+// Darken pure white usages and provide CSS variables for easy tuning.
+:root {
+	--app-white: #f0f0f0; /* matches $white in quasar.variables.scss */
+	--app-white-foreground: #222222; /* default text on the lighter background */
+}
+
+/* Replace hard-coded white backgrounds and text where safe */
+body,
+.q-page,
+.q-layout__container {
+	background-color: var(--app-white);
+}
+
+/* Generic helper to darken elements using inline 'background: white' */
+[style*="background: white"],
+[style*="background:white"],
+[style*="background-color: #ffffff"],
+[style*="background-color:#ffffff"],
+[style*="background-color: #fff"],
+[style*="background-color:#fff"] {
+	background-color: var(--app-white) !important;
+}
+
+/* Generic replacement for text-color white used via classes */
+.text-white {
+	color: #f0f0f0 !important; /* light grey-white for contrast on dark backgrounds */
+}
+
+/* Buttons and chisps that rely on text-color white can keep contrast */
+.q-btn--flat.text-white,
+.q-chip.text-white,
+.q-avatar[text-color="white"] {
+	color: #fafafa !important;
+}

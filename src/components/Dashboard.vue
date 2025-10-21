@@ -275,6 +275,7 @@ const truncateText = (text: string | undefined, maxLength: number): string => {
 .content-card {
   border-radius: 12px;
   height: 100%;
+  background-color: var(--app-white);
 }
 
 .q-item {

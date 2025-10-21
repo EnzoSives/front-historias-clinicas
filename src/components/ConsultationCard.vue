@@ -173,7 +173,7 @@ const confirmDelete = () => {
   border-radius: 12px;
   transition: all 0.3s ease-in-out;
   cursor: default;
-  background-color: #ffffff;
+  background-color: var(--app-white);
   border-left: 5px solid transparent;
   border: 1px solid #e0e0e0;
   min-height: 250px;

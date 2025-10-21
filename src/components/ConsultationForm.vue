@@ -272,7 +272,7 @@ const handleSubmit = async () => {
 }
 
 .expansion-style :deep(.q-expansion-item__content) {
-  background: white;
+  background: var(--app-white);
   /* Añadimos padding para separar el contenido del borde */
   /* padding-top: 8px; */ /* Eliminado para usar q-pa-sm en el div interno */
 }
