@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { AuthUser } from 'src/types/index';
+import type { AuthUser } from 'src/types/index';
 // ✅ **PASO 1: Importar la instancia de Axios**
 import { api } from 'src/boot/axios';
 
