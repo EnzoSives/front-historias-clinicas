@@ -50,8 +50,8 @@
           </div>
         </q-expansion-item>
 
-        <q-expansion-item group="consultation-sections" icon="description" label="Anamnesis y Examen Físico" dense-toggle
-          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
+        <q-expansion-item group="consultation-sections" icon="description" label="Anamnesis y Examen Físico"
+          dense-toggle class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm q-gutter-sm">
             <q-input dense outlined v-model="form.anamnesis" label="Anamnesis" type="textarea" autogrow
               hint="Historial clínico y detalles del padecimiento actual" />
@@ -82,14 +82,14 @@
         <q-expansion-item group="consultation-sections" icon="attach_file" label="Archivos Adjuntos" dense-toggle
           class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm">
-             <div class="row q-col-gutter-sm">
-               <div class="col-12 col-sm-6">
-                 <q-file dense outlined v-model="form.file1" label="Imagen 1" hint="Opcional" accept=".jpg, image/*" />
-               </div>
-               <div class="col-12 col-sm-6">
-                 <q-file dense outlined v-model="form.file2" label="Imagen 2" hint="Opcional" accept=".jpg, image/*" />
-               </div>
-               </div>
+            <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-6">
+                <q-file dense outlined v-model="form.file1" label="Imagen 1" hint="Opcional" accept=".jpg, image/*" />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-file dense outlined v-model="form.file2" label="Imagen 2" hint="Opcional" accept=".jpg, image/*" />
+              </div>
+            </div>
           </div>
         </q-expansion-item>
 
@@ -274,7 +274,8 @@ const handleSubmit = async () => {
 .expansion-style :deep(.q-expansion-item__content) {
   background: var(--app-white);
   /* Añadimos padding para separar el contenido del borde */
-  /* padding-top: 8px; */ /* Eliminado para usar q-pa-sm en el div interno */
+  /* padding-top: 8px; */
+  /* Eliminado para usar q-pa-sm en el div interno */
 }
 
 /* Ajustes opcionales para q-tabs si los usaras (no es el caso aquí) */

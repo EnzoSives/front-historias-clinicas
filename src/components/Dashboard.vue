@@ -201,14 +201,13 @@ const upcomingAppointments = computed(() => {
 const recentPatients = computed(() => {
   return (medicalStore.patients || [])
     .sort((a, b) => new Date(b.fechaCreacion || 0).getTime() - new Date(a.fechaCreacion || 0).getTime())
-    .slice(0, 5);
+    .slice(0, 4); // Limitado a 4 pacientes
 });
 
 const recentConsultations = computed(() => {
-  // CORRECCIÓN: Usar 'consultationsAll' en lugar de 'consultations'
   return (medicalStore.consultationsAll || [])
     .sort((a, b) => new Date(b.fechaConsulta).getTime() - new Date(a.fechaConsulta).getTime())
-    .slice(0, 5);
+    .slice(0, 4); // Limitado a 4 consultas
 });
 // --- Helper Functions ---
 const getPatientName = (patientId: number): string => {

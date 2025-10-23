@@ -12,25 +12,26 @@
         <div class="row q-col-gutter-xs items-center">
           <div class="col-12 col-sm-6">
             <q-input dense outlined v-model="form.nombre" label="Nombres"
-              :rules="[(val) => !!val || 'Nombres requeridos']" />
+              :rules="[(val) => !!val || 'Nombres requeridos']" :disable="!isReadOnly" />
           </div>
           <div class="col-12 col-sm-6">
             <q-input dense outlined v-model="form.apellido" label="Apellidos"
-              :rules="[(val) => !!val || 'Apellidos requeridos']" />
+              :rules="[(val) => !!val || 'Apellidos requeridos']" :disable="!isReadOnly" />
           </div>
         </div>
 
         <div class="row q-col-gutter-xs items-center">
           <div class="col-12 col-sm-4">
-            <q-input dense outlined v-model="form.dni" label="DNI/Cédula"
-              :rules="[(val) => !!val || 'DNI requerido']" />
+            <q-input dense outlined v-model="form.dni" label="DNI/Cédula" :rules="[(val) => !!val || 'DNI requerido']"
+              :disable="!isReadOnly" />
           </div>
           <div class="col-12 col-sm-4">
             <q-input dense outlined v-model="fechaNacimientoModel" label="Fecha de Nacimiento"
-              :rules="[(val) => !!val || 'Fecha de nacimiento requerida']" readonly hint="Seleccione una fecha">
+              :rules="[(val) => !!val || 'Fecha de nacimiento requerida']" readonly hint="Seleccione una fecha"
+              :disable="!isReadOnly">
               <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer">
-                  <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                <q-icon name="event" class="cursor-pointer" :class="{ 'cursor-not-allowed': !isReadOnly }">
+                  <q-popup-proxy cover transition-show="scale" transition-hide="scale" v-if="!isReadOnly">
                     <q-date v-model="fechaNacimientoModel">
                       <div class="row items-center justify-end">
                         <q-btn v-close-popup label="Cerrar" color="primary" flat />
@@ -43,7 +44,7 @@
           </div>
           <div class="col-12 col-sm-4">
             <q-select dense outlined v-model="form.sexo" label="Sexo" :options="genderOptions"
-              :rules="[(val) => !!val || 'Sexo requerido']" emit-value map-options />
+              :rules="[(val) => !!val || 'Sexo requerido']" emit-value map-options :disable="!isReadOnly" />
           </div>
         </div>
 
@@ -53,13 +54,15 @@
             <div class="row q-col-gutter-sm">
               <div class="col-12">
                 <q-input dense outlined v-model="form.direccion" label="Dirección"
-                  :rules="[(val) => !!val || 'Dirección requerida']" />
+                  :rules="[(val) => !!val || 'Dirección requerida']" :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-6">
-                <q-input dense outlined v-model="form.telefonoCelular" label="Teléfono Celular" hint="Opcional" />
+                <q-input dense outlined v-model="form.telefonoCelular" label="Teléfono Celular" hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-6">
-                <q-input dense outlined v-model="form.telefonoFijo" label="Teléfono Fijo" hint="Opcional" />
+                <q-input dense outlined v-model="form.telefonoFijo" label="Teléfono Fijo" hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
             </div>
           </div>
@@ -70,17 +73,20 @@
           <div class="q-pa-sm">
             <div class="row q-col-gutter-sm">
               <div class="col-12 col-sm-6">
-                <q-input dense outlined v-model="form.ocupacion" label="Ocupación" hint="Opcional" />
+                <q-input dense outlined v-model="form.ocupacion" label="Ocupación" hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-6">
-                <q-input dense outlined v-model="form.estadoCivil" label="Estado Civil" hint="Opcional" />
+                <q-input dense outlined v-model="form.estadoCivil" label="Estado Civil" hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-6">
-                <q-input dense outlined v-model="form.obraSocial" label="Obra Social" hint="Opcional" />
+                <q-input dense outlined v-model="form.obraSocial" label="Obra Social" hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-6">
-                <q-input dense outlined v-model="form.afiliadoObraSocial" label="Afiliado Obra Social"
-                  hint="Opcional" />
+                <q-input dense outlined v-model="form.afiliadoObraSocial" label="Afiliado Obra Social" hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
             </div>
           </div>
@@ -92,19 +98,19 @@
             <div class="row q-col-gutter-sm">
               <div class="col-12">
                 <q-input dense outlined v-model="form.antecedentesPersonalesMedicos" label="Antecedentes Personales"
-                  type="textarea" rows="2" hint="Opcional" />
+                  type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
               </div>
               <div class="col-12">
                 <q-input dense outlined v-model="form.antecedentesQuirurgicos" label="Antecedentes Quirúrgicos"
-                  type="textarea" rows="2" hint="Opcional" />
+                  type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
               </div>
               <div class="col-12">
                 <q-input dense outlined v-model="form.alergias" label="Alergias" type="textarea" rows="2"
-                  hint="Opcional" />
+                  hint="Opcional" :disable="!isReadOnly" />
               </div>
               <div class="col-12">
                 <q-input dense outlined v-model="form.medicacionHabitual" label="Medicamentos Habituales"
-                  type="textarea" rows="2" hint="Opcional" />
+                  type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
               </div>
             </div>
           </div>
@@ -116,30 +122,34 @@
             <div class="row q-col-gutter-sm">
               <div class="col-12 col-sm-3">
                 <q-input dense outlined v-model.number="form.examenFisicoPeso" label="Peso (kg)" type="number"
-                  hint="Opcional" />
+                  hint="Opcional" :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-3">
                 <q-input dense outlined v-model.number="form.examenFisicoTalla" label="Talla (cm)" type="number"
-                  hint="Opcional" />
+                  hint="Opcional" :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-3">
-                <q-input dense outlined v-model.number="form.examenFisicoIMC" label="IMC" type="number"
-                  hint="Opcional" />
+                <q-input dense outlined v-model.number="form.examenFisicoIMC" label="IMC" type="number" hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-3">
-                <q-input dense outlined v-model="form.examenFisicoTemperatura" label="Temp. (°C)" hint="Opcional" />
+                <q-input dense outlined v-model="form.examenFisicoTemperatura" label="Temp. (°C)" hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
             </div>
 
             <div class="row q-col-gutter-sm q-mt-sm">
               <div class="col-12 col-sm-4">
-                <q-input dense outlined v-model="form.examenFisicoTA" label="T.A." hint="Opcional" />
+                <q-input dense outlined v-model="form.examenFisicoTA" label="T.A." hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-4">
-                <q-input dense outlined v-model="form.examenFisicoFC" label="F.C." hint="Opcional" />
+                <q-input dense outlined v-model="form.examenFisicoFC" label="F.C." hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-4">
-                <q-input dense outlined v-model="form.examenFisicoFR" label="F.R." hint="Opcional" />
+                <q-input dense outlined v-model="form.examenFisicoFR" label="F.R." hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
             </div>
 
@@ -147,28 +157,28 @@
 
             <q-tabs v-model="activeSystemTab" dense class="text-grey" active-color="primary" indicator-color="primary"
               align="justify" narrow-indicator>
-              <q-tab name="nervous" label="Nervioso" />
-              <q-tab name="cardio" label="Cardiovascular" />
-              <q-tab name="respiratory" label="Respiratorio" />
-              <q-tab name="digestive" label="Digestivo" />
+              <q-tab name="nervous" label="Nervioso" :disable="!isReadOnly" />
+              <q-tab name="cardio" label="Cardiovascular" :disable="!isReadOnly" />
+              <q-tab name="respiratory" label="Respiratorio" :disable="!isReadOnly" />
+              <q-tab name="digestive" label="Digestivo" :disable="!isReadOnly" />
             </q-tabs>
 
             <q-tab-panels v-model="activeSystemTab" animated>
               <q-tab-panel name="nervous" class="q-pa-none q-pt-sm">
                 <q-input dense outlined v-model="form.examenFisicoSistemaNervioso" label="Sistema Nervioso"
-                  type="textarea" rows="2" hint="Opcional" />
+                  type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
               </q-tab-panel>
               <q-tab-panel name="cardio" class="q-pa-none q-pt-sm">
                 <q-input dense outlined v-model="form.examenFisicoAPCardiovascular" label="Sistema Cardiovascular"
-                  type="textarea" rows="2" hint="Opcional" />
+                  type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
               </q-tab-panel>
               <q-tab-panel name="respiratory" class="q-pa-none q-pt-sm">
                 <q-input dense outlined v-model="form.examenFisicoAPRespiratorio" label="Sistema Respiratorio"
-                  type="textarea" rows="2" hint="Opcional" />
+                  type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
               </q-tab-panel>
               <q-tab-panel name="digestive" class="q-pa-none q-pt-sm">
                 <q-input dense outlined v-model="form.examenFisicoAPDigestivo" label="Sistema Digestivo" type="textarea"
-                  rows="2" hint="Opcional" />
+                  rows="2" hint="Opcional" :disable="!isReadOnly" />
               </q-tab-panel>
             </q-tab-panels>
           </div>
@@ -179,10 +189,10 @@
           <div class="q-pa-sm">
             <div class="row q-col-gutter-sm">
               <div class="col-12 col-sm-6">
-                <q-file dense outlined v-model="form.imagen" label="Imagen 1" hint="Opcional" />
+                <q-file dense outlined v-model="form.imagen" label="Imagen 1" hint="Opcional" :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-6">
-                <q-file dense outlined v-model="form.imagen2" label="Imagen 2" hint="Opcional" />
+                <q-file dense outlined v-model="form.imagen2" label="Imagen 2" hint="Opcional" :disable="!isReadOnly" />
               </div>
             </div>
           </div>
@@ -190,7 +200,8 @@
 
         <q-card-actions align="right" class="q-pt-md">
           <q-btn flat dense color="grey-7" label="Cancelar" @click="$emit('cancel')" />
-          <q-btn dense type="submit" color="primary" :label="isEdit ? 'Actualizar' : 'Crear'" :loading="loading" />
+          <q-btn dense type="submit" color="primary" :label="isEdit ? 'Actualizar' : 'Crear'" :loading="loading"
+            :disable="!isReadOnly" />
         </q-card-actions>
       </q-form>
     </q-card-section>
@@ -221,6 +232,19 @@ const loading = ref(false);
 const authStore = useAuthStore();
 const activeSystemTab = ref("nervous");
 
+// Propiedad computada para determinar si el formulario es de solo lectura
+const isReadOnly = computed(() => {
+  // Obtiene el nombre del médico del store, asegurándose de que exista
+  const doctorName = authStore.user?.medico?.nombre;
+  // Compara el nombre (en minúsculas) con "florencia"
+  // Si el nombre NO es "florencia", devuelve true (mostrar)
+  // Si el nombre ES "florencia", devuelve false (ocultar)
+  // Si no hay médico o nombre, por defecto se muestra (devuelve true)
+  return doctorName?.toLowerCase() !== 'null';
+});
+
+
+
 const genderOptions = [
   { label: "Masculino", value: "Masculino" },
   { label: "Femenino", value: "Femenino" },
@@ -235,7 +259,7 @@ const form = reactive<PatientType>({
   dni: undefined,
   sexo: undefined,
   edad: undefined,
-  fechaNacimiento: undefined, // Este valor se mantendrá como Date o undefined
+  fechaNacimiento: undefined,
   lugarNacimiento: undefined,
   direccion: undefined,
   telefonoFijo: undefined,
@@ -274,13 +298,11 @@ const form = reactive<PatientType>({
   activo: undefined,
 });
 
-// Esta propiedad computada funciona perfecto con el nuevo QInput+QDate
 const fechaNacimientoModel = computed({
   get() {
     if (!form.fechaNacimiento) return "";
     try {
       const date = new Date(form.fechaNacimiento);
-      // Corregir el problema de la zona horaria que puede restar un día
       const offset = date.getTimezoneOffset();
       const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
       return adjustedDate.toISOString().split("T")[0];
@@ -289,31 +311,30 @@ const fechaNacimientoModel = computed({
     }
   },
   set(newValue: string) {
-    if (!newValue) {
-      form.fechaNacimiento = undefined;
-    } else {
-      // El nuevo valor del input (string) se convierte a un objeto Date
-      // QDate y el input type="date" usan 'YYYY-MM-DD' o 'YYYY/MM/DD'
-      // new Date() maneja ambos formatos correctamente.
-      form.fechaNacimiento = new Date(newValue);
-    }
+    form.fechaNacimiento = newValue ? new Date(newValue) : undefined;
   },
 });
 
 watch(
   () => props.patient,
   (newPatient) => {
+    Object.keys(form).forEach((key) => {
+      const typedKey = key as keyof PatientType;
+      if (typedKey === 'id_paciente') form.id_paciente = 0;
+      else if (typedKey === 'imagen' || typedKey === 'imagen2') (form as any)[typedKey] = null;
+      else if (typedKey === 'imagenes') form.imagenes = [];
+      else (form as any)[typedKey] = undefined;
+    });
+
     if (newPatient) {
       Object.assign(form, newPatient);
+      form.id_medico = newPatient.id_medico;
       if (newPatient.fechaNacimiento) {
         form.fechaNacimiento = new Date(newPatient.fechaNacimiento);
       }
-    } else {
-      Object.keys(form).forEach((key) => ((form as any)[key] = undefined));
-      form.id_paciente = 0;
       form.imagen = null;
       form.imagen2 = null;
-      form.imagenes = [];
+    } else {
       form.id_medico = authStore.user?.medico?.id_medico;
     }
   },
@@ -321,68 +342,55 @@ watch(
 );
 
 const handleSubmit = async () => {
+  if (isReadOnly.value) {
+    $q.notify({ type: "warning", message: "No tiene permiso para editar este paciente." });
+    return;
+  }
+
   loading.value = true;
-  const medicoId = authStore.user?.medico?.id_medico;
+  const medicoIdLogueado = authStore.getMedicoId;
   const formData = new FormData();
 
   for (const key in form) {
-    if (key === "imagenes") continue;
-    if (props.isEdit && key === "id_paciente") continue;
-
-    const value = (form as any)[key];
+    const typedKey = key as keyof PatientType;
+    if (typedKey === "imagenes" || typedKey === 'edad' || (props.isEdit && typedKey === 'id_paciente')) continue;
+    const value = form[typedKey];
     if (value !== null && value !== undefined) {
       if (value instanceof File) {
-        formData.append(key, value);
-      } else if (key === "fechaNacimiento" && value instanceof Date) {
-        // Aseguramos que se envíe en formato ISO
-        formData.append(key, value.toISOString());
-      } else if (key !== "imagen" && key !== "imagen2") {
-        formData.append(key, String(value));
+        formData.append(typedKey, value, value.name);
+      } else if (typedKey === "fechaNacimiento" && value instanceof Date) {
+        formData.append(typedKey, value.toISOString());
+      } else if (typedKey !== 'imagen' && typedKey !== 'imagen2') {
+        formData.append(typedKey, String(value));
       }
     }
   }
 
-  if (medicoId) {
-    formData.set("id_medico", String(medicoId));
+  if (props.isEdit && form.id_medico !== undefined) {
+    formData.set('id_medico', String(form.id_medico));
+  } else if (!props.isEdit && medicoIdLogueado !== null) {
+    formData.set('id_medico', String(medicoIdLogueado));
+  } else if (!props.isEdit && medicoIdLogueado === null) {
+    $q.notify({ type: "negative", message: "Error: No se pudo identificar al médico." });
+    loading.value = false;
+    return;
   }
 
   try {
-    const config = {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    };
-
+    const config = { headers: { "Content-Type": "multipart/form-data" } };
     if (props.isEdit && form.id_paciente) {
-      await api.patch(
-        `http://localhost:3000/paciente/actualizar/${form.id_paciente}`,
-        formData,
-        config
-      );
-      $q.notify({
-        type: "positive",
-        message: "Paciente actualizado exitosamente!",
-      });
+      await api.patch(`/paciente/actualizar/${form.id_paciente}`, formData, config);
+      $q.notify({ type: "positive", message: "Paciente actualizado!" });
     } else {
-      await api.post(
-        "http://localhost:3000/paciente/crear",
-        formData,
-        config
-      );
-      $q.notify({
-        type: "positive",
-        message: "Paciente creado exitosamente!",
-      });
+      await api.post("/paciente/crear", formData, config);
+      $q.notify({ type: "positive", message: "Paciente creado!" });
     }
-
     emit("saved");
   } catch (error: any) {
-    console.error("Error saving patient:", error.response || error);
+    console.error("Error saving patient:", error.response?.data || error);
     $q.notify({
       type: "negative",
-      message:
-        error.response?.data?.message ||
-        "Error al guardar el paciente. Intente nuevamente.",
+      message: error.response?.data?.message || "Error al guardar.",
     });
   } finally {
     loading.value = false;
@@ -391,9 +399,6 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* 4. CSS de 'compact-form' y 'mini-field' ELIMINADO */
-
-/* Estos estilos son para los QExpansionItem y QTabs, están bien */
 .expansion-style :deep(.q-expansion-item__container) {
   border-radius: 8px;
   margin-bottom: 8px;
@@ -414,5 +419,9 @@ const handleSubmit = async () => {
 
 .expansion-style :deep(.q-separator) {
   margin: 8px 0;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed !important;
 }
 </style>
