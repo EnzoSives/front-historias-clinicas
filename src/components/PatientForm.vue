@@ -26,21 +26,22 @@
               :disable="!isReadOnly" />
           </div>
           <div class="col-12 col-sm-4">
-            <q-input dense outlined v-model="fechaNacimientoModel" label="Fecha de Nacimiento"
-              :rules="[(val) => !!val || 'Fecha de nacimiento requerida']" readonly hint="Seleccione una fecha"
-              :disable="!isReadOnly">
-              <template v-slot:append>
-                <q-icon name="event" class="cursor-pointer" :class="{ 'cursor-not-allowed': !isReadOnly }">
-                  <q-popup-proxy cover transition-show="scale" transition-hide="scale" v-if="!isReadOnly">
-                    <q-date v-model="fechaNacimientoModel">
-                      <div class="row items-center justify-end">
-                        <q-btn v-close-popup label="Cerrar" color="primary" flat />
-                      </div>
-                    </q-date>
-                  </q-popup-proxy>
-                </q-icon>
+            <v-date-picker v-model="fechaNacimientoModel" :model-config="{ type: 'string', mask: 'YYYY-MM-DD' }"
+              :input-props="{
+                class: 'q-field__native q-placeholder full-width',
+                placeholder: 'Seleccione una fecha',
+              }" :is-required="true" :masks="{
+                input: 'DD/MM/YYYY'
+              }" class="full-width">
+              <template v-slot="{ inputValue, inputEvents }">
+                <q-input dense outlined :model-value="inputValue" v-on="inputEvents" label="Fecha de Nacimiento"
+                  :rules="[(val) => !!val || 'Fecha de nacimiento requerida']">
+                  <template v-slot:append>
+                    <q-icon name="event" class="cursor-pointer" />
+                  </template>
+                </q-input>
               </template>
-            </q-input>
+            </v-date-picker>
           </div>
           <div class="col-12 col-sm-4">
             <q-select dense outlined v-model="form.sexo" label="Sexo" :options="genderOptions"
