@@ -49,7 +49,7 @@
           </div>
         </div>
 
-        <q-expansion-item group="form-sections" icon="contact_mail" label="Información de Contacto" default-opened
+        <q-expansion-item group="form-sections" icon="contact_mail" label="Información de Contacto"
           dense-toggle class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm">
             <div class="row q-col-gutter-sm">
@@ -73,6 +73,10 @@
           class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm">
             <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-6">
+                <q-input dense outlined v-model="form.lugarNacimiento" label="Lugar de Nacimiento" hint="Opcional"
+                  :disable="!isReadOnly" />
+              </div>
               <div class="col-12 col-sm-6">
                 <q-input dense outlined v-model="form.ocupacion" label="Ocupación" hint="Opcional"
                   :disable="!isReadOnly" />
@@ -106,12 +110,21 @@
                   type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
               </div>
               <div class="col-12">
+                <q-input dense outlined v-model="form.antecedentesHeredoFamiliares"
+                  label="Antecedentes Heredo-Familiares" type="textarea" rows="2" hint="Opcional"
+                  :disable="!isReadOnly" />
+              </div>
+              <div class="col-12">
                 <q-input dense outlined v-model="form.alergias" label="Alergias" type="textarea" rows="2"
                   hint="Opcional" :disable="!isReadOnly" />
               </div>
               <div class="col-12">
                 <q-input dense outlined v-model="form.medicacionHabitual" label="Medicamentos Habituales"
                   type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
+              </div>
+              <div class="col-12">
+                <q-input dense outlined v-model="form.habitosToxicos" label="Hábitos Tóxicos" type="textarea" rows="2"
+                  hint="Opcional" :disable="!isReadOnly" />
               </div>
             </div>
           </div>
@@ -130,8 +143,8 @@
                   hint="Opcional" :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-3">
-                <q-input dense outlined v-model.number="form.examenFisicoIMC" label="IMC" type="number" hint="Opcional"
-                  :disable="!isReadOnly" />
+                <q-input dense outlined v-model.number="form.examenFisicoIMC" label="IMC" type="number"
+                  hint="Calculado" :disable="!isReadOnly" readonly />
               </div>
               <div class="col-12 col-sm-3">
                 <q-input dense outlined v-model="form.examenFisicoTemperatura" label="Temp. (°C)" hint="Opcional"
@@ -139,17 +152,21 @@
               </div>
             </div>
 
-            <div class="row q-col-gutter-sm q-mt-sm">
-              <div class="col-12 col-sm-4">
+            <div class="row q-col-gutter-sm q-mt-xs">
+              <div class="col-12 col-sm-3">
                 <q-input dense outlined v-model="form.examenFisicoTA" label="T.A." hint="Opcional"
                   :disable="!isReadOnly" />
               </div>
-              <div class="col-12 col-sm-4">
+              <div class="col-12 col-sm-3">
                 <q-input dense outlined v-model="form.examenFisicoFC" label="F.C." hint="Opcional"
                   :disable="!isReadOnly" />
               </div>
-              <div class="col-12 col-sm-4">
+              <div class="col-12 col-sm-3">
                 <q-input dense outlined v-model="form.examenFisicoFR" label="F.R." hint="Opcional"
+                  :disable="!isReadOnly" />
+              </div>
+              <div class="col-12 col-sm-3">
+                <q-input dense outlined v-model="form.examenFisicoHabito" label="Hábito" hint="Opcional"
                   :disable="!isReadOnly" />
               </div>
             </div>
@@ -162,6 +179,11 @@
               <q-tab name="cardio" label="Cardiovascular" :disable="!isReadOnly" />
               <q-tab name="respiratory" label="Respiratorio" :disable="!isReadOnly" />
               <q-tab name="digestive" label="Digestivo" :disable="!isReadOnly" />
+              <q-tab name="genitourinary" label="Genitourinario" :disable="!isReadOnly" />
+              <q-tab name="endocrine" label="Endocrino" :disable="!isReadOnly" />
+              <q-tab name="hematopoietic" label="Hematopoyético" :disable="!isReadOnly" />
+              <q-tab name="musculoskeletal" label="M. Esquelético" :disable="!isReadOnly" />
+              <q-tab name="skin" label="Piel y Anexos" :disable="!isReadOnly" />
             </q-tabs>
 
             <q-tab-panels v-model="activeSystemTab" animated>
@@ -181,7 +203,35 @@
                 <q-input dense outlined v-model="form.examenFisicoAPDigestivo" label="Sistema Digestivo" type="textarea"
                   rows="2" hint="Opcional" :disable="!isReadOnly" />
               </q-tab-panel>
+              <q-tab-panel name="genitourinary" class="q-pa-none q-pt-sm">
+                <q-input dense outlined v-model="form.examenFisicoAPGenitourinario" label="Sistema Genitourinario"
+                  type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
+              </q-tab-panel>
+              <q-tab-panel name="endocrine" class="q-pa-none q-pt-sm">
+                <q-input dense outlined v-model="form.examenFisicoSistemaEndocrino" label="Sistema Endocrino"
+                  type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
+              </q-tab-panel>
+              <q-tab-panel name="hematopoietic" class="q-pa-none q-pt-sm">
+                <q-input dense outlined v-model="form.examenFisicoSistemaHematopoyetico" label="Sistema Hematopoyético"
+                  type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
+              </q-tab-panel>
+              <q-tab-panel name="musculoskeletal" class="q-pa-none q-pt-sm">
+                <q-input dense outlined v-model="form.examenFisicoSistemaMusculoEsqueletico"
+                  label="Sistema Músculo Esquelético" type="textarea" rows="2" hint="Opcional" :disable="!isReadOnly" />
+              </q-tab-panel>
+              <q-tab-panel name="skin" class="q-pa-none q-pt-sm">
+                <q-input dense outlined v-model="form.examenFisicoPielAnexos" label="Piel y Anexos" type="textarea"
+                  rows="2" hint="Opcional" :disable="!isReadOnly" />
+              </q-tab-panel>
             </q-tab-panels>
+          </div>
+        </q-expansion-item>
+
+        <q-expansion-item group="form-sections" icon="visibility" label="Observaciones" dense-toggle
+          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
+          <div class="q-pa-sm">
+            <q-input dense outlined v-model="form.primerObservacion" label="Primera Observación" type="textarea"
+              rows="3" hint="Opcional" :disable="!isReadOnly" />
           </div>
         </q-expansion-item>
 
@@ -243,8 +293,6 @@ const isReadOnly = computed(() => {
   // Si no hay médico o nombre, por defecto se muestra (devuelve true)
   return doctorName?.toLowerCase() !== 'null';
 });
-
-
 
 const genderOptions = [
   { label: "Masculino", value: "Masculino" },
@@ -342,8 +390,30 @@ watch(
   { immediate: true, deep: true }
 );
 
+// *** CAMBIO AQUÍ: Watch para calcular el IMC automáticamente ***
+watch(
+  [() => form.examenFisicoPeso, () => form.examenFisicoTalla],
+  ([peso, talla]) => {
+    const pesoNum = typeof peso === 'number' ? peso : undefined;
+    const tallaNum = typeof talla === 'number' ? talla : undefined;
+
+    if (pesoNum && pesoNum > 0 && tallaNum && tallaNum > 0) {
+      // Convertir talla de cm a metros
+      const tallaMetros = tallaNum / 100;
+      // Calcular IMC: peso / (altura_m * altura_m)
+      const imc = pesoNum / (tallaMetros * tallaMetros);
+      // Asignar al formulario, redondeado a 2 decimales
+      form.examenFisicoIMC = parseFloat(imc.toFixed(2));
+    } else {
+      // Si no hay peso o talla válidos, limpiar el campo IMC
+      form.examenFisicoIMC = undefined;
+    }
+  }
+);
+// *** FIN DEL CAMBIO ***
+
 const handleSubmit = async () => {
-  if (isReadOnly.value) {
+  if (!isReadOnly.value) {
     $q.notify({ type: "warning", message: "No tiene permiso para editar este paciente." });
     return;
   }

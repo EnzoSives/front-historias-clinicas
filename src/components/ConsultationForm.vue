@@ -82,14 +82,15 @@
         <q-expansion-item group="consultation-sections" icon="attach_file" label="Archivos Adjuntos" dense-toggle
           class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm">
-            <div class="row q-col-gutter-sm">
-              <div class="col-12 col-sm-6">
-                <q-file dense outlined v-model="form.file1" label="Imagen 1" hint="Opcional" accept=".jpg, image/*" />
-              </div>
-              <div class="col-12 col-sm-6">
-                <q-file dense outlined v-model="form.file2" label="Imagen 2" hint="Opcional" accept=".jpg, image/*" />
-              </div>
-            </div>
+            <q-uploader
+              label="Adjuntar archivos (imágenes o PDF)"
+              multiple
+              batch
+              style="max-width: 100%"
+              @added="filesAdded"
+              @removed="filesRemoved"
+              accept=".jpg, .jpeg, .png, .pdf"
+            />
           </div>
         </q-expansion-item>
 
@@ -127,7 +128,20 @@ const medicalStore = useMedicalStore();
 const selectedPatient = ref<PatientType | null>(null);
 const patientOptions = ref<{ label: string; value: PatientType }[]>([]);
 
-// Añade campos para los archivos
+// --- CAMBIOS SCRIPT ---
+// 1. Añadimos el ref para el q-uploader
+const uploadedFiles = ref<File[]>([]);
+
+// 2. Añadimos los manejadores de eventos
+const filesAdded = (files: readonly File[]) => {
+  uploadedFiles.value.push(...files);
+};
+
+const filesRemoved = (files: readonly File[]) => {
+  uploadedFiles.value = uploadedFiles.value.filter(f => !files.includes(f));
+};
+
+// 3. Quitamos file1 y file2 del formulario reactivo
 const form = reactive({
   fechaConsulta: '',
   motivoConsulta: '',
@@ -136,8 +150,8 @@ const form = reactive({
   diagnostico: '',
   tratamiento: '',
   observaciones: '',
-  file1: null as File | null,
-  file2: null as File | null,
+  // file1: null as File | null, // <--- ELIMINADO
+  // file2: null as File | null, // <--- ELIMINADO
 });
 
 const isEdit = computed(() => !!props.consultation?.id);
@@ -157,8 +171,12 @@ const populateForm = () => {
     // NOTA: La carga inicial de archivos existentes no se maneja aquí.
     // Necesitarías mostrar las imágenes existentes de props.consultation.imagenes
     // y permitir reemplazarlas o borrarlas.
-    form.file1 = null;
-    form.file2 = null;
+
+    // 4. Actualizamos el reseteo del formulario
+    // form.file1 = null; // <--- ELIMINADO
+    // form.file2 = null; // <--- ELIMINADO
+    uploadedFiles.value = []; // <--- AÑADIDO
+
   } else {
     // Resetear formulario para nueva consulta
     const now = new Date();
@@ -170,8 +188,11 @@ const populateForm = () => {
     form.diagnostico = '';
     form.tratamiento = '';
     form.observaciones = '';
-    form.file1 = null;
-    form.file2 = null;
+
+    // 4. Actualizamos el reseteo del formulario
+    // form.file1 = null; // <--- ELIMINADO
+    // form.file2 = null; // <--- ELIMINADO
+    uploadedFiles.value = []; // <--- AÑADIDO
   }
 };
 
@@ -248,13 +269,22 @@ const handleSubmit = async () => {
     formData.append('diagnostico', form.diagnostico || '');
     formData.append('tratamiento', form.tratamiento || '');
 
+    // 5. Actualizamos el envío de archivos
     // Adjuntar archivos si existen
-    if (form.file1) {
-      formData.append('files', form.file1); // El backend debe estar preparado para recibir 'files'
-    }
-    if (form.file2) {
-      formData.append('files', form.file2);
-    }
+    // if (form.file1) { // <--- ELIMINADO
+    //   formData.append('files', form.file1); // El backend debe estar preparado para recibir 'files'
+    // }
+    // if (form.file2) { // <--- ELIMINADO
+    //   formData.append('files', form.file2);
+    // }
+
+    // <--- AÑADIDO ---
+    // Adjuntar archivos del q-uploader
+    uploadedFiles.value.forEach(file => {
+      // Usamos 'files' como clave, ya que así lo tenías para file1 y file2
+      formData.append('files', file);
+    });
+    // --- FIN CAMBIOS SCRIPT ---
 
     emit('save', formData);
 
@@ -277,16 +307,4 @@ const handleSubmit = async () => {
   /* padding-top: 8px; */
   /* Eliminado para usar q-pa-sm en el div interno */
 }
-
-/* Ajustes opcionales para q-tabs si los usaras (no es el caso aquí) */
-/* .expansion-style :deep(.q-tab) {
-  padding: 0 12px;
-  min-height: 32px;
-} */
-/* .expansion-style :deep(.q-tab__label) {
-  font-size: 0.875rem;
-} */
-/* .expansion-style :deep(.q-separator) {
-  margin: 8px 0;
-} */
 </style>
