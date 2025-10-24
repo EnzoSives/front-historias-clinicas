@@ -79,7 +79,7 @@
           </div>
         </q-expansion-item>
 
-        <q-expansion-item group="consultation-sections" icon="attach_file" label="Archivos Adjuntos" dense-toggle
+        <q-expansion-item group="consultation-sections" icon="attach_file" label="Laboratorios" dense-toggle
           class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm">
             <q-uploader

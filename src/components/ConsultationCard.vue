@@ -53,21 +53,36 @@
       </div>
     </q-card-section>
 
-    <q-card-section v-if="hasImages" class="q-pt-none">
+    <q-card-section v-if="images.length > 0" class="q-pt-none q-pb-sm">
       <div class="text-subtitle2 text-grey-9 q-mb-xs">
         <q-icon name="image" class="q-mr-xs" size="xs" /> Imágenes:
       </div>
       <div class="row q-gutter-sm">
-        <div v-for="(imagen, index) in consultation.imagenes" :key="imagen.filename" class="col-auto cursor-pointer"
+        <div v-for="(imagen, index) in images" :key="imagen.filename" class="col-auto cursor-pointer"
           @click="openImageDialog(index)">
-          <q-img :src="getImageUrl(imagen.filename)" spinner-color="primary"
+          <q-img :src="getFileUrl(imagen.filename)" spinner-color="primary"
             style="height: 50px; width: 50px; border-radius: 4px;">
             <q-tooltip>Ver imagen</q-tooltip>
           </q-img>
         </div>
       </div>
     </q-card-section>
-    <q-card-section v-else class="q-pt-none">
+
+    <q-card-section v-if="pdfs.length > 0" class="q-pt-none">
+      <div class="text-subtitle2 text-grey-9 q-mb-xs">
+        <q-icon name="picture_as_pdf" class="q-mr-xs" size="xs" /> Archivos PDF:
+      </div>
+      <div class="row q-gutter-sm">
+        <div v-for="pdf in pdfs" :key="pdf.filename" class="col-auto cursor-pointer"
+          @click="openPdf(pdf.filename)">
+          <q-avatar icon="picture_as_pdf" color="red-1" text-color="red-8" font-size="30px" square
+            style="height: 50px; width: 50px; border-radius: 4px;" />
+          <q-tooltip>Ver PDF: {{ pdf.filename }}</q-tooltip>
+        </div>
+      </div>
+    </q-card-section>
+
+    <q-card-section v-if="images.length === 0 && pdfs.length === 0" class="q-pt-none">
       <div style="min-height: 70px;"></div>
     </q-card-section>
 
@@ -79,8 +94,8 @@
     <q-dialog v-model="imageDialog">
       <q-carousel v-model="slide" animated arrows navigation infinite control-color="white"
         class="bg-black rounded-borders" style="width: 90vw; max-width: 90vw; height: 90vh;">
-        <q-carousel-slide v-for="(imagen, index) in consultation.imagenes" :key="imagen.filename" :name="index"
-          :img-src="getImageUrl(imagen.filename)" style="background-size: contain; background-repeat: no-repeat;" />
+        <q-carousel-slide v-for="(imagen, index) in images" :key="imagen.filename" :name="index"
+          :img-src="getFileUrl(imagen.filename)" style="background-size: contain; background-repeat: no-repeat;" />
       </q-carousel>
     </q-dialog>
 
@@ -88,9 +103,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue' // Importa 'ref' y 'computed'
+import { ref, computed } from 'vue'
 import { useQuasar } from 'quasar'
-import type { Consultation as ConsultationType, Patient as PatientType } from 'src/types/index'
+import type { Consultation as ConsultationType, Patient as PatientType, Imagen } from 'src/types/index'
 import ConsultationDetail from 'src/components/ConsultationDetail.vue'
 
 interface Props {
@@ -107,27 +122,46 @@ const emit = defineEmits<{
 }>()
 
 const $q = useQuasar()
-
-// ✅ LÓGICA PARA EL VISUALIZADOR DE IMÁGENES
 const imageDialog = ref(false);
-const slide = ref(0); // Para controlar la imagen activa en el carrusel
+const slide = ref(0);
 
-// Verifica si la consulta tiene imágenes
-const hasImages = computed(() => props.consultation.imagenes && props.consultation.imagenes.length > 0);
+// --- INICIO DE CAMBIOS ---
 
-// Construye la URL completa de la imagen
-const getImageUrl = (filename: string) => {
-  // Asegúrate de que la URL base coincida con la de tu backend (http://localhost:3000 por defecto)
+// Expresiones regulares para filtrar tipos de archivo
+const imageRegex = /\.(jpe?g|png|gif|bmp|webp)$/i;
+const pdfRegex = /\.(pdf)$/i;
+
+// Devuelve la URL base para cualquier archivo
+const getFileUrl = (filename: string) => {
   return `http://localhost:3000/uploads/${filename}`;
 };
 
-// Abre el diálogo del carrusel en la imagen seleccionada
+// Computed property para filtrar solo imágenes
+const images = computed((): Imagen[] => {
+  if (!props.consultation.imagenes) return [];
+  return props.consultation.imagenes.filter(file => imageRegex.test(file.filename));
+});
+
+// Computed property para filtrar solo PDFs
+const pdfs = computed((): Imagen[] => {
+  if (!props.consultation.imagenes) return [];
+  return props.consultation.imagenes.filter(file => pdfRegex.test(file.filename));
+});
+
+// Abre el carrusel de imágenes
 const openImageDialog = (index: number) => {
   slide.value = index;
   imageDialog.value = true;
 };
 
-// --- Lógica existente ---
+// Abre el PDF en una nueva pestaña
+const openPdf = (filename: string) => {
+  const url = getFileUrl(filename);
+  window.open(url, '_blank');
+};
+
+// --- FIN DE CAMBIOS ---
+
 const showDetailsDialog = () => {
   if (!props.consultation || !props.patient) return;
 
@@ -177,11 +211,8 @@ const confirmDelete = () => {
   border-left: 5px solid transparent;
   border: 1px solid #e0e0e0;
   min-height: 250px;
-  /* Asegura una altura mínima para todas las tarjetas */
   display: flex;
-  /* Activa Flexbox */
   flex-direction: column;
-  /* Organiza el contenido en una columna */
 }
 
 .consultation-card.q-hoverable:hover {
