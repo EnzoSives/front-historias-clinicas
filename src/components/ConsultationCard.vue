@@ -73,8 +73,7 @@
         <q-icon name="picture_as_pdf" class="q-mr-xs" size="xs" /> Archivos PDF:
       </div>
       <div class="row q-gutter-sm">
-        <div v-for="pdf in pdfs" :key="pdf.filename" class="col-auto cursor-pointer"
-          @click="openPdf(pdf.filename)">
+        <div v-for="pdf in pdfs" :key="pdf.filename" class="col-auto cursor-pointer" @click="openPdf(pdf.filename)">
           <q-avatar icon="picture_as_pdf" color="red-1" text-color="red-8" font-size="30px" square
             style="height: 50px; width: 50px; border-radius: 4px;" />
           <q-tooltip>Ver PDF: {{ pdf.filename }}</q-tooltip>
@@ -105,7 +104,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useQuasar } from 'quasar'
-import type { Consultation as ConsultationType, Patient as PatientType, Imagen } from 'src/types/index'
+import type { Consultation as ConsultationType, Patient as PatientType, PatientImage } from 'src/types/index'
 import ConsultationDetail from 'src/components/ConsultationDetail.vue'
 
 interface Props {
@@ -137,13 +136,13 @@ const getFileUrl = (filename: string) => {
 };
 
 // Computed property para filtrar solo imágenes
-const images = computed((): Imagen[] => {
+const images = computed((): PatientImage[] => {
   if (!props.consultation.imagenes) return [];
   return props.consultation.imagenes.filter(file => imageRegex.test(file.filename));
 });
 
 // Computed property para filtrar solo PDFs
-const pdfs = computed((): Imagen[] => {
+const pdfs = computed((): PatientImage[] => {
   if (!props.consultation.imagenes) return [];
   return props.consultation.imagenes.filter(file => pdfRegex.test(file.filename));
 });

@@ -254,6 +254,16 @@
             </q-card>
           </q-expansion-item>
         </q-list>
+
+        <div class="text-weight-medium q-mt-lg">
+          <q-icon name="visibility" class="q-mr-sm" />
+          Observaciones
+        </div>
+        <q-card flat bordered class="q-mt-sm">
+          <q-card-section>
+            <div class="text-caption">{{ patient.primerObservacion || "No se reportan observaciones." }}</div>
+          </q-card-section>
+        </q-card>
       </q-card-section>
     </q-card>
 

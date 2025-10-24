@@ -75,22 +75,15 @@
           class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm">
             <q-input dense outlined v-model="form.observaciones" label="Observaciones Adicionales" type="textarea"
-              autogrow hint="Notas adicionales sobre la consulta, si las hubiera" />
+              hint="Notas adicionales sobre la consulta, si las hubiera" />
           </div>
         </q-expansion-item>
 
         <q-expansion-item group="consultation-sections" icon="attach_file" label="Laboratorios" dense-toggle
           class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm">
-            <q-uploader
-              label="Adjuntar archivos (imágenes o PDF)"
-              multiple
-              batch
-              style="max-width: 100%"
-              @added="filesAdded"
-              @removed="filesRemoved"
-              accept=".jpg, .jpeg, .png, .pdf"
-            />
+            <q-uploader label="Adjuntar archivos (imágenes o PDF)" multiple batch style="max-width: 100%"
+              @added="filesAdded" @removed="filesRemoved" accept=".jpg, .jpeg, .png, .pdf" />
           </div>
         </q-expansion-item>
 
