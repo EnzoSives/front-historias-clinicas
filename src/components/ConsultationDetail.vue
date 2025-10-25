@@ -33,7 +33,7 @@
                         <q-item-section>
                             <q-item-label>Motivo de Consulta</q-item-label>
                             <q-item-label caption class="text-body2 text-wrap">{{ consultation.motivoConsulta
-                            }}</q-item-label>
+                                }}</q-item-label>
                         </q-item-section>
                     </q-item>
 
@@ -44,7 +44,7 @@
                         <q-item-section>
                             <q-item-label>Anamnesis</q-item-label>
                             <q-item-label caption class="text-body2 text-wrap">{{ consultation.anamnesis
-                                }}</q-item-label>
+                            }}</q-item-label>
                         </q-item-section>
                     </q-item>
 
@@ -55,7 +55,7 @@
                         <q-item-section>
                             <q-item-label>Examen Físico</q-item-label>
                             <q-item-label caption class="text-body2 text-wrap">{{ consultation.examenFisico
-                                }}</q-item-label>
+                            }}</q-item-label>
                         </q-item-section>
                     </q-item>
 
@@ -66,7 +66,7 @@
                         <q-item-section>
                             <q-item-label>Diagnóstico</q-item-label>
                             <q-item-label caption class="text-body2 text-wrap">{{ consultation.diagnostico
-                            }}</q-item-label>
+                                }}</q-item-label>
                         </q-item-section>
                     </q-item>
 
@@ -77,7 +77,7 @@
                         <q-item-section>
                             <q-item-label>Tratamiento</q-item-label>
                             <q-item-label caption class="text-body2 text-wrap">{{ consultation.tratamiento
-                            }}</q-item-label>
+                                }}</q-item-label>
                         </q-item-section>
                     </q-item>
 
@@ -88,7 +88,18 @@
                         <q-item-section>
                             <q-item-label>Observaciones</q-item-label>
                             <q-item-label caption class="text-body2 text-wrap">{{ consultation.observaciones
-                            }}</q-item-label>
+                                }}</q-item-label>
+                        </q-item-section>
+                    </q-item>
+
+                    <q-item v-if="consultation.laboratorios">
+                        <q-item-section avatar>
+                            <q-icon color="primary" name="science" />
+                        </q-item-section>
+                        <q-item-section>
+                            <q-item-label>Laboratorios</q-item-label>
+                            <q-item-label caption class="text-body2 text-wrap">{{ consultation.laboratorios
+                                }}</q-item-label>
                         </q-item-section>
                     </q-item>
                 </q-list>

@@ -39,6 +39,7 @@ export interface Patient {
   examenFisicoSistemaMusculoEsqueletico?: string | undefined;
   examenFisicoPielAnexos?: string | undefined;
   primerObservacion?: string | undefined;
+  laboratorios?: string | undefined;
   imagen?: File | null | undefined;
   imagen2?: File | null | undefined;
   imagenes?: PatientImage[] | null | undefined; // Updated to match backend response
@@ -67,6 +68,7 @@ export interface Consultation {
   id_medico?: number;
   motivoConsulta?: string | undefined | null;
   observaciones?: string | undefined | null;
+  laboratorios?: string | undefined | null;
   fechaConsulta: Date;
   // ASEGÚRATE DE QUE ESTA LÍNEA USE 'anamnesis'
   anamnesis?: string | undefined | null;

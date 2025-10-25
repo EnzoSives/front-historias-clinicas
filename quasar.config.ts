@@ -154,15 +154,39 @@ export default defineConfig((ctx) => {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'GenerateSW' // 'GenerateSW' or 'InjectManifest'
+      // Generate a Workbox service worker for offline caching
+      workboxMode: 'GenerateSW', // 'GenerateSW' or 'InjectManifest'
       // swFilename: 'sw.js',
       // manifestFilename: 'manifest.json',
-      // extendManifestJson (json) {},
-      // useCredentialsForManifestTag: true,
-      // injectPwaMetaTags: false,
-      // extendPWACustomSWConf (esbuildConf) {},
-      // extendGenerateSWOptions (cfg) {},
-      // extendInjectManifestOptions (cfg) {}
+      injectPwaMetaTags: true,
+      extendGenerateSWOptions(cfg) {
+        // Sensible defaults for most apps
+        cfg.cleanupOutdatedCaches = true;
+        cfg.skipWaiting = true;
+        cfg.clientsClaim = true;
+        cfg.navigateFallback = '/index.html';
+        // Optional: pre-cache the root and index
+        cfg.globPatterns = cfg.globPatterns || ['**/*.{js,css,html,ico,png,svg,jpg,jpeg}'];
+      },
+      manifest: {
+        name: 'Historias Clínicas',
+        short_name: 'H. Clínicas',
+        description: 'Sistema de Historias Clínicas',
+        display: 'standalone',
+        start_url: '.',
+        theme_color: '#1976D2',
+        background_color: '#ffffff',
+        lang: 'es-AR',
+        icons: [
+          { src: 'icons/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+          { src: 'icons/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+          { src: 'icons/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+          { src: 'icons/favicon-128x128.png', sizes: '128x128', type: 'image/png' }
+          // Sugerido: agregar 192x192 y 512x512 (maskable) para mejor soporte
+          // { src: 'icons/icon-192x192.png', sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+          // { src: 'icons/icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+        ]
+      }
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova

@@ -79,6 +79,14 @@
           </div>
         </q-expansion-item>
 
+        <q-expansion-item group="consultation-sections" icon="science" label="Laboratorios" dense-toggle
+          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
+          <div class="q-pa-sm">
+            <q-input dense outlined v-model="form.laboratorios" label="Estudios de Laboratorio" type="textarea" autogrow
+              hint="Resultados de laboratorio o estudios complementarios" />
+          </div>
+        </q-expansion-item>
+
         <q-expansion-item group="consultation-sections" icon="attach_file" label="Laboratorios" dense-toggle
           class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm">
@@ -143,6 +151,7 @@ const form = reactive({
   diagnostico: '',
   tratamiento: '',
   observaciones: '',
+  laboratorios: '',
   // file1: null as File | null, // <--- ELIMINADO
   // file2: null as File | null, // <--- ELIMINADO
 });
@@ -161,6 +170,7 @@ const populateForm = () => {
     form.tratamiento = consultation.tratamiento || '';
     form.anamnesis = consultation.anamnesis || '';
     form.observaciones = consultation.observaciones || '';
+    form.laboratorios = consultation.laboratorios || '';
     // NOTA: La carga inicial de archivos existentes no se maneja aquí.
     // Necesitarías mostrar las imágenes existentes de props.consultation.imagenes
     // y permitir reemplazarlas o borrarlas.
@@ -181,6 +191,7 @@ const populateForm = () => {
     form.diagnostico = '';
     form.tratamiento = '';
     form.observaciones = '';
+    form.laboratorios = '';
 
     // 4. Actualizamos el reseteo del formulario
     // form.file1 = null; // <--- ELIMINADO
@@ -257,6 +268,7 @@ const handleSubmit = async () => {
     formData.append('fechaConsulta', new Date(form.fechaConsulta).toISOString());
     formData.append('motivoConsulta', form.motivoConsulta || '');
     formData.append('observaciones', form.observaciones || '');
+    formData.append('laboratorios', form.laboratorios || '');
     formData.append('anamnesis', form.anamnesis || '');
     formData.append('examenFisico', form.examenFisico || '');
     formData.append('diagnostico', form.diagnostico || '');

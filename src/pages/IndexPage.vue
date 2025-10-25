@@ -129,7 +129,7 @@
       <q-page class="bg-grey-1 q-page-no-padding-top">
         <div v-if="currentView === 'dashboard'">
           <Dashboard @select-patient="selectPatient" @view-consultation="viewConsultation"
-            @new-patient="showNewPatientForm" @new-consultation="showNewConsultationForm(selectedPatient!)"
+            @new-patient="showNewPatientForm" @new-consultation="showNewConsultationForm(null)"
             @search-patient="currentView = 'patients'" />
         </div>
 

@@ -22,20 +22,19 @@
 
         <div class="row q-col-gutter-xs items-center">
           <div class="col-12 col-sm-4">
-            <q-input dense outlined v-model="form.dni" label="DNI/Cédula" :rules="[(val) => !!val || 'DNI requerido']"
-              :disable="!isReadOnly" />
+            <q-input dense outlined v-model="form.dni" label="DNI/Cédula" hint="Opcional" :disable="!isReadOnly" />
           </div>
           <div class="col-12 col-sm-4">
             <v-date-picker v-model="fechaNacimientoModel" :model-config="{ type: 'string', mask: 'YYYY-MM-DD' }"
               :input-props="{
                 class: 'q-field__native q-placeholder full-width',
                 placeholder: 'Seleccione una fecha',
-              }" :is-required="true" :masks="{
+              }" :is-required="false" :masks="{
                 input: 'DD/MM/YYYY'
               }" class="full-width">
               <template v-slot="{ inputValue, inputEvents }">
                 <q-input dense outlined :model-value="inputValue" v-on="inputEvents" label="Fecha de Nacimiento"
-                  :rules="[(val) => !!val || 'Fecha de nacimiento requerida']">
+                  hint="Opcional">
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer" />
                   </template>
@@ -44,18 +43,18 @@
             </v-date-picker>
           </div>
           <div class="col-12 col-sm-4">
-            <q-select dense outlined v-model="form.sexo" label="Sexo" :options="genderOptions"
-              :rules="[(val) => !!val || 'Sexo requerido']" emit-value map-options :disable="!isReadOnly" />
+            <q-select dense outlined v-model="form.sexo" label="Sexo" :options="genderOptions" hint="Opcional"
+              emit-value map-options :disable="!isReadOnly" />
           </div>
         </div>
 
-        <q-expansion-item group="form-sections" icon="contact_mail" label="Información de Contacto"
-          dense-toggle class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
+        <q-expansion-item group="form-sections" icon="contact_mail" label="Información de Contacto" dense-toggle
+          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm">
             <div class="row q-col-gutter-sm">
               <div class="col-12">
-                <q-input dense outlined v-model="form.direccion" label="Dirección"
-                  :rules="[(val) => !!val || 'Dirección requerida']" :disable="!isReadOnly" />
+                <q-input dense outlined v-model="form.direccion" label="Dirección" hint="Opcional"
+                  :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-6">
                 <q-input dense outlined v-model="form.telefonoCelular" label="Teléfono Celular" hint="Opcional"
@@ -143,8 +142,8 @@
                   hint="Opcional" :disable="!isReadOnly" />
               </div>
               <div class="col-12 col-sm-3">
-                <q-input dense outlined v-model.number="form.examenFisicoIMC" label="IMC" type="number"
-                  hint="Calculado" :disable="!isReadOnly" readonly />
+                <q-input dense outlined v-model.number="form.examenFisicoIMC" label="IMC" type="number" hint="Calculado"
+                  :disable="!isReadOnly" readonly />
               </div>
               <div class="col-12 col-sm-3">
                 <q-input dense outlined v-model="form.examenFisicoTemperatura" label="Temp. (°C)" hint="Opcional"
@@ -232,6 +231,14 @@
           <div class="q-pa-sm">
             <q-input dense outlined v-model="form.primerObservacion" label="Primera Observación" type="textarea"
               rows="3" hint="Opcional" :disable="!isReadOnly" />
+          </div>
+        </q-expansion-item>
+
+        <q-expansion-item group="form-sections" icon="science" label="Laboratorios" dense-toggle
+          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
+          <div class="q-pa-sm">
+            <q-input dense outlined v-model="form.laboratorios" label="Estudios de Laboratorio" type="textarea" rows="3"
+              hint="Opcional" :disable="!isReadOnly" />
           </div>
         </q-expansion-item>
 
@@ -341,6 +348,7 @@ const form = reactive<PatientType>({
   examenFisicoSistemaMusculoEsqueletico: undefined,
   examenFisicoPielAnexos: undefined,
   primerObservacion: undefined,
+  laboratorios: undefined,
   imagen: null,
   imagen2: null,
   imagenes: [],
