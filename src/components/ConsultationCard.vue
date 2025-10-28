@@ -132,7 +132,7 @@ const pdfRegex = /\.(pdf)$/i;
 
 // Devuelve la URL base para cualquier archivo
 const getFileUrl = (filename: string) => {
-  return `http://localhost:3000/uploads/${filename}`;
+  return `http://66.97.45.96:3007/uploads/${filename}`;
 };
 
 // Computed property para filtrar solo imágenes
