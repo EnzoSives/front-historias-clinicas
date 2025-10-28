@@ -72,7 +72,7 @@ const handleSubmit = async () => {
 
   try {
     const response = await api.post<LoginResponse>(
-      "http://localhost:3000/auth/login",
+      "http://66.97.45.96:3007/auth/login",
       form
     );
 
