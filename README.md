@@ -125,13 +125,7 @@ yarn global add @quasar/cli
 
 El proyecto utiliza una configuración de API centralizada en `src/boot/axios.ts`:
 
-```typescript
-const api = axios.create({ 
-  baseURL: 'https://api.hcmadariaga.online/' 
-});
-```
-
-Para entornos de desarrollo local, puedes modificar la baseURL:
+Para entornos de desarrollo local la baseURL es:
 
 ```typescript
 const api = axios.create({ 
