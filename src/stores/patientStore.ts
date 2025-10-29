@@ -38,7 +38,7 @@ export const usePatientStore = defineStore("patient", {
       this.error = null;
       try {
         const response = await api.get<PatientType[]>(
-          "http://66.97.45.96:3007/paciente/all"
+          "https://api.hcmadariaga.online/paciente/all"
         ); //
         this.patients = response.data;
       } catch (err: any) {
@@ -56,7 +56,7 @@ export const usePatientStore = defineStore("patient", {
       this.error = null;
       try {
         const response = await api.post<PatientType>(
-          "http://66.97.45.96:3007/paciente/crear",
+          "https://api.hcmadariaga.online/paciente/crear",
           patientData
         ); //
         this.patients.push(response.data); // Añade el nuevo paciente a la lista local
@@ -77,7 +77,7 @@ export const usePatientStore = defineStore("patient", {
       this.error = null;
       try {
         const response = await api.patch<PatientType>(
-          `http://66.97.45.96:3007/paciente/actualizar/${id}`,
+          `https://api.hcmadariaga.online/paciente/actualizar/${id}`,
           patientData
         ); //
         // Actualiza el paciente en la lista local
@@ -101,7 +101,7 @@ export const usePatientStore = defineStore("patient", {
       this.loading = true;
       this.error = null;
       try {
-        await api.delete(`http://66.97.45.96:3007/paciente/eliminar/${id}`); //
+        await api.delete(`https://api.hcmadariaga.online/paciente/eliminar/${id}`); //
         // Elimina el paciente de la lista local
         this.patients = this.patients.filter((p) => p.id_paciente !== id);
       } catch (err: any) {
@@ -120,7 +120,7 @@ export const usePatientStore = defineStore("patient", {
       this.error = null;
       try {
         const response = await api.get<PatientType>(
-          `http://66.97.45.96:3007/paciente/${id}`
+          `https://api.hcmadariaga.online/paciente/${id}`
         ); //
         // Opcional: podrías añadir este paciente a una lista de pacientes individuales si tu UI lo requiere
         return response.data;

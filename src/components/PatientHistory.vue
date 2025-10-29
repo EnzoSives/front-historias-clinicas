@@ -388,7 +388,7 @@ const loading = ref(false);
 const patientImageUrls = computed(() => {
   const urls = [];
   // Asegúrate de que esta URL coincida con la de tu servidor backend.
-  const baseUrl = 'http://localhost:3000/uploads/';
+  const baseUrl = 'https://api.hcmadariaga.online/uploads/';
 
   // Si el paciente tiene un nombre de archivo para 'imagen', construye la URL completa.
   if (props.patient?.imagenes) {
