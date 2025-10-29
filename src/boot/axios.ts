@@ -9,7 +9,8 @@ declare module 'vue' {
 }
 
 // Se crea la instancia de Axios que usará toda la app
-const api = axios.create({ baseURL: 'http://66.97.45.96:3007' });
+// const api = axios.create({ baseURL: 'http://66.97.45.96:3007' });
+const api = axios.create({ baseURL: 'https://api.hcmadariaga.online/' });
 
 // La lógica para añadir el token se coloca aquí, dentro de la función de boot
 export default defineBoot(({ app }) => {

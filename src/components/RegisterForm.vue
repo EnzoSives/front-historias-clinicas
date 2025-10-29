@@ -143,7 +143,7 @@ const handleSubmit = async () => {
   try {
     // El objeto 'form' ya contiene todos los campos necesarios
     const response = await api.post(
-      "http://66.97.45.96:3007/auth/register",
+      "https://api.hcmadariaga.online/auth/register",
       form
     );
     console.log("Registration successful:", response.data);
