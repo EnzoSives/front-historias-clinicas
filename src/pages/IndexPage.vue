@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr fFf">
+  <q-layout view="hHh lpr lFf">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn flat dense round icon="menu" @click="drawerOpen = !drawerOpen" />
@@ -48,13 +48,23 @@
     </q-header>
 
     <q-page-container>
-      <q-drawer v-model="drawerOpen" :width="280" :breakpoint="700" elevated class="bg-grey-2">
+      <q-drawer
+        v-model="drawerOpen"
+        :mini="drawerMini"
+        @mouseenter="drawerMini = false"
+        @mouseleave="drawerMini = true"
+        mini-to-overlay
+        :width="280"
+        :breakpoint="1200"
+        bordered
+        class="bg-grey-2"
+      >
         <q-scroll-area class="fit">
           <q-list>
-            <q-item-label header class="flex items-center text-primary q-mb-sm">
-
-              <span class="text-h6">Menú</span>
-            </q-item-label>
+            <!-- <q-item-label header class="flex items-center text-primary q-mb-sm">
+              <q-btn flat dense round :icon="drawerMini ? 'chevron_right' : 'chevron_left'" @click="drawerMini = !drawerMini" size="sm" />
+              <span v-if="!drawerMini" class="text-h6">Menú</span>
+            </q-item-label> -->
 
             <q-item clickable v-ripple @click="currentView = 'dashboard'" :active="currentView === 'dashboard'">
               <q-item-section avatar>
@@ -290,7 +300,8 @@ const medicalStore = useMedicalStore();
 const authStore = useAuthStore();
 const appointmentStore = useAppointmentStore();
 
-const drawerOpen = ref(false);
+const drawerOpen = ref(true);
+const drawerMini = ref(true);
 const currentView = ref<
   | "dashboard"
   | "patients"
