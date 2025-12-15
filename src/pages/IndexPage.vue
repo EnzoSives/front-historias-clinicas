@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr fFf">
+  <q-layout view="hHh lpr lFf">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn flat dense round icon="menu" @click="drawerOpen = !drawerOpen" class="lt-md" />
@@ -48,12 +48,11 @@
     </q-header>
 
     <q-page-container>
-      <q-drawer v-model="drawerOpen" show-if-above :width="280" :breakpoint="700" elevated class="bg-grey-2"
-        mini-to-overlay :mini="miniState" @mouseover="miniState = false" @mouseout="miniState = true">
+      <q-drawer v-model="drawerOpen" :width="280" :breakpoint="700" elevated class="bg-grey-2">
         <q-scroll-area class="fit">
           <q-list>
             <q-item-label header class="flex items-center text-primary q-mb-sm">
-              <!-- <q-icon name="menu" class="q-mr-sm" /> -->
+
               <span class="text-h6">Menú</span>
             </q-item-label>
 
@@ -292,7 +291,6 @@ const authStore = useAuthStore();
 const appointmentStore = useAppointmentStore();
 
 const drawerOpen = ref(false);
-const miniState = ref(true);
 const currentView = ref<
   | "dashboard"
   | "patients"
