@@ -2,7 +2,7 @@
   <q-layout view="lHh Lpr fFf">
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-btn flat dense round icon="menu" @click="drawerOpen = !drawerOpen" />
+        <q-btn flat dense round icon="menu" @click="drawerOpen = !drawerOpen" class="lt-md" />
 
         <q-toolbar-title class="gt-xs">
           <q-icon name="local_hospital" class="q-mr-sm" />
@@ -48,11 +48,12 @@
     </q-header>
 
     <q-page-container>
-      <q-drawer v-model="drawerOpen" :width="280" :breakpoint="700" elevated class="bg-grey-2">
+      <q-drawer v-model="drawerOpen" show-if-above :width="280" :breakpoint="700" elevated class="bg-grey-2"
+        mini-to-overlay :mini="miniState" @mouseover="miniState = false" @mouseout="miniState = true">
         <q-scroll-area class="fit">
           <q-list>
             <q-item-label header class="flex items-center text-primary q-mb-sm">
-
+              <!-- <q-icon name="menu" class="q-mr-sm" /> -->
               <span class="text-h6">Menú</span>
             </q-item-label>
 
@@ -291,6 +292,7 @@ const authStore = useAuthStore();
 const appointmentStore = useAppointmentStore();
 
 const drawerOpen = ref(false);
+const miniState = ref(true);
 const currentView = ref<
   | "dashboard"
   | "patients"
@@ -421,6 +423,7 @@ const editConsultation = (consultation: ConsultationType) => {
 };
 
 const savePatient = async () => {
+  console.log('savePatient llamado, previousView:', previousView.value);
   await medicalStore.fetchAllPatients(true);
   goBack();
 };
@@ -578,5 +581,34 @@ onMounted(async () => {
   .full-width {
     width: 100%;
   }
+}
+
+/* Enhanced layout styling */
+.q-layout {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.01) 100%);
+}
+
+.q-drawer {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.q-drawer:hover {
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Improved scroll area */
+.q-scroll-area {
+  border-radius: 12px;
+}
+
+/* Header improvements */
+.q-header {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.q-toolbar-title {
+  letter-spacing: -0.5px;
+  font-weight: 600;
 }
 </style>

@@ -55,7 +55,7 @@
                             <q-item-section>
                                 <q-item-label>Dirección del Consultorio</q-item-label>
                                 <q-item-label caption>{{ medico.direccionConsultorio || 'No especificada'
-                                    }}</q-item-label>
+                                }}</q-item-label>
                             </q-item-section>
                         </q-item>
                         <q-item class="q-py-md">
@@ -63,7 +63,7 @@
                             <q-item-section>
                                 <q-item-label>Teléfono del Consultorio</q-item-label>
                                 <q-item-label caption>{{ medico.telefonoConsultorio || 'No especificado'
-                                    }}</q-item-label>
+                                }}</q-item-label>
                             </q-item-section>
                         </q-item>
                         <q-item class="q-py-md">
@@ -78,7 +78,7 @@
                             <q-item-section>
                                 <q-item-label>Obras Sociales</q-item-label>
                                 <q-item-label caption>{{ medico.obrasSocialesAcepta || 'No especificado'
-                                    }}</q-item-label>
+                                }}</q-item-label>
                             </q-item-section>
                         </q-item>
                     </q-list>
@@ -257,35 +257,120 @@ const saveProfile = async () => {
 
 <style lang="scss" scoped>
 .profile-page-container {
-    background: linear-gradient(to top, #f3f4f6, #e5e7eb);
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
     min-height: 100vh;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .profile-card {
     background-color: var(--app-white);
     border-radius: 16px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease-in-out;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
 
     &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 35px rgba(0, 0, 0, 0.08);
+        transform: translateY(-6px);
+        box-shadow: 0 20px 35px rgba(0, 0, 0, 0.1);
     }
+}
+
+/* Avatar improvements */
+::v-deep .q-avatar {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 50%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.profile-card:hover ::v-deep .q-avatar {
+    transform: scale(1.05);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+/* List items improvements */
+::v-deep .q-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px;
+}
+
+::v-deep .q-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Icon improvements */
+::v-deep .q-icon {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-card:hover ::v-deep .q-icon {
+    opacity: 0.9;
 }
 
 .q-item__label--caption {
     font-size: 1em;
     color: #6b7280;
+    transition: color 0.3s ease;
 }
 
 .text-h4,
 .text-h6 {
     font-weight: 600;
     color: #1f2937;
+    letter-spacing: -0.3px;
 }
 
+.text-h4 {
+    letter-spacing: -0.5px;
+}
+
+/* Separator improvements */
+::v-deep .q-separator {
+    opacity: 0.4;
+}
+
+/* Editor improvements */
 .q-editor {
     border: 1px solid #d1d5db;
     border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.q-editor:focus-within {
+    border-color: var(--q-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Button improvements */
+::v-deep .q-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px;
+}
+
+::v-deep .q-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Chip improvements */
+::v-deep .q-chip {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px;
+}
+
+::v-deep .q-chip:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Card sections */
+::v-deep .q-card-section {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Input fields improvements */
+::v-deep .q-field {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::v-deep .q-field:focus-within {
+    opacity: 1;
 }
 </style>

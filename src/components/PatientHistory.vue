@@ -484,16 +484,71 @@ const formatDate = (dateString: string): string => {
   padding: 16px;
 }
 
+/* Card styling improvements */
+::v-deep .q-card {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::v-deep .q-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
 /* Desktop: mantener visible el panel de consultas con scroll interno */
 @media (min-width: 1024px) {
   .consultations-card {
     position: sticky;
     top: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
   }
 
   .consultations-scroll {
     max-height: 70vh;
     overflow: auto;
+    border-radius: 8px;
   }
+}
+
+/* List items improvements */
+::v-deep .q-item {
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::v-deep .q-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Buttons improvements */
+::v-deep .q-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+}
+
+::v-deep .q-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Icon improvements */
+::v-deep .q-icon {
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+/* Separator improvements */
+::v-deep .q-separator {
+  opacity: 0.4;
+}
+
+/* Text improvements */
+.text-h5 {
+  letter-spacing: -0.5px;
+  font-weight: 600;
+}
+
+.text-h6 {
+  letter-spacing: -0.3px;
+  font-weight: 500;
 }
 </style>

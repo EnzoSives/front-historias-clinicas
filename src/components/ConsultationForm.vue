@@ -82,12 +82,12 @@
         <q-expansion-item group="consultation-sections" icon="science" label="Laboratorios" dense-toggle
           class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm">
-            <q-input dense outlined v-model="form.laboratorios" label="Estudios de Laboratorio" type="textarea" autogrow
+            <q-input dense outlined v-model="form.laboratorios" label="Estudios de Laboratorio" type="textarea"
               hint="Resultados de laboratorio o estudios complementarios" />
           </div>
         </q-expansion-item>
 
-        <q-expansion-item group="consultation-sections" icon="attach_file" label="Laboratorios" dense-toggle
+        <q-expansion-item group="consultation-sections" icon="attach_file" label="Documentos" dense-toggle
           class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
           <div class="q-pa-sm">
             <q-uploader label="Adjuntar archivos (imágenes o PDF)" multiple batch style="max-width: 100%"
@@ -300,16 +300,87 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* Copiamos los estilos relevantes de PatientForm */
+/* Card improvements */
+.q-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Form inputs improvements */
+::v-deep .q-field {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::v-deep .q-field:focus-within {
+  opacity: 1;
+}
+
+::v-deep .q-field__input {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+/* Expansion items improvements */
+.expansion-style {
+  border-radius: 8px !important;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: rgba(0, 0, 0, 0.01) !important;
+}
+
+.expansion-style:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
 .expansion-style :deep(.q-expansion-item__container) {
   border-radius: 8px;
-  /* margin-bottom: 8px; No necesario por q-gutter-sm */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .expansion-style :deep(.q-expansion-item__content) {
   background: var(--app-white);
-  /* Añadimos padding para separar el contenido del borde */
-  /* padding-top: 8px; */
-  /* Eliminado para usar q-pa-sm en el div interno */
+  border-radius: 0 0 8px 8px;
+  padding: 12px;
+}
+
+/* Button styling */
+::v-deep .q-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+}
+
+::v-deep .q-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Select and other components improvements */
+::v-deep .q-select {
+  transition: all 0.3s ease;
+}
+
+::v-deep .q-uploader {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Icon improvements */
+::v-deep .q-icon {
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+/* Text improvements */
+.text-h6 {
+  letter-spacing: -0.3px;
+  font-weight: 600;
+}
+
+.text-subtitle2 {
+  letter-spacing: -0.2px;
+}
+
+/* Card actions improvements */
+::v-deep .q-card-actions {
+  gap: 8px;
 }
 </style>

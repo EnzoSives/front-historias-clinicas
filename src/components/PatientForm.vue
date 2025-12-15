@@ -25,22 +25,17 @@
             <q-input dense outlined v-model="form.dni" label="DNI/Cédula" hint="Opcional" :disable="!isReadOnly" />
           </div>
           <div class="col-12 col-sm-4">
-            <v-date-picker v-model="fechaNacimientoModel" :model-config="{ type: 'string', mask: 'YYYY-MM-DD' }"
-              :input-props="{
-                class: 'q-field__native q-placeholder full-width',
-                placeholder: 'Seleccione una fecha',
-              }" :is-required="false" :masks="{
-                input: 'DD/MM/YYYY'
-              }" class="full-width">
-              <template v-slot="{ inputValue, inputEvents }">
-                <q-input dense outlined :model-value="inputValue" v-on="inputEvents" label="Fecha de Nacimiento"
-                  hint="Opcional">
+            <DatePicker v-model="fechaNacimientoModel" mode="date" is24hr>
+              <template v-slot="{ togglePopover }">
+                <q-input outlined v-model="manualDateInput" dense label="Fecha de Nacimiento" style="min-width: 160px"
+                  class="date-input" mask="##/##/####" placeholder="DD/MM/AAAA" hint="Opcional" :disable="!isReadOnly"
+                  @blur="handleManualDateInput" @keyup.enter="handleManualDateInput">
                   <template v-slot:append>
-                    <q-icon name="event" class="cursor-pointer" />
+                    <q-icon name="event" class="cursor-pointer" color="primary" @click="togglePopover" />
                   </template>
                 </q-input>
               </template>
-            </v-date-picker>
+            </DatePicker>
           </div>
           <div class="col-12 col-sm-4">
             <q-select dense outlined v-model="form.sexo" label="Sexo" :options="genderOptions" hint="Opcional"
@@ -272,6 +267,7 @@ import { useQuasar } from "quasar";
 import { api } from "src/boot/axios";
 import { useAuthStore } from "src/stores/authStore";
 import type { Patient as PatientType } from "src/types/index";
+import { DatePicker } from 'v-calendar';
 
 interface Props {
   patient?: PatientType | null;
@@ -289,6 +285,7 @@ const $q = useQuasar();
 const loading = ref(false);
 const authStore = useAuthStore();
 const activeSystemTab = ref("nervous");
+const manualDateInput = ref("");
 
 // Propiedad computada para determinar si el formulario es de solo lectura
 const isReadOnly = computed(() => {
@@ -357,20 +354,103 @@ const form = reactive<PatientType>({
 
 const fechaNacimientoModel = computed({
   get() {
-    if (!form.fechaNacimiento) return "";
+    if (!form.fechaNacimiento) return null;
     try {
-      const date = new Date(form.fechaNacimiento);
-      const offset = date.getTimezoneOffset();
-      const adjustedDate = new Date(date.getTime() - offset * 60 * 1000);
-      return adjustedDate.toISOString().split("T")[0];
+      return new Date(form.fechaNacimiento);
     } catch (e) {
-      return "";
+      return null;
     }
   },
-  set(newValue: string) {
-    form.fechaNacimiento = newValue ? new Date(newValue) : undefined;
+  set(newValue: Date | null) {
+    if (!newValue) {
+      form.fechaNacimiento = undefined;
+      manualDateInput.value = "";
+      return;
+    }
+    // DatePicker returns a Date object
+    form.fechaNacimiento = newValue;
+    // Sync manual input when date changes from calendar
+    const day = String(newValue.getDate()).padStart(2, '0');
+    const month = String(newValue.getMonth() + 1).padStart(2, '0');
+    const year = newValue.getFullYear();
+    manualDateInput.value = `${day}/${month}/${year}`;
   },
 });
+
+// Function to handle manual date input in DD/MM/YYYY format
+const handleManualDateInput = () => {
+  const input = manualDateInput.value.trim();
+
+  // Si está vacío, limpiar la fecha
+  if (!input) {
+    form.fechaNacimiento = undefined;
+    return;
+  }
+
+  // Si no está completo (menos de 10 caracteres), no validar aún
+  if (input.length < 10) {
+    return;
+  }
+
+  // Validate DD/MM/YYYY format
+  const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+  const match = input.match(dateRegex);
+
+  if (match) {
+    const day = match[1];
+    const month = match[2];
+    const year = match[3];
+
+    if (day && month && year) {
+      const dayNum = parseInt(day, 10);
+      const monthNum = parseInt(month, 10);
+      const yearNum = parseInt(year, 10);
+
+      // Validate ranges
+      if (monthNum >= 1 && monthNum <= 12 && dayNum >= 1 && dayNum <= 31) {
+        // Create date in local timezone to avoid timezone offset issues
+        const date = new Date(yearNum, monthNum - 1, dayNum, 12, 0, 0);
+
+        // Verify it's a valid date (check if the date components match)
+        if (!isNaN(date.getTime()) &&
+          date.getDate() === dayNum &&
+          date.getMonth() === monthNum - 1 &&
+          date.getFullYear() === yearNum) {
+          form.fechaNacimiento = date;
+        } else {
+          $q.notify({ type: "warning", message: "Fecha inválida. Use formato DD/MM/AAAA" });
+          manualDateInput.value = "";
+        }
+      } else {
+        $q.notify({ type: "warning", message: "Fecha inválida. Use formato DD/MM/AAAA" });
+        manualDateInput.value = "";
+      }
+    }
+  } else {
+    $q.notify({ type: "warning", message: "Formato inválido. Use DD/MM/AAAA" });
+    manualDateInput.value = "";
+  }
+};
+
+// Watch for changes in form.fechaNacimiento to sync with manual input
+watch(
+  () => form.fechaNacimiento,
+  (newDate) => {
+    if (newDate) {
+      const date = new Date(newDate);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const formattedDate = `${day}/${month}/${year}`;
+      // Only update if different to avoid infinite loops
+      if (manualDateInput.value !== formattedDate) {
+        manualDateInput.value = formattedDate;
+      }
+    } else {
+      manualDateInput.value = "";
+    }
+  }
+);
 
 watch(
   () => props.patient,
@@ -393,6 +473,7 @@ watch(
       form.imagen2 = null;
     } else {
       form.id_medico = authStore.user?.medico?.id_medico;
+      form.fechaNacimiento = undefined;
     }
   },
   { immediate: true, deep: true }
@@ -464,6 +545,8 @@ const handleSubmit = async () => {
       await api.post("/paciente/crear", formData, config);
       $q.notify({ type: "positive", message: "Paciente creado!" });
     }
+
+    // Emitir evento después de guardar exitosamente
     emit("saved");
   } catch (error: any) {
     console.error("Error saving patient:", error.response?.data || error);
@@ -478,29 +561,89 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
+/* Card improvements */
+.q-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Form inputs improvements */
+::v-deep .q-field {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::v-deep .q-field:focus-within {
+  opacity: 1;
+}
+
+::v-deep .q-field__input {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+/* Expansion items improvements */
+.expansion-style {
+  border-radius: 8px !important;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: rgba(0, 0, 0, 0.01) !important;
+}
+
+.expansion-style:hover {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
 .expansion-style :deep(.q-expansion-item__container) {
   border-radius: 8px;
   margin-bottom: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .expansion-style :deep(.q-expansion-item__content) {
   background: var(--app-white);
+  border-radius: 0 0 8px 8px;
+  padding: 12px;
 }
 
 .expansion-style :deep(.q-tab) {
   padding: 0 12px;
   min-height: 32px;
+  transition: all 0.3s ease;
 }
 
 .expansion-style :deep(.q-tab__label) {
   font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .expansion-style :deep(.q-separator) {
   margin: 8px 0;
+  opacity: 0.3;
+}
+
+/* Button styling */
+::v-deep .q-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+}
+
+::v-deep .q-btn:hover {
+  transform: translateY(-2px);
 }
 
 .cursor-not-allowed {
   cursor: not-allowed !important;
+}
+
+/* Icon improvements */
+::v-deep .q-icon {
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+/* Text improvements */
+.text-h6 {
+  letter-spacing: -0.3px;
+  font-weight: 600;
 }
 </style>

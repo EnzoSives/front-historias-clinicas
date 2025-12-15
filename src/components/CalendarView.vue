@@ -46,9 +46,9 @@
                                     turno.paciente.apellido }}</q-item-label>
                                 <q-item-label caption><q-icon name="access_time" class="q-mr-xs" />{{
                                     formatTime(turno.fechaHora)
-                                    }}</q-item-label>
+                                }}</q-item-label>
                                 <q-item-label caption v-if="turno.motivo" class="ellipsis">{{ turno.motivo
-                                    }}</q-item-label>
+                                }}</q-item-label>
                             </q-item-section>
                         </q-item>
                     </q-list>
@@ -230,8 +230,101 @@ const addAppointment = async () => {
 </script>
 
 <style scoped>
+/* Card improvements */
+::v-deep .q-card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::v-deep .q-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Calendar styling */
 .custom-calendar {
     border: none;
     width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Calendar items improvements */
+::v-deep .vc-header {
+    transition: all 0.3s ease;
+}
+
+::v-deep .vc-day {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 6px;
+}
+
+::v-deep .vc-day:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* List items improvements */
+::v-deep .q-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px;
+}
+
+::v-deep .q-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Button styling */
+::v-deep .q-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 8px;
+}
+
+::v-deep .q-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Avatar styling */
+::v-deep .q-avatar {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::v-deep .q-item:hover .q-avatar {
+    transform: scale(1.05);
+}
+
+/* Input fields improvements */
+::v-deep .q-field {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Separator improvements */
+::v-deep .q-separator {
+    opacity: 0.4;
+}
+
+/* Title improvements */
+.text-h4 {
+    letter-spacing: -0.5px;
+    font-weight: 600;
+}
+
+.text-h6 {
+    letter-spacing: -0.3px;
+    font-weight: 500;
+}
+
+/* Dialog responsive improvements */
+::v-deep .q-dialog__inner {
+    border-radius: 12px;
+}
+
+::v-deep .q-dialog-responsive {
+    min-width: 400px;
+}
+
+@media (max-width: 600px) {
+    ::v-deep .q-dialog-responsive {
+        min-width: 90vw;
+    }
 }
 </style>

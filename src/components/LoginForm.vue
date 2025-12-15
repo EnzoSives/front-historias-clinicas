@@ -128,7 +128,72 @@ const handleSubmit = async () => {
 <style scoped>
 .my_card {
   width: 25rem;
-  border-radius: 8px;
+  border-radius: 12px;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--app-white);
+}
+
+.my_card:hover {
+  box-shadow: 0 25px 30px -5px rgb(0 0 0 / 0.12);
+  transform: translateY(-2px);
+}
+
+/* Input fields improvements */
+::v-deep .q-field {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+::v-deep .q-field:focus-within {
+  opacity: 1;
+}
+
+::v-deep .q-field__input {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+/* Button improvements */
+::v-deep .q-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+::v-deep .q-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Text improvements */
+.text-h5 {
+  letter-spacing: -0.5px;
+  font-weight: 700;
+}
+
+.text-weight-bold {
+  font-weight: 600;
+}
+
+/* Link styling */
+::v-deep a {
+  color: var(--q-primary);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+::v-deep a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Card sections */
+::v-deep .q-card-section {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Form improvements */
+::v-deep .q-form {
+  transition: all 0.3s ease;
 }
 </style>

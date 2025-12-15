@@ -109,21 +109,61 @@ const downloadPDF = async (patientId: number) => {
 <style scoped>
 .patient-card {
   border-radius: 12px;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   border-left: 5px solid transparent;
   background-color: var(--app-white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 .patient-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
   border-left-color: var(--q-primary);
+}
+
+.patient-card:hover .q-avatar {
+  transform: scale(1.1);
 }
 
 .ellipsis {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Card sections improvements */
+.q-card-section {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Separator improvements */
+::v-deep .q-separator {
+  opacity: 0.5;
+}
+
+/* Action buttons improvements */
+.q-card-actions {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 4px;
+}
+
+.q-btn {
+  transition: all 0.2s ease;
+}
+
+.q-btn:hover {
+  transform: scale(1.05);
+}
+
+/* Chip styling */
+.q-chip {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 6px;
+}
+
+.q-chip:hover {
+  background-color: rgba(0, 0, 0, 0.08);
 }
 </style>

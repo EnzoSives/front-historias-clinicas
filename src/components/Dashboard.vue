@@ -254,13 +254,14 @@ const truncateText = (text: string | undefined, maxLength: number): string => {
 
 .stat-card {
   border-radius: 12px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
 }
 
 .stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
 }
 
 .opacity-80 {
@@ -269,15 +270,47 @@ const truncateText = (text: string | undefined, maxLength: number): string => {
 
 .opacity-50 {
   opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.stat-card:hover .opacity-50 {
+  opacity: 0.65;
 }
 
 .content-card {
   border-radius: 12px;
   height: 100%;
   background-color: var(--app-white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.content-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .q-item {
   padding: 16px;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.q-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Recent sections styling */
+.recent-section {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.recent-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.recent-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+  padding-left: 20px;
 }
 </style>

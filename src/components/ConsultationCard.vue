@@ -204,24 +204,31 @@ const confirmDelete = () => {
 <style scoped>
 .consultation-card {
   border-radius: 12px;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: default;
   background-color: var(--app-white);
   border-left: 5px solid transparent;
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   min-height: 250px;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .consultation-card.q-hoverable:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.12);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
   border-left-color: var(--q-primary);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .cursor-pointer {
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cursor-pointer:hover {
+  opacity: 0.85;
 }
 
 .ellipsis-2-lines {
@@ -231,14 +238,60 @@ const confirmDelete = () => {
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
+  transition: all 0.3s ease;
+}
+
+.consultation-card:hover .ellipsis-2-lines {
+  opacity: 0.95;
 }
 
 .text-body1.text-weight-medium {
   font-size: 1.1rem;
   font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.consultation-card:hover .text-body1.text-weight-medium {
+  color: var(--q-primary);
+  opacity: 1;
 }
 
 .q-icon {
   vertical-align: middle;
+  transition: all 0.3s ease;
+}
+
+.consultation-card:hover .q-icon {
+  opacity: 0.9;
+}
+
+/* Card sections */
+.q-card-section {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Separator improvements */
+::v-deep .q-separator {
+  opacity: 0.4;
+}
+
+/* Button styling */
+.q-btn {
+  transition: all 0.2s ease;
+}
+
+.q-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Image styling */
+.q-img {
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+.q-img:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.02);
 }
 </style>
