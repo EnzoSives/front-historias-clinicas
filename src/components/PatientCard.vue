@@ -1,44 +1,49 @@
 <template>
-  <q-card class="patient-card q-ma-sm" flat bordered @click="$emit('select-patient', patient)">
-    <q-card-section>
-      <div class="row items-center no-wrap">
-        <div class="col-auto q-mr-md">
-          <q-avatar size="60px" color="indigo-1" text-color="primary" icon="person" />
+  <q-card class="patient-card q-ma-sm" flat @click="$emit('select-patient', patient)">
+    <!-- Header con banda de color -->
+    <div class="patient-card__header">
+      <q-avatar size="52px" color="white" text-color="primary" icon="person" class="patient-card__avatar" />
+      <div class="patient-card__title">
+        <div class="text-subtitle1 text-weight-bold text-white ellipsis">{{ patient.nombre }} {{ patient.apellido }}
         </div>
-        <div class="col">
-          <div class="text-h6 text-primary ellipsis">{{ patient.nombre }} {{ patient.apellido }}</div>
-          <div class="text-caption text-grey-7">
-            Registrado: {{ formatDate(patient.fechaCreacion ? patient.fechaCreacion.toString() : "") }}
-          </div>
+        <div class="text-caption" style="opacity: 0.85; color: #e8eaf6;">
+          <q-icon name="calendar_today" size="10px" class="q-mr-xs" />
+          Registrado: {{ formatDate(patient.fechaCreacion ? patient.fechaCreacion.toString() : "") }}
         </div>
+      </div>
+    </div>
+
+    <!-- Chips de datos -->
+    <q-card-section class="q-pt-sm q-pb-sm">
+      <div class="row q-gutter-xs">
+        <q-chip dense icon="badge" color="primary" text-color="white" class="chip-data">
+          {{ patient.dni || 'Sin DNI' }}
+        </q-chip>
+        <q-chip dense icon="cake" color="indigo-1" text-color="indigo-9" class="chip-data">
+          {{ calculateAge(patient.fechaNacimiento ? patient.fechaNacimiento.toString() : "") }} años
+        </q-chip>
+        <q-chip dense icon="transgender" color="indigo-1" text-color="indigo-9" class="chip-data">
+          {{ patient.sexo || 'N/E' }}
+        </q-chip>
       </div>
     </q-card-section>
 
-    <q-card-section class="q-pt-none">
-      <q-chip dense icon="badge" color="grey-2" text-color="grey-9">
-        DNI: {{ patient.dni }}
-      </q-chip>
-      <q-chip dense icon="cake" color="grey-2" text-color="grey-9" class="q-ml-sm">
-        {{ calculateAge(patient.fechaNacimiento ? patient.fechaNacimiento.toString() : "") }} años
-      </q-chip>
-      <q-chip dense icon="transgender" color="grey-2" text-color="grey-9" class="q-ml-sm">
-        {{ patient.sexo }}
-      </q-chip>
-    </q-card-section>
-
-    <q-separator />
-
-    <q-card-actions align="right" class="q-pa-sm">
-      <q-btn flat round color="primary" icon="visibility" @click.stop="$emit('view-history', patient)">
+    <!-- Acciones -->
+    <q-card-actions align="right" class="q-pa-xs card-footer">
+      <q-btn flat round dense color="primary" icon="visibility" @click.stop="$emit('view-history', patient)"
+        aria-label="Ver Historial">
         <q-tooltip>Ver Historial</q-tooltip>
       </q-btn>
-      <q-btn flat round color="orange" icon="edit" @click.stop="$emit('edit-patient', patient)">
+      <q-btn flat round dense color="orange-8" icon="edit" @click.stop="$emit('edit-patient', patient)"
+        aria-label="Editar Paciente">
         <q-tooltip>Editar Paciente</q-tooltip>
       </q-btn>
-      <q-btn flat round color="purple" icon="picture_as_pdf" @click.stop="downloadPDF(patient.id_paciente)">
+      <q-btn flat round dense color="deep-purple" icon="picture_as_pdf" @click.stop="downloadPDF(patient.id_paciente)"
+        aria-label="Descargar PDF">
         <q-tooltip>Descargar PDF</q-tooltip>
       </q-btn>
-      <q-btn flat round color="negative" icon="delete" @click.stop="$emit('delete-patient', patient.id_paciente)">
+      <q-btn flat round dense color="negative" icon="delete" @click.stop="$emit('delete-patient', patient.id_paciente)"
+        aria-label="Eliminar Paciente">
         <q-tooltip>Eliminar Paciente</q-tooltip>
       </q-btn>
     </q-card-actions>
@@ -108,62 +113,50 @@ const downloadPDF = async (patientId: number) => {
 
 <style scoped>
 .patient-card {
-  border-radius: 12px;
+  border-radius: 14px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  border-left: 5px solid transparent;
-  background-color: var(--app-white);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  border: 1px solid rgba(63, 81, 181, 0.25);
 }
 
 .patient-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
-  border-left-color: var(--q-primary);
+  transform: translateY(-5px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
 }
 
-.patient-card:hover .q-avatar {
-  transform: scale(1.1);
+.patient-card__header {
+  background: #1976D2;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.patient-card__avatar {
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.patient-card__title {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-footer {
+  background-color: white;
+}
+
+.chip-data {
+  font-size: 11px;
+  height: 22px;
 }
 
 .ellipsis {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* Card sections improvements */
-.q-card-section {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Separator improvements */
-::v-deep .q-separator {
-  opacity: 0.5;
-}
-
-/* Action buttons improvements */
-.q-card-actions {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  gap: 4px;
-}
-
-.q-btn {
-  transition: all 0.2s ease;
-}
-
-.q-btn:hover {
-  transform: scale(1.05);
-}
-
-/* Chip styling */
-.q-chip {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 6px;
-}
-
-.q-chip:hover {
-  background-color: rgba(0, 0, 0, 0.08);
 }
 </style>

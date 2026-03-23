@@ -2,17 +2,15 @@
   <div class="dashboard q-pa-md">
     <div class="row q-col-gutter-md q-mb-lg">
       <div class="col-12 col-sm-6 col-lg-3">
-        <q-card class="stat-card bg-primary text-white" flat bordered>
+        <q-card class="stat-card" flat bordered>
           <q-card-section>
-            <div class="row items-center no-wrap">
-              <div class="col">
-                <div class="text-h4 text-weight-bold">{{ totalPatients }}</div>
-                <div class="text-subtitle2 opacity-80">
-                  Pacientes Registrados
-                </div>
-              </div>
-              <div class="col-auto">
-                <q-icon name="people" size="40px" class="opacity-50" />
+            <div class="row items-center no-wrap q-gutter-sm">
+              <q-avatar color="primary" text-color="white" size="52px">
+                <q-icon name="people" size="28px" />
+              </q-avatar>
+              <div>
+                <div class="text-h4 text-weight-bold text-primary">{{ totalPatients }}</div>
+                <div class="text-subtitle2 text-grey-6">Pacientes Registrados</div>
               </div>
             </div>
           </q-card-section>
@@ -20,17 +18,15 @@
       </div>
 
       <div class="col-12 col-sm-6 col-lg-3">
-        <q-card class="stat-card bg-secondary text-white" flat bordered>
+        <q-card class="stat-card" flat bordered>
           <q-card-section>
-            <div class="row items-center no-wrap">
-              <div class="col">
-                <div class="text-h4 text-weight-bold">
-                  {{ totalConsultations }}
-                </div>
-                <div class="text-subtitle2 opacity-80">Total de Consultas</div>
-              </div>
-              <div class="col-auto">
-                <q-icon name="medical_services" size="40px" class="opacity-50" />
+            <div class="row items-center no-wrap q-gutter-sm">
+              <q-avatar color="teal" text-color="white" size="52px">
+                <q-icon name="medical_services" size="28px" />
+              </q-avatar>
+              <div>
+                <div class="text-h4 text-weight-bold text-teal">{{ totalConsultations }}</div>
+                <div class="text-subtitle2 text-grey-6">Total de Consultas</div>
               </div>
             </div>
           </q-card-section>
@@ -38,19 +34,15 @@
       </div>
 
       <div class="col-12 col-sm-6 col-lg-3">
-        <q-card class="stat-card bg-positive text-white" flat bordered>
+        <q-card class="stat-card" flat bordered>
           <q-card-section>
-            <div class="row items-center no-wrap">
-              <div class="col">
-                <div class="text-h4 text-weight-bold">
-                  {{ consultationsThisMonth }}
-                </div>
-                <div class="text-subtitle2 opacity-80">
-                  Consultas este Mes
-                </div>
-              </div>
-              <div class="col-auto">
-                <q-icon name="calendar_month" size="40px" class="opacity-50" />
+            <div class="row items-center no-wrap q-gutter-sm">
+              <q-avatar color="positive" text-color="white" size="52px">
+                <q-icon name="calendar_month" size="28px" />
+              </q-avatar>
+              <div>
+                <div class="text-h4 text-weight-bold text-positive">{{ consultationsThisMonth }}</div>
+                <div class="text-subtitle2 text-grey-6">Consultas este Mes</div>
               </div>
             </div>
           </q-card-section>
@@ -58,17 +50,15 @@
       </div>
 
       <div class="col-12 col-sm-6 col-lg-3">
-        <q-card class="stat-card bg-warning text-white" flat bordered>
+        <q-card class="stat-card" flat bordered>
           <q-card-section>
-            <div class="row items-center no-wrap">
-              <div class="col">
-                <div class="text-h4 text-weight-bold">
-                  {{ upcomingAppointments }}
-                </div>
-                <div class="text-subtitle2 opacity-80">Turnos del día</div>
-              </div>
-              <div class="col-auto">
-                <q-icon name="event_available" size="40px" class="opacity-50" />
+            <div class="row items-center no-wrap q-gutter-sm">
+              <q-avatar color="deep-orange" text-color="white" size="52px">
+                <q-icon name="event_available" size="28px" />
+              </q-avatar>
+              <div>
+                <div class="text-h4 text-weight-bold text-deep-orange">{{ upcomingAppointments }}</div>
+                <div class="text-subtitle2 text-grey-6">Turnos del día</div>
               </div>
             </div>
           </q-card-section>
@@ -280,8 +270,8 @@ const truncateText = (text: string | undefined, maxLength: number): string => {
 .content-card {
   border-radius: 12px;
   height: 100%;
-  background-color: var(--app-white);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background-color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

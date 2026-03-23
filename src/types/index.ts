@@ -21,6 +21,7 @@ export interface Patient {
   antecedentesHeredoFamiliares?: string | undefined;
   habitosToxicos?: string | undefined;
   medicacionHabitual?: string | undefined;
+  antecedentesGinecoObstetricos?: string | undefined;
   examenFisicoHabito?: string | undefined;
   examenFisicoPeso?: number | undefined;
   examenFisicoTalla?: number | undefined;

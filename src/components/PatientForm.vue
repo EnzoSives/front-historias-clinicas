@@ -8,45 +8,54 @@
     </q-card-section>
 
     <q-card-section>
-      <q-form @submit="handleSubmit" class="q-gutter-sm">
-        <div class="row q-col-gutter-xs items-center">
-          <div class="col-12 col-sm-6">
-            <q-input dense outlined v-model="form.nombre" label="Nombres"
-              :rules="[(val) => !!val || 'Nombres requeridos']" :disable="!isReadOnly" />
-          </div>
-          <div class="col-12 col-sm-6">
-            <q-input dense outlined v-model="form.apellido" label="Apellidos"
-              :rules="[(val) => !!val || 'Apellidos requeridos']" :disable="!isReadOnly" />
-          </div>
-        </div>
+      <q-form @submit="handleSubmit">
+        <q-banner v-if="!isReadOnly" class="bg-warning text-white q-mb-md" rounded>
+          <template v-slot:avatar>
+            <q-icon name="lock" color="white" />
+          </template>
+          Estás en modo solo lectura. No tenés permisos para editar este paciente.
+        </q-banner>
 
-        <div class="row q-col-gutter-xs items-center">
-          <div class="col-12 col-sm-4">
-            <q-input dense outlined v-model="form.dni" label="DNI/Cédula" hint="Opcional" :disable="!isReadOnly" />
-          </div>
-          <div class="col-12 col-sm-4">
-            <DatePicker v-model="fechaNacimientoModel" mode="date" is24hr>
-              <template v-slot="{ togglePopover }">
-                <q-input outlined v-model="manualDateInput" dense label="Fecha de Nacimiento" style="min-width: 160px"
-                  class="date-input" mask="##/##/####" placeholder="DD/MM/AAAA" hint="Opcional" :disable="!isReadOnly"
-                  @blur="handleManualDateInput" @keyup.enter="handleManualDateInput">
-                  <template v-slot:append>
-                    <q-icon name="event" class="cursor-pointer" color="primary" @click="togglePopover" />
-                  </template>
-                </q-input>
-              </template>
-            </DatePicker>
-          </div>
-          <div class="col-12 col-sm-4">
-            <q-select dense outlined v-model="form.sexo" label="Sexo" :options="genderOptions" hint="Opcional"
-              emit-value map-options :disable="!isReadOnly" />
-          </div>
-        </div>
-
-        <q-expansion-item group="form-sections" icon="contact_mail" label="Información de Contacto" dense-toggle
-          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
-          <div class="q-pa-sm">
+        <q-stepper v-model="step" flat animated color="primary" alternative-labels>
+          <!-- ===== PASO 1: DATOS BÁSICOS ===== -->
+          <q-step :name="1" title="Datos Básicos" icon="person" :done="step > 1">
             <div class="row q-col-gutter-sm">
+              <div class="col-12 col-sm-6">
+                <q-input dense outlined v-model="form.nombre" label="Nombres"
+                  :rules="[(val) => !!val || 'Nombres requeridos']" :disable="!isReadOnly" />
+              </div>
+              <div class="col-12 col-sm-6">
+                <q-input dense outlined v-model="form.apellido" label="Apellidos"
+                  :rules="[(val) => !!val || 'Apellidos requeridos']" :disable="!isReadOnly" />
+              </div>
+              <div class="col-12 col-sm-4">
+                <q-input dense outlined v-model="form.dni" label="DNI/Cédula" hint="Opcional" :disable="!isReadOnly" />
+              </div>
+              <div class="col-12 col-sm-4">
+                <DatePicker v-model="fechaNacimientoModel" mode="date" is24hr>
+                  <template v-slot="{ togglePopover }">
+                    <q-input outlined v-model="manualDateInput" dense label="Fecha de Nacimiento"
+                      style="min-width: 160px" class="date-input" mask="##/##/####" placeholder="DD/MM/AAAA"
+                      hint="Opcional" :disable="!isReadOnly" @blur="handleManualDateInput"
+                      @keyup.enter="handleManualDateInput">
+                      <template v-slot:append>
+                        <q-icon name="event" class="cursor-pointer" color="primary" @click="togglePopover" />
+                      </template>
+                    </q-input>
+                  </template>
+                </DatePicker>
+              </div>
+              <div class="col-12 col-sm-4">
+                <q-select dense outlined v-model="form.sexo" label="Sexo" :options="genderOptions" hint="Opcional"
+                  emit-value map-options :disable="!isReadOnly" />
+              </div>
+            </div>
+          </q-step>
+
+          <!-- ===== PASO 2: CONTACTO & ANTECEDENTES ===== -->
+          <q-step :name="2" title="Contacto & Antecedentes" icon="contact_mail" :done="step > 2">
+            <div class="text-subtitle2 text-primary q-mb-sm">Información de Contacto</div>
+            <div class="row q-col-gutter-sm q-mb-md">
               <div class="col-12">
                 <q-input dense outlined v-model="form.direccion" label="Dirección" hint="Opcional"
                   :disable="!isReadOnly" />
@@ -60,13 +69,9 @@
                   :disable="!isReadOnly" />
               </div>
             </div>
-          </div>
-        </q-expansion-item>
 
-        <q-expansion-item group="form-sections" icon="person" label="Datos Personales" dense-toggle
-          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
-          <div class="q-pa-sm">
-            <div class="row q-col-gutter-sm">
+            <div class="text-subtitle2 text-primary q-mb-sm">Datos Personales</div>
+            <div class="row q-col-gutter-sm q-mb-md">
               <div class="col-12 col-sm-6">
                 <q-input dense outlined v-model="form.lugarNacimiento" label="Lugar de Nacimiento" hint="Opcional"
                   :disable="!isReadOnly" />
@@ -88,12 +93,8 @@
                   :disable="!isReadOnly" />
               </div>
             </div>
-          </div>
-        </q-expansion-item>
 
-        <q-expansion-item group="form-sections" icon="medical_information" label="Antecedentes Médicos" dense-toggle
-          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
-          <div class="q-pa-sm">
+            <div class="text-subtitle2 text-primary q-mb-sm">Antecedentes Médicos</div>
             <div class="row q-col-gutter-sm">
               <div class="col-12">
                 <q-input dense outlined v-model="form.antecedentesPersonalesMedicos" label="Antecedentes Personales"
@@ -120,13 +121,16 @@
                 <q-input dense outlined v-model="form.habitosToxicos" label="Hábitos Tóxicos" type="textarea" rows="2"
                   hint="Opcional" :disable="!isReadOnly" />
               </div>
+              <div class="col-12">
+                <q-input dense outlined v-model="form.antecedentesGinecoObstetricos"
+                  label="Antecedentes Gineco-Obstétricos" type="textarea" rows="2" hint="Opcional"
+                  :disable="!isReadOnly" />
+              </div>
             </div>
-          </div>
-        </q-expansion-item>
+          </q-step>
 
-        <q-expansion-item group="form-sections" icon="monitor_heart" label="Examen Físico" dense-toggle
-          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
-          <div class="q-pa-sm">
+          <!-- ===== PASO 3: EXAMEN FÍSICO & ADJUNTOS ===== -->
+          <q-step :name="3" title="Examen Físico & Adjuntos" icon="monitor_heart">
             <div class="row q-col-gutter-sm">
               <div class="col-12 col-sm-3">
                 <q-input dense outlined v-model.number="form.examenFisicoPeso" label="Peso (kg)" type="number"
@@ -218,28 +222,19 @@
                   rows="2" hint="Opcional" :disable="!isReadOnly" />
               </q-tab-panel>
             </q-tab-panels>
-          </div>
-        </q-expansion-item>
-
-        <q-expansion-item group="form-sections" icon="visibility" label="Observaciones" dense-toggle
-          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
-          <div class="q-pa-sm">
-            <q-input dense outlined v-model="form.primerObservacion" label="Primera Observación" type="textarea"
-              rows="3" hint="Opcional" :disable="!isReadOnly" />
-          </div>
-        </q-expansion-item>
-
-        <q-expansion-item group="form-sections" icon="science" label="Laboratorios" dense-toggle
-          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
-          <div class="q-pa-sm">
-            <q-input dense outlined v-model="form.laboratorios" label="Estudios de Laboratorio" type="textarea" rows="3"
-              hint="Opcional" :disable="!isReadOnly" />
-          </div>
-        </q-expansion-item>
-
-        <q-expansion-item group="form-sections" icon="attach_file" label="Archivos Adjuntos" dense-toggle
-          class="q-mb-sm bg-grey-1 expansion-style" header-class="text-primary">
-          <div class="q-pa-sm">
+            <q-separator class="q-my-md" />
+            <div class="text-subtitle2 text-primary q-mb-sm">Observaciones y Laboratorios</div>
+            <div class="row q-col-gutter-sm q-mb-md">
+              <div class="col-12">
+                <q-input dense outlined v-model="form.primerObservacion" label="Primera Observación" type="textarea"
+                  rows="3" hint="Opcional" :disable="!isReadOnly" />
+              </div>
+              <div class="col-12">
+                <q-input dense outlined v-model="form.laboratorios" label="Estudios de Laboratorio" type="textarea"
+                  rows="3" hint="Opcional" :disable="!isReadOnly" />
+              </div>
+            </div>
+            <div class="text-subtitle2 text-primary q-mb-sm">Archivos Adjuntos</div>
             <div class="row q-col-gutter-sm">
               <div class="col-12 col-sm-6">
                 <q-file dense outlined v-model="form.imagen" label="Imagen 1" hint="Opcional" :disable="!isReadOnly" />
@@ -248,14 +243,22 @@
                 <q-file dense outlined v-model="form.imagen2" label="Imagen 2" hint="Opcional" :disable="!isReadOnly" />
               </div>
             </div>
-          </div>
-        </q-expansion-item>
+          </q-step>
 
-        <q-card-actions align="right" class="q-pt-md">
-          <q-btn flat dense color="grey-7" label="Cancelar" @click="$emit('cancel')" />
-          <q-btn dense type="submit" color="primary" :label="isEdit ? 'Actualizar' : 'Crear'" :loading="loading"
-            :disable="!isReadOnly" />
-        </q-card-actions>
+          <template v-slot:navigation>
+            <q-stepper-navigation class="row justify-between q-pt-sm">
+              <div>
+                <q-btn v-if="step > 1" flat color="grey-7" label="Atrás" @click="step--" class="q-mr-sm" />
+                <q-btn flat dense color="grey-7" label="Cancelar" @click="$emit('cancel')" />
+              </div>
+              <div>
+                <q-btn v-if="step < 3" color="primary" label="Siguiente" @click="step++" />
+                <q-btn v-else dense type="submit" color="primary" :label="isEdit ? 'Actualizar' : 'Crear'"
+                  :loading="loading" :disable="!isReadOnly" />
+              </div>
+            </q-stepper-navigation>
+          </template>
+        </q-stepper>
       </q-form>
     </q-card-section>
   </q-card>
@@ -283,6 +286,7 @@ const emit = defineEmits<{
 
 const $q = useQuasar();
 const loading = ref(false);
+const step = ref(1);
 const authStore = useAuthStore();
 const activeSystemTab = ref("nervous");
 const manualDateInput = ref("");
@@ -327,6 +331,7 @@ const form = reactive<PatientType>({
   antecedentesHeredoFamiliares: undefined,
   habitosToxicos: undefined,
   medicacionHabitual: undefined,
+  antecedentesGinecoObstetricos: undefined,
   examenFisicoHabito: undefined,
   examenFisicoPeso: undefined,
   examenFisicoTalla: undefined,

@@ -7,6 +7,10 @@
         <q-toolbar-title class="gt-xs">
           <q-icon name="local_hospital" class="q-mr-sm" />
           Sistema de Historias Clínicas
+          <div v-if="currentView !== 'dashboard'" class="text-caption"
+            style="opacity: 0.8; font-size: 0.75rem; font-weight: 400;">
+            {{ breadcrumbLabel }}
+          </div>
         </q-toolbar-title>
 
         <q-space />
@@ -225,8 +229,9 @@
             </q-input>
 
             <div v-if="filteredPatients.length === 0" class="text-center text-grey-6 q-pa-xl">
-              <q-icon name="people" size="64px" />
-              <div class="q-mt-md">No se encontraron pacientes</div>
+              <q-icon name="person_search" size="64px" />
+              <div class="q-mt-md text-h6">No se encontraron pacientes</div>
+              <div class="text-body2 q-mt-sm">Probá una búsqueda diferente o agrega un nuevo paciente.</div>
             </div>
 
             <div v-else class="row">
@@ -310,6 +315,21 @@ const patientSearchQuery = ref("");
 const consultationSearchQuery = ref("");
 const consultationSortOrder = ref("newest");
 const previousView = ref<string>("");
+
+const breadcrumbLabel = computed(() => {
+  const labels: Record<string, string> = {
+    patients: 'Pacientes',
+    consultations: 'Consultas',
+    calendar: 'Turnos',
+    'patient-history': selectedPatient.value
+      ? `Pacientes › ${selectedPatient.value.nombre} ${selectedPatient.value.apellido}`
+      : 'Historial',
+    'patient-form': selectedPatient.value ? 'Editar Paciente' : 'Nuevo Paciente',
+    'consultation-form': selectedConsultation.value ? 'Editar Consulta' : 'Nueva Consulta',
+    profile: 'Mi Perfil',
+  };
+  return labels[currentView.value] || '';
+});
 
 const user = ref({
   name: authStore.user?.username,

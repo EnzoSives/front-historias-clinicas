@@ -1,93 +1,65 @@
 <template>
-  <q-card class="consultation-card q-ma-sm q-hoverable" flat bordered>
-    <q-card-section class="q-pb-sm">
-      <div class="row items-center no-wrap">
-        <div class="col-grow">
-          <div v-if="patient" class="text-body1 text-weight-medium text-primary cursor-pointer ellipsis"
-            @click.stop="$emit('view-patient')">
-            <q-icon name="person" class="q-mr-xs" size="sm" />
-            {{ patient.nombre }} {{ patient.apellido }}
-            <q-tooltip>Ver historial del paciente</q-tooltip>
-          </div>
-          <div class="text-caption text-grey-7 q-mt-xs">
-            <q-icon name="event" size="xs" class="q-mr-xs" />
-            {{ formatDate(consultation.fechaConsulta) }}
-            <span class="q-mx-xs">·</span>
-            <q-icon name="schedule" size="xs" class="q-mr-xs" />
-            {{ formatTime(consultation.fechaConsulta) }}
-          </div>
+  <q-card class="consultation-card q-ma-sm" flat>
+    <!-- Header con banda de color -->
+    <div class="consultation-card__header">
+      <div class="consultation-card__header-info">
+        <div v-if="patient" class="text-subtitle1 text-weight-bold text-white ellipsis cursor-pointer"
+          @click.stop="$emit('view-patient')">
+          <q-icon name="person" size="14px" class="q-mr-xs" />
+          {{ patient.nombre }} {{ patient.apellido }}
+          <q-tooltip>Ver historial del paciente</q-tooltip>
         </div>
-        <div class="col-auto">
-          <q-btn flat round color="grey-7" icon="more_vert" size="sm">
-            <q-menu anchor="bottom right" self="top right">
-              <q-list dense style="min-width: 150px">
-                <q-item clickable v-ripple @click="$emit('edit', consultation)">
-                  <q-item-section avatar><q-icon name="edit" size="xs" /></q-item-section>
-                  <q-item-section>Editar</q-item-section>
-                </q-item>
-                <q-item clickable v-ripple @click="confirmDelete">
-                  <q-item-section avatar><q-icon name="delete" color="negative" size="xs" /></q-item-section>
-                  <q-item-section>Eliminar</q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
-          </q-btn>
+        <div class="text-caption" style="opacity:0.85; color:#e0f2f1;">
+          <q-icon name="event" size="10px" class="q-mr-xs" />
+          {{ formatDate(consultation.fechaConsulta) }}
+          <span class="q-mx-xs">·</span>
+          <q-icon name="schedule" size="10px" class="q-mr-xs" />
+          {{ formatTime(consultation.fechaConsulta) }}
         </div>
       </div>
-    </q-card-section>
+      <q-btn flat round dense icon="more_vert" color="white" size="sm" aria-label="Opciones">
+        <q-menu anchor="bottom right" self="top right">
+          <q-list dense style="min-width: 150px">
+            <q-item clickable v-ripple @click="$emit('edit', consultation)">
+              <q-item-section avatar><q-icon name="edit" size="xs" /></q-item-section>
+              <q-item-section>Editar</q-item-section>
+            </q-item>
+            <q-item clickable v-ripple @click="confirmDelete">
+              <q-item-section avatar><q-icon name="delete" color="negative" size="xs" /></q-item-section>
+              <q-item-section>Eliminar</q-item-section>
+            </q-item>
+          </q-list>
+        </q-menu>
+      </q-btn>
+    </div>
 
-    <q-separator inset />
-
-    <q-card-section class="q-pt-sm q-pb-md" style="flex-grow: 1;">
-      <div class="text-subtitle2 text-grey-9 q-mb-xs">
-        <q-icon name="priority_high" class="q-mr-xs" size="xs" /> Motivo:
+    <!-- Contenido: área de altura fija -->
+    <q-card-section class="q-pt-sm q-pb-sm card-body">
+      <div class="row q-gutter-xs q-mb-xs">
+        <q-chip dense icon="badge" color="primary" text-color="white" class="chip-data">
+          {{ consultation.motivoConsulta || 'Sin motivo' }}
+        </q-chip>
       </div>
-      <div class="text-body2 text-grey-8 ellipsis-2-lines q-mb-sm">
-        {{ consultation.motivoConsulta || 'No especificado' }}
+      <div class="row q-gutter-xs q-mb-xs">
+        <q-chip dense icon="medical_information" color="indigo-1" text-color="indigo-9" class="chip-data">
+          {{ consultation.diagnostico || 'Sin diagnóstico' }}
+        </q-chip>
       </div>
-      <div class="text-subtitle2 text-grey-9 q-mb-xs">
-        <q-icon name="medical_information" class="q-mr-xs" size="xs" /> Diagnóstico:
-      </div>
-      <div class="text-body2 text-grey-8 ellipsis-2-lines">
-        {{ consultation.diagnostico || 'No especificado' }}
-      </div>
-    </q-card-section>
-
-    <q-card-section v-if="images.length > 0" class="q-pt-none q-pb-sm">
-      <div class="text-subtitle2 text-grey-9 q-mb-xs">
-        <q-icon name="image" class="q-mr-xs" size="xs" /> Imágenes:
-      </div>
-      <div class="row q-gutter-sm">
-        <div v-for="(imagen, index) in images" :key="imagen.filename" class="col-auto cursor-pointer"
-          @click="openImageDialog(index)">
-          <q-img :src="getFileUrl(imagen.filename)" spinner-color="primary"
-            style="height: 50px; width: 50px; border-radius: 4px;">
-            <q-tooltip>Ver imagen</q-tooltip>
-          </q-img>
-        </div>
-      </div>
-    </q-card-section>
-
-    <q-card-section v-if="pdfs.length > 0" class="q-pt-none">
-      <div class="text-subtitle2 text-grey-9 q-mb-xs">
-        <q-icon name="picture_as_pdf" class="q-mr-xs" size="xs" /> Archivos PDF:
-      </div>
-      <div class="row q-gutter-sm">
-        <div v-for="pdf in pdfs" :key="pdf.filename" class="col-auto cursor-pointer" @click="openPdf(pdf.filename)">
-          <q-avatar icon="picture_as_pdf" color="red-1" text-color="red-8" font-size="30px" square
-            style="height: 50px; width: 50px; border-radius: 4px;" />
-          <q-tooltip>Ver PDF: {{ pdf.filename }}</q-tooltip>
-        </div>
+      <!-- Adjuntos: siempre presentes para mantener la altura -->
+      <div class="row q-gutter-xs" style="min-height: 26px;">
+        <q-chip v-if="images.length > 0" dense icon="image" color="blue-1" text-color="blue-9"
+          class="chip-data cursor-pointer" @click.stop="openImageDialog(0)">
+          {{ images.length }} imagen{{ images.length > 1 ? 'es' : '' }}
+        </q-chip>
+        <q-chip v-if="pdfs.length > 0" dense icon="picture_as_pdf" color="red-1" text-color="red-9"
+          class="chip-data cursor-pointer" @click.stop="pdfs[0] && openPdf(pdfs[0].filename)">
+          {{ pdfs.length }} PDF{{ pdfs.length > 1 ? 's' : '' }}
+        </q-chip>
       </div>
     </q-card-section>
 
-    <q-card-section v-if="images.length === 0 && pdfs.length === 0" class="q-pt-none">
-      <div style="min-height: 70px;"></div>
-    </q-card-section>
-
-
-    <q-card-actions align="right" class="q-pa-sm">
-      <q-btn flat color="primary" label="Ver Detalles" icon-right="visibility" size="sm" @click="showDetailsDialog" />
+    <q-card-actions align="right" class="q-pa-xs">
+      <q-btn flat color="primary" label="Ver Detalles" icon-right="open_in_new" size="sm" @click="showDetailsDialog" />
     </q-card-actions>
 
     <q-dialog v-model="imageDialog">
@@ -97,7 +69,6 @@
           :img-src="getFileUrl(imagen.filename)" style="background-size: contain; background-repeat: no-repeat;" />
       </q-carousel>
     </q-dialog>
-
   </q-card>
 </template>
 
@@ -203,23 +174,69 @@ const confirmDelete = () => {
 
 <style scoped>
 .consultation-card {
-  border-radius: 12px;
+  border-radius: 14px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: default;
-  background-color: var(--app-white);
-  border-left: 5px solid transparent;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  min-height: 250px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 1px solid rgba(63, 81, 181, 0.25);
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  height: 100%;
 }
 
-.consultation-card.q-hoverable:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
-  border-left-color: var(--q-primary);
-  border-color: rgba(0, 0, 0, 0.1);
+.consultation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.14);
+}
+
+.consultation-card__header {
+  background: #1976D2;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card-body {
+  flex: 1;
+}
+
+.consultation-card__header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.consultation-field__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #78909c;
+  margin-bottom: 2px;
+}
+
+.consultation-field__value {
+  font-size: 13px;
+  color: #37474f;
+  line-height: 1.4;
+}
+
+.card-footer {
+  background-color: #1976D2;
+}
+
+.chip-data {
+  font-size: 11px;
+  height: 22px;
+  max-width: 100%;
+}
+
+.chip-data :deep(.q-chip__content) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cursor-pointer {
