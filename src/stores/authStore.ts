@@ -60,7 +60,9 @@ export const useAuthStore = defineStore('auth', () => {
   const getUserEmail = computed(() => user.value?.email || '');
   const getToken = computed(() => token.value);
   // Este getter es clave para obtener el ID del médico
-  const getMedicoId = computed(() => user.value?.medico?.id_medico || null);
+  const getMedicoId = computed(() => user.value?.medico?.id_medico ?? user.value?.id_medico ?? null);
+  const getRole = computed(() => user.value?.role ?? null);
+  const isTurnero = computed(() => user.value?.role === 'turnero');
 
   return {
     // Estado
@@ -78,6 +80,8 @@ export const useAuthStore = defineStore('auth', () => {
     getUserUsername,
     getUserEmail,
     getToken,
-    getMedicoId, // Getter corregido para el ID del médico
+    getMedicoId,
+    getRole,
+    isTurnero,
   };
 });

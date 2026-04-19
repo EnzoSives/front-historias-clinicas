@@ -106,6 +106,7 @@ export interface AuthUser {
   username: string | undefined | null;
   email: string | undefined | null;
   role: string | undefined | null;
+  id_medico?: number | null;
   medico: Doctor | null;
 }
 

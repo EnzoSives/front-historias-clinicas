@@ -35,6 +35,7 @@ export default defineRouter(function (/* { store, ssrContext } */) {
   // Global auth guard:
   // - Require auth for all routes except login (and register)
   // - If already authenticated and trying to access login/register, redirect to home
+  // - Role-based: 'turnero' can only access /turnos and /pacientes
   Router.beforeEach((to) => {
     const auth = useAuthStore();
 
@@ -50,7 +51,15 @@ export default defineRouter(function (/* { store, ssrContext } */) {
     }
 
     if (publicPaths.has(to.path) && auth.isAuthenticated) {
-      return { path: '/' };
+      return auth.isTurnero ? { path: '/turnos' } : { path: '/dashboard' };
+    }
+
+    // Role guard for 'turnero'
+    if (auth.isAuthenticated && auth.isTurnero) {
+      const allowedForTurnero = new Set(['/turnos', '/pacientes']);
+      if (!allowedForTurnero.has(to.path)) {
+        return { path: '/turnos' };
+      }
     }
   });
 

@@ -204,7 +204,10 @@ export const useMedicalStore = defineStore('medical', {
       this.setLoading('patients', true);
       this.setError('patients', null);
       try {
-        const response = await api.post<PatientType>(API_ENDPOINTS.PATIENTS.CREATE, patientData);
+        const authStore = useAuthStore();
+        const medicoId = authStore.getMedicoId;
+        const payload = { ...patientData, ...(medicoId ? { id_medico: medicoId } : {}) };
+        const response = await api.post<PatientType>(API_ENDPOINTS.PATIENTS.CREATE, payload);
         this.patients.push(response.data);
         this.saveToStorage(STORAGE_KEYS.PATIENTS_CACHE, this.patients);
         return response.data;

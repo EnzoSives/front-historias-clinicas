@@ -7,15 +7,11 @@
         <q-toolbar-title class="gt-xs">
           <q-icon name="local_hospital" class="q-mr-sm" />
           Sistema de Historias Clínicas
-          <div v-if="currentView !== 'dashboard'" class="text-caption"
-            style="opacity: 0.8; font-size: 0.75rem; font-weight: 400;">
-            {{ breadcrumbLabel }}
-          </div>
         </q-toolbar-title>
 
         <q-space />
 
-        <q-btn v-if="currentView !== 'dashboard'" flat icon="arrow_back" label="Volver" @click="goBack" />
+        <q-btn v-if="showBackButton" flat icon="arrow_back" label="Volver" @click="goBack" />
 
         <q-btn flat round dense>
           <q-avatar size="32px">
@@ -61,14 +57,15 @@
               <span class="text-h6">Menú</span>
             </q-item-label>
 
-            <q-item clickable v-ripple @click="currentView = 'dashboard'" :active="currentView === 'dashboard'">
+            <q-item clickable v-ripple @click="navigateTo('dashboard')" :active="activeSection === 'dashboard'"
+              v-if="!authStore.isTurnero">
               <q-item-section avatar>
                 <q-icon name="dashboard" />
               </q-item-section>
               <q-item-section>Inicio</q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple @click="currentView = 'patients'" :active="currentView === 'patients'"
+            <q-item clickable v-ripple @click="navigateTo('pacientes')" :active="activeSection === 'pacientes'"
               class="modern-menu-item">
               <q-item-section avatar>
                 <q-icon name="people" />
@@ -76,15 +73,15 @@
               <q-item-section class="modern-title">Pacientes</q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple @click="currentView = 'consultations'" :active="currentView === 'consultations'"
-              class="modern-menu-item">
+            <q-item clickable v-ripple @click="navigateTo('consultas')" :active="activeSection === 'consultas'"
+              class="modern-menu-item" v-if="!authStore.isTurnero">
               <q-item-section avatar>
                 <q-icon name="history_edu" />
               </q-item-section>
               <q-item-section class="modern-title">Consultas</q-item-section>
             </q-item>
 
-            <q-item clickable v-ripple @click="currentView = 'calendar'" :active="currentView === 'calendar'"
+            <q-item clickable v-ripple @click="navigateTo('turnos')" :active="activeSection === 'turnos'"
               class="modern-menu-item">
               <q-item-section avatar>
                 <q-icon name="event" />
@@ -99,14 +96,14 @@
               <q-item-section>Nuevo Paciente</q-item-section>
             </q-item> -->
 
-            <q-separator class="q-my-md" />
+            <!-- <q-separator class="q-my-md" v-if="!authStore.isTurnero" />
 
-            <q-item-label header class="text-grey-7">
+            <q-item-label header class="text-grey-7" v-if="!authStore.isTurnero">
               <q-icon name="analytics" class="q-mr-sm" />
               Estadísticas
-            </q-item-label>
+            </q-item-label> -->
 
-            <q-item>
+            <!-- <q-item>
               <q-item-section avatar>
                 <q-icon name="people" color="primary" />
               </q-item-section>
@@ -114,9 +111,9 @@
                 <q-item-label>{{ medicalStore.getTotalPatients }}</q-item-label>
                 <q-item-label caption>Pacientes</q-item-label>
               </q-item-section>
-            </q-item>
+            </q-item> -->
 
-            <q-item>
+            <!-- <q-item>
               <q-item-section avatar>
                 <q-icon name="medical_services" color="secondary" />
               </q-item-section>
@@ -126,23 +123,23 @@
                 }}</q-item-label>
                 <q-item-label caption>Consultas</q-item-label>
               </q-item-section>
-            </q-item>
+            </q-item> -->
           </q-list>
         </q-scroll-area>
       </q-drawer>
 
       <q-page class="bg-grey-1 q-page-no-padding-top">
-        <div v-if="currentView === 'dashboard'">
+        <div v-if="currentView === 'dashboard' && !authStore.isTurnero">
           <Dashboard @select-patient="selectPatient" @view-consultation="viewConsultation"
             @new-patient="showNewPatientForm" @new-consultation="showNewConsultationForm(null)"
-            @search-patient="currentView = 'patients'" />
+            @search-patient="navigateTo('pacientes')" />
         </div>
 
         <div v-else-if="currentView === 'calendar'">
           <CalendarView />
         </div>
 
-        <div v-else-if="currentView === 'consultations'">
+        <div v-else-if="currentView === 'consultations' && !authStore.isTurnero">
           <div class="q-pa-md">
             <div class="row items-center justify-between q-mb-md q-col-gutter-sm">
               <div class="col-12 col-sm-auto">
@@ -274,9 +271,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useQuasar } from "quasar";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import { useMedicalStore } from "src/stores/medicalStore";
 import { useAuthStore } from "src/stores/authStore";
 import type { Patient as PatientType, Consultation as ConsultationType } from "src/types/index";
@@ -292,6 +289,7 @@ import ProfilePage from 'src/pages/ProfilePage.vue';
 
 const $q = useQuasar();
 const router = useRouter();
+const route = useRoute();
 const medicalStore = useMedicalStore();
 const authStore = useAuthStore();
 const appointmentStore = useAppointmentStore();
@@ -316,20 +314,55 @@ const consultationSearchQuery = ref("");
 const consultationSortOrder = ref("newest");
 const previousView = ref<string>("");
 
-const breadcrumbLabel = computed(() => {
-  const labels: Record<string, string> = {
-    patients: 'Pacientes',
-    consultations: 'Consultas',
-    calendar: 'Turnos',
-    'patient-history': selectedPatient.value
-      ? `Pacientes › ${selectedPatient.value.nombre} ${selectedPatient.value.apellido}`
-      : 'Historial',
-    'patient-form': selectedPatient.value ? 'Editar Paciente' : 'Nuevo Paciente',
-    'consultation-form': selectedConsultation.value ? 'Editar Consulta' : 'Nueva Consulta',
-    profile: 'Mi Perfil',
+const sectionViewMap: Record<string, string> = {
+  dashboard: 'dashboard',
+  pacientes: 'patients',
+  consultas: 'consultations',
+  turnos: 'calendar',
+  perfil: 'profile',
+};
+
+const activeSection = computed(() => {
+  const map: Record<string, string> = {
+    dashboard: 'dashboard',
+    patients: 'pacientes',
+    consultations: 'consultas',
+    calendar: 'turnos',
+    profile: 'perfil',
+    'patient-form': 'pacientes',
+    'patient-history': 'pacientes',
+    'consultation-form': 'consultas',
   };
-  return labels[currentView.value] || '';
+  return map[currentView.value] ?? 'dashboard';
 });
+
+const navigateTo = (section: string) => {
+  void router.push('/' + section);
+  const view = sectionViewMap[section];
+  if (view) currentView.value = view as any;
+};
+
+watch(() => route.params.section, (section) => {
+  const view = sectionViewMap[section as string];
+  if (view) {
+    // Turnero cannot access dashboard or consultations
+    if (authStore.isTurnero && (view === 'dashboard' || view === 'consultations')) {
+      void router.replace('/turnos');
+      currentView.value = 'calendar';
+      return;
+    }
+    currentView.value = view as any;
+  }
+}, { immediate: true });
+
+const isTurnero = computed(() => authStore.isTurnero);
+
+const topLevelViews = computed(() => {
+  if (isTurnero.value) return new Set(['calendar', 'patients']);
+  return new Set(['dashboard', 'calendar', 'patients', 'consultations']);
+});
+
+const showBackButton = computed(() => !topLevelViews.value.has(currentView.value));
 
 const user = ref({
   name: authStore.user?.username,
@@ -339,7 +372,7 @@ const user = ref({
 
 const goToProfile = () => {
   previousView.value = currentView.value;
-  currentView.value = "profile";
+  navigateTo('perfil');
 };
 
 const logout = () => {
@@ -475,7 +508,7 @@ const saveConsultation = async (consultationPayload: FormData) => {
     if (previousView.value === 'patient-history') {
       currentView.value = 'patient-history';
     } else {
-      currentView.value = 'consultations';
+      navigateTo('consultas');
     }
   } catch (error) {
     $q.notify({
@@ -502,7 +535,7 @@ const deletePatient = async (patientId: number) => {
     await medicalStore.deletePatient(patientId);
     $q.notify({ type: "positive", message: "Paciente eliminado." });
     if (currentView.value === 'patient-history') {
-      currentView.value = 'patients';
+      navigateTo('pacientes');
     }
   } catch (error) {
     $q.notify({ type: "negative", message: "Error al eliminar el paciente." });
@@ -530,15 +563,26 @@ const viewConsultation = async (consultation: ConsultationType) => {
 
 const goBack = () => {
   const validViews = ["dashboard", "patients", "consultations", "patient-history"];
-  const newView = (validViews.includes(previousView.value) ? previousView.value : "dashboard") as any;
+  const target = (validViews.includes(previousView.value) ? previousView.value : "dashboard");
 
-  if (newView !== 'patient-history') {
+  if (target !== 'patient-history') {
     selectedPatient.value = null;
   }
 
-  currentView.value = newView;
   previousView.value = "";
   selectedConsultation.value = null;
+
+  const sectionForView: Record<string, string> = {
+    dashboard: 'dashboard',
+    patients: 'pacientes',
+    consultations: 'consultas',
+  };
+  const section = sectionForView[target];
+  if (section) {
+    navigateTo(section);
+  } else {
+    currentView.value = target as any;
+  }
 };
 
 onMounted(async () => {
