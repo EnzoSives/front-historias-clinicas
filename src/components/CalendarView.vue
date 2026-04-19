@@ -131,8 +131,10 @@
                                                     <q-icon :name="weekView ? 'view_day' : 'view_week'" color="grey-7"
                                                         size="16px" />
                                                 </q-item-section>
-                                                <q-item-section class="text-body2">{{ weekView ? 'Ocultar semana' : 'Ver
-                                                    semana' }}</q-item-section>
+                                                <q-item-section class="text-body2">
+                                                    <span v-if="weekView">Ocultar semana</span>
+                                                    <span v-else>Ver semana</span>
+                                                </q-item-section>
                                             </q-item>
                                             <q-item clickable @click="showHorariosDialog = true">
                                                 <q-item-section avatar>
@@ -255,7 +257,7 @@
                                 <q-badge :color="isSobreturno(idx) ? 'orange-7' : statusColor(turno.estado)"
                                     :label="$q.screen.xs ? undefined : (isSobreturno(idx) ? 'sobreturno' : turno.estado)">
                                     <q-tooltip v-if="$q.screen.xs">{{ isSobreturno(idx) ? 'Sobreturno' : turno.estado
-                                        }}</q-tooltip>
+                                    }}</q-tooltip>
                                 </q-badge>
                                 <q-btn flat round dense icon="more_vert" size="xs" color="grey-6">
                                     <q-menu auto-close>
@@ -383,7 +385,7 @@
                                     <q-item-section>
                                         <q-item-label>{{ scope.opt.label }}</q-item-label>
                                         <q-item-label caption v-if="scope.opt.sublabel">{{ scope.opt.sublabel
-                                        }}</q-item-label>
+                                            }}</q-item-label>
                                     </q-item-section>
                                 </q-item>
                             </template>
