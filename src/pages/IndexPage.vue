@@ -6,7 +6,7 @@
 
         <q-toolbar-title class="gt-xs">
           <q-icon name="local_hospital" class="q-mr-sm" />
-          Sistema de Historias Clínicas
+          {{ authStore.isTurnero ? 'Sistema de Turnos' : 'Sistema de Historias Clínicas' }}
         </q-toolbar-title>
 
         <q-space />
@@ -405,7 +405,7 @@ const getPatientById = (patientId: number): PatientType | undefined => {
 
 const getPatientName = (patientId: number): string => {
   const patient = medicalStore.getPatientById(patientId);
-  return patient ? `${patient.nombre} ${patient.apellido}` : 'Paciente Desconocido';
+  return patient ? `${patient.apellido} ${patient.nombre}` : 'Paciente Desconocido';
 };
 
 const filteredConsultations = computed(() => {

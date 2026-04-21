@@ -6,7 +6,7 @@
         <div v-if="patient" class="text-subtitle1 text-weight-bold text-white ellipsis cursor-pointer"
           @click.stop="$emit('view-patient')">
           <q-icon name="person" size="14px" class="q-mr-xs" />
-          {{ patient.nombre }} {{ patient.apellido }}
+          {{ patient.apellido }} {{ patient.nombre }}
           <q-tooltip>Ver historial del paciente</q-tooltip>
         </div>
         <div class="text-caption" style="opacity:0.85; color:#e0f2f1;">

@@ -9,7 +9,7 @@
               Historial Médico
             </div>
             <div class="text-h6">
-              {{ patient.nombre }} {{ patient.apellido }}
+              {{ patient.apellido }} {{ patient.nombre }}
             </div>
             <div class="text-subtitle2 text-grey-7">
               DNI: {{ patient.dni }} •
@@ -20,7 +20,7 @@
           <div class="col-auto" v-if="$q.screen.gt.xs">
             <q-btn color="orange" icon="edit" label="Editar Paciente" class="q-mr-sm" :disable="!patient"
               @click="patient && $emit('edit-patient', patient)" />
-            <q-btn color="primary" icon="add" label="Nueva Consulta" :disable="!patient"
+            <q-btn v-if="!authStore.isTurnero" color="primary" icon="add" label="Nueva Consulta" :disable="!patient"
               @click="patient && $emit('new-consultation', patient)" />
           </div>
           <div class="col-auto" v-else>
@@ -28,7 +28,7 @@
               aria-label="Editar Paciente" @click="patient && $emit('edit-patient', patient)">
               <q-tooltip class="bg-grey-8" anchor="bottom middle" self="top middle">Editar Paciente</q-tooltip>
             </q-btn>
-            <q-btn round dense color="primary" icon="add" :disable="!patient" aria-label="Nueva Consulta"
+            <q-btn v-if="!authStore.isTurnero" round dense color="primary" icon="add" :disable="!patient" aria-label="Nueva Consulta"
               @click="patient && $emit('new-consultation', patient)">
               <q-tooltip class="bg-grey-8" anchor="bottom middle" self="top middle">Nueva Consulta</q-tooltip>
             </q-btn>
@@ -203,13 +203,13 @@
             <div class="col-4 col-sm-2"><q-item-label>Talla</q-item-label><q-item-label caption>{{
               patient.examenFisicoTalla || 'N/A' }} m</q-item-label></div>
             <div class="col-4 col-sm-2"><q-item-label>IMC</q-item-label><q-item-label caption>{{ patient.examenFisicoIMC
-                || 'N/A' }}</q-item-label></div>
+              || 'N/A' }}</q-item-label></div>
             <div class="col-4 col-sm-2"><q-item-label>TA</q-item-label><q-item-label caption>{{ patient.examenFisicoTA
-                || 'N/A' }}</q-item-label></div>
+              || 'N/A' }}</q-item-label></div>
             <div class="col-4 col-sm-2"><q-item-label>FC</q-item-label><q-item-label caption>{{ patient.examenFisicoFC
-                || 'N/A' }}</q-item-label></div>
+              || 'N/A' }}</q-item-label></div>
             <div class="col-4 col-sm-2"><q-item-label>FR</q-item-label><q-item-label caption>{{ patient.examenFisicoFR
-                || 'N/A' }}</q-item-label></div>
+              || 'N/A' }}</q-item-label></div>
           </div>
           <q-list bordered>
             <q-expansion-item expand-separator icon="list" label="Revisión Detallada por Sistemas"
@@ -306,6 +306,7 @@ import {
   useMedicalStore
 } from "src/stores/medicalStore";
 import { useQuasar } from "quasar";
+import { useAuthStore } from "src/stores/authStore";
 
 interface Props {
   patient: PatientType | null;
@@ -322,6 +323,7 @@ defineEmits<{
 
 const medicalStore = useMedicalStore();
 const $q = useQuasar();
+const authStore = useAuthStore();
 const sortOrder = ref("newest");
 const loading = ref(false);
 const activeTab = ref('info');
@@ -398,8 +400,9 @@ const sortedConsultations = computed(() => {
 
 const calculateAge = (birthDate: string): number => {
   if (!birthDate) return 0;
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(birthDate) ? birthDate + 'T00:00:00' : birthDate;
   const today = new Date();
-  const birth = new Date(birthDate);
+  const birth = new Date(normalized);
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
 
@@ -411,7 +414,8 @@ const calculateAge = (birthDate: string): number => {
 
 const formatDate = (dateString: string): string => {
   if (!dateString) return 'Fecha no disponible';
-  return new Date(dateString).toLocaleDateString("es-ES", {
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(dateString) ? dateString + 'T00:00:00' : dateString;
+  return new Date(normalized).toLocaleDateString("es-ES", {
     year: "numeric",
     month: "long",
     day: "numeric",

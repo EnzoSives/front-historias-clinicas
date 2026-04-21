@@ -249,11 +249,11 @@
             <q-stepper-navigation class="row justify-between q-pt-sm">
               <div>
                 <q-btn v-if="step > 1" flat color="grey-7" label="Atrás" @click="step--" class="q-mr-sm" />
-                <q-btn flat dense color="grey-7" label="Cancelar" @click="$emit('cancel')" />
+                <q-btn flat dense color="negative" label="Cancelar" @click="$emit('cancel')" />
               </div>
-              <div>
-                <q-btn v-if="step < 3" color="primary" label="Siguiente" @click="step++" />
-                <q-btn v-else dense type="submit" color="primary" :label="isEdit ? 'Actualizar' : 'Crear'"
+              <div class="row q-gutter-sm">
+                <q-btn v-if="step < 3" color="positive" label="Siguiente" @click="step++" />
+                <q-btn type="submit" color="primary" :label="isEdit ? 'Actualizar' : 'Guardar'"
                   :loading="loading" :disable="!isReadOnly" />
               </div>
             </q-stepper-navigation>
@@ -472,7 +472,17 @@ watch(
       Object.assign(form, newPatient);
       form.id_medico = newPatient.id_medico;
       if (newPatient.fechaNacimiento) {
-        form.fechaNacimiento = new Date(newPatient.fechaNacimiento);
+        const raw = newPatient.fechaNacimiento;
+        const normalized = typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw)
+          ? raw + 'T00:00:00'
+          : raw;
+        const d = new Date(normalized);
+        form.fechaNacimiento = d;
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        manualDateInput.value = `${day}/${month}/${d.getFullYear()}`;
+      } else {
+        manualDateInput.value = '';
       }
       form.imagen = null;
       form.imagen2 = null;

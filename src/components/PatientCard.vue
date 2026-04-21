@@ -4,7 +4,7 @@
     <div class="patient-card__header">
       <q-avatar size="52px" color="white" text-color="primary" icon="person" class="patient-card__avatar" />
       <div class="patient-card__title">
-        <div class="text-subtitle1 text-weight-bold text-white ellipsis">{{ patient.nombre }} {{ patient.apellido }}
+        <div class="text-subtitle1 text-weight-bold text-white ellipsis">{{ patient.apellido }} {{ patient.nombre }}
         </div>
         <div class="text-caption" style="opacity: 0.85; color: #e8eaf6;">
           <q-icon name="calendar_today" size="10px" class="q-mr-xs" />

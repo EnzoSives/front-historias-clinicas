@@ -108,7 +108,7 @@
               </q-item-section>
 
               <q-item-section>
-                <q-item-label lines="1">{{ patient.nombre }} {{ patient.apellido }}</q-item-label>
+                <q-item-label lines="1">{{ patient.apellido }} {{ patient.nombre }}</q-item-label>
                 <q-item-label caption>DNI: {{ patient.dni }}</q-item-label>
               </q-item-section>
 
@@ -202,7 +202,7 @@ const recentConsultations = computed(() => {
 // --- Helper Functions ---
 const getPatientName = (patientId: number): string => {
   const patient = medicalStore.getPatientById(patientId);
-  return patient ? `${patient.nombre} ${patient.apellido}` : "Paciente no encontrado";
+  return patient ? `${patient.apellido} ${patient.nombre}` : "Paciente no encontrado";
 };
 
 const getPatientInitials = (patient: PatientType): string => {

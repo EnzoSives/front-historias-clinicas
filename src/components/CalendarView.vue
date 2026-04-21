@@ -18,7 +18,7 @@
                     <span class="text-weight-bold q-mr-xs">{{ stats.semana }}</span>
                     <span>Semana</span>
                 </q-chip>
-                <q-chip square color="orange" text-color="white" icon="pending_actions"
+                <q-chip square color="amber-5" text-color="white" icon="pending_actions"
                     :size="$q.screen.xs ? 'sm' : 'md'">
                     <span class="text-weight-bold q-mr-xs">{{ stats.pendientes }}</span>
                     <span>Pendientes</span>
@@ -162,9 +162,10 @@
                                     <q-tooltip v-if="$q.screen.xs">Agregar paciente</q-tooltip>
                                 </q-btn>
                                 <q-btn color="primary" icon="add" :label="$q.screen.gt.xs ? 'Nuevo turno' : undefined"
-                                    @click="openAddDialog" :disable="horariosDelDia.length === 0">
+                                    @click="openAddDialog" :disable="horariosDelDia.length === 0 || !!feriadoDelDia">
                                     <q-tooltip>{{ horariosDelDia.length === 0 ? 'Configurá una franja horaria primero' :
-                                        'Nuevo turno' }}</q-tooltip>
+                                        feriadoDelDia ? `Feriado:
+                                        ${feriadoDelDia}` : 'Nuevo turno' }}</q-tooltip>
                                 </q-btn>
                             </div>
                         </div>
@@ -176,12 +177,15 @@
                             <div class="row items-center q-gutter-xs">
                                 <q-badge outline color="grey-7"
                                     :label="`${turnosActivosDia} / ${maxTurnosDia > 0 ? maxTurnosDia : '∞'} turnos`" />
-                                <q-badge v-if="sobreturnos > 0" color="orange-7"
+                                <q-badge v-if="sobreturnos > 0" color="amber-5"
                                     :label="`${sobreturnos} sobreturno${sobreturnos > 1 ? 's' : ''}`" />
-                                <q-badge v-if="slotsLibres > 0 && sobreturnos === 0 && maxTurnosDia > 0" outline
-                                    color="green-7" :label="`${slotsLibres} libre${slotsLibres !== 1 ? 's' : ''}`" />
+                                <q-badge
+                                    v-if="slotsLibres > 0 && sobreturnos === 0 && maxTurnosDia > 0 && !feriadoDelDia"
+                                    outline color="green-7"
+                                    :label="`${slotsLibres} libre${slotsLibres !== 1 ? 's' : ''}`" />
                                 <q-badge v-if="horariosDelDia.length === 0" color="grey-5"
                                     label="Sin horario configurado" />
+                                <q-badge v-if="feriadoDelDia" color="red-4" icon="celebration" :label="feriadoDelDia" />
                             </div>
                             <div class="row items-center q-gutter-xs">
                                 <q-btn v-if="pendientesDia > 0" flat dense icon="done_all" color="teal" size="xs"
@@ -200,10 +204,18 @@
                         </div>
                         <q-linear-progress v-if="maxTurnosDia > 0" rounded size="5px" class="q-mt-xs"
                             :value="Math.min(turnosActivosDia / maxTurnosDia, 1)"
-                            :color="sobreturnos > 0 ? 'orange-7' : turnosActivosDia >= maxTurnosDia ? 'green' : 'primary'" />
+                            :color="sobreturnos > 0 ? 'amber-5' : turnosActivosDia >= maxTurnosDia ? 'green' : 'primary'" />
                     </q-card-section>
 
                     <q-separator />
+
+                    <q-banner v-if="feriadoDelDia" class="bg-red-1 text-red-9" rounded>
+                        <template v-slot:avatar>
+                            <q-icon name="celebration" color="red-7" />
+                        </template>
+                        <span class="text-weight-medium">{{ feriadoDelDia }}</span><br />
+                        <span class="text-caption">No se pueden cargar turnos en días feriados.</span>
+                    </q-banner>
 
                     <q-list separator>
                         <q-item v-if="appointmentStore.loading">
@@ -213,7 +225,7 @@
                         </q-item>
                         <q-item v-else-if="filteredTurnos.length === 0">
                             <q-item-section class="text-center text-grey-5 q-py-xl">
-                                <q-icon name="event_busy" size="2.5rem" class="q-mb-xs" />
+
                                 <div class="text-caption">{{ turnoSearch.trim() ? `Sin resultados para "${turnoSearch}"`
                                     : 'No hay turnos para este día' }}</div>
                             </q-item-section>
@@ -223,8 +235,7 @@
                             isSobreturno(idx) ? 'sobreturno-item' : '',
                             isProximo(turno) ? 'proximo-item' : '']">
                             <q-item-section avatar style="min-width: 40px">
-                                <q-avatar size="34px"
-                                    :color="isSobreturno(idx) ? 'orange-7' : statusColor(turno.estado)"
+                                <q-avatar size="34px" :color="isSobreturno(idx) ? 'amber-5' : statusColor(turno.estado)"
                                     text-color="white" class="text-caption text-weight-bold">
                                     {{ initials(turno.paciente) }}
                                 </q-avatar>
@@ -233,7 +244,7 @@
 
                             <q-item-section>
                                 <q-item-label class="text-body2 text-weight-medium">
-                                    {{ turno.paciente.nombre }} {{ turno.paciente.apellido }}
+                                    {{ turno.paciente.apellido }} {{ turno.paciente.nombre }}
                                     <q-chip v-if="getPatient(turno.id_paciente)?.obraSocial" dense size="xs"
                                         color="blue-1" text-color="blue-8" class="q-ml-xs q-px-xs" style="height:16px">
                                         {{ getPatient(turno.id_paciente)?.obraSocial }}
@@ -254,10 +265,10 @@
                             </q-item-section>
 
                             <q-item-section side class="row items-center no-wrap q-gutter-xs">
-                                <q-badge :color="isSobreturno(idx) ? 'orange-7' : statusColor(turno.estado)"
+                                <q-badge :color="isSobreturno(idx) ? 'amber-5' : statusColor(turno.estado)"
                                     :label="$q.screen.xs ? undefined : (isSobreturno(idx) ? 'sobreturno' : turno.estado)">
                                     <q-tooltip v-if="$q.screen.xs">{{ isSobreturno(idx) ? 'Sobreturno' : turno.estado
-                                    }}</q-tooltip>
+                                        }}</q-tooltip>
                                 </q-badge>
                                 <q-btn flat round dense icon="more_vert" size="xs" color="grey-6">
                                     <q-menu auto-close>
@@ -315,12 +326,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(turno, idx) in appointmentsForSelectedDate" :key="turno.id_turno"
-                        :style="idx % 2 === 0 ? 'background:#f5f5f5' : 'background:#fff'">
+                    <tr v-for="(turno, idx) in appointmentsForSelectedDate.filter(t => t.estado !== 'cancelado')"
+                        :key="turno.id_turno" :style="idx % 2 === 0 ? 'background:#f5f5f5' : 'background:#fff'">
                         <td style="padding:7px 12px;border-bottom:1px solid #e0e0e0">{{ formatTime(turno.fechaHora) }}
                         </td>
-                        <td style="padding:7px 12px;border-bottom:1px solid #e0e0e0">{{ turno.paciente.nombre }} {{
-                            turno.paciente.apellido }}</td>
+                        <td style="padding:7px 12px;border-bottom:1px solid #e0e0e0">{{ turno.paciente.apellido }} {{
+                            turno.paciente.nombre }}</td>
                         <td style="padding:7px 12px;border-bottom:1px solid #e0e0e0">{{
                             getPatient(turno.id_paciente)?.obraSocial ?? '—' }}</td>
                         <td style="padding:7px 12px;border-bottom:1px solid #e0e0e0">{{
@@ -328,7 +339,7 @@
                             getPatient(turno.id_paciente)?.telefonoFijo ?? '—' }}</td>
                         <td style="padding:7px 12px;border-bottom:1px solid #e0e0e0">{{ turno.motivo ?? '—' }}</td>
                     </tr>
-                    <tr v-if="appointmentsForSelectedDate.length === 0">
+                    <tr v-if="appointmentsForSelectedDate.filter(t => t.estado !== 'cancelado').length === 0">
                         <td colspan="5" style="padding:12px;text-align:center;color:#999">Sin turnos para esta fecha.
                         </td>
                     </tr>
@@ -385,7 +396,7 @@
                                     <q-item-section>
                                         <q-item-label>{{ scope.opt.label }}</q-item-label>
                                         <q-item-label caption v-if="scope.opt.sublabel">{{ scope.opt.sublabel
-                                            }}</q-item-label>
+                                        }}</q-item-label>
                                     </q-item-section>
                                 </q-item>
                             </template>
@@ -556,6 +567,7 @@ import type { Turno } from 'src/types';
 // ── Types ────────────────────────────────────────────────────────
 type TurnoEstado = 'pendiente' | 'confirmado' | 'cancelado' | 'completado';
 type PatientOption = { label: string; sublabel?: string; value: { id_paciente: number; nombre: string; apellido: string } };
+interface Feriado { fecha: string; tipo: string; nombre: string; }
 
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -574,6 +586,8 @@ const weekView = ref(false);
 const calendarExpanded = ref(false);
 const turnoSearch = ref('');
 const filteredPatientOptions = ref<PatientOption[]>([]);
+const feriadosMap = ref<Map<string, string>>(new Map());
+const feriadosLoaded = ref<Set<number>>(new Set());
 
 const turnoForm = ref<{ pacienteOpt: PatientOption | null; slot: string; motivo: string }>({
     pacienteOpt: null,
@@ -597,18 +611,35 @@ const editForm = ref({ slot: '', motivo: '', notas: '' });
 
 // ── Static data ───────────────────────────────────────────────────
 const statusOptions: { value: TurnoEstado; label: string; icon: string; color: string }[] = [
-    { value: 'pendiente', label: 'Pendiente', icon: 'schedule', color: 'orange' },
+    { value: 'pendiente', label: 'Pendiente', icon: 'schedule', color: 'amber-5' },
     { value: 'confirmado', label: 'Confirmado', icon: 'event_available', color: 'teal' },
     { value: 'completado', label: 'Completado', icon: 'check_circle', color: 'green' },
     { value: 'cancelado', label: 'Cancelado', icon: 'cancel', color: 'red' },
 ];
 
 // ── Lifecycle ─────────────────────────────────────────────────────
+const fetchFeriados = async (year: number) => {
+    if (feriadosLoaded.value.has(year)) return;
+    try {
+        const res = await fetch(`https://api.argentinadatos.com/v1/feriados/${year}`);
+        const data: Feriado[] = await res.json();
+        data.forEach(f => {
+            feriadosMap.value.set(f.fecha, f.nombre);
+        });
+        feriadosLoaded.value.add(year);
+    } catch {
+        console.warn('No se pudieron cargar los feriados.');
+    }
+};
+
 onMounted(async () => {
+    const year = new Date().getFullYear();
     await Promise.all([
         medicalStore.fetchAllPatients(),
         appointmentStore.fetchTurnos(),
         appointmentStore.fetchHorarios(),
+        fetchFeriados(year),
+        fetchFeriados(year + 1),
     ]);
 });
 
@@ -695,13 +726,26 @@ const sobreturnos = computed(() =>
     maxTurnosDia.value > 0 ? Math.max(0, turnosActivosDia.value - maxTurnosDia.value) : 0
 );
 
+const feriadoDelDia = computed(() => {
+    const key = date.formatDate(selectedDate.value, 'YYYY-MM-DD');
+    return feriadosMap.value.get(key) ?? null;
+});
+
 const calendarAttributes = computed(() => [
     { key: 'today', highlight: true, dates: new Date() },
     {
         key: 'turnos',
         dot: 'blue',
-        dates: appointmentStore.turnos.map(t => new Date(t.fechaHora)),
+        dates: [...new Set(
+            appointmentStore.turnos.map(t => date.formatDate(new Date(t.fechaHora), 'YYYY-MM-DD'))
+        )].map(d => new Date(d + 'T12:00:00')),
     },
+    ...[...feriadosMap.value.entries()].map(([dateStr, motivo]) => ({
+        key: `feriado-${dateStr}`,
+        dot: { color: 'red', class: 'feriado-dot' },
+        popover: { label: `🗓️ ${motivo}`, visibility: 'hover' },
+        dates: new Date(dateStr + 'T12:00:00'),
+    })),
 ]);
 
 const stats = computed(() => {
@@ -797,7 +841,7 @@ const initials = (p: Turno['paciente']) =>
     `${(p.nombre ?? '?').charAt(0)}${(p.apellido ?? '?').charAt(0)}`.toUpperCase();
 
 const statusColor = (estado: TurnoEstado): string => ({
-    pendiente: 'orange',
+    pendiente: 'amber-5',
     confirmado: 'teal',
     cancelado: 'red',
     completado: 'green',
@@ -856,7 +900,7 @@ const filterPatients = (val: string, update: (fn: () => void) => void) => {
             .map(p => {
                 const details = [p.dni, p.telefonoCelular ?? p.telefonoFijo].filter(Boolean).join(' · ');
                 return {
-                    label: `${p.nombre ?? ''} ${p.apellido ?? ''}`.trim(),
+                    label: `${p.apellido ?? ''} ${p.nombre ?? ''}`.trim(),
                     ...(details ? { sublabel: details } : {}),
                     value: { id_paciente: p.id_paciente, nombre: p.nombre ?? '', apellido: p.apellido ?? '' },
                 };
@@ -949,7 +993,7 @@ const exportCSV = () => {
         ['Horario', 'Nombre', 'Obra social', 'Telefono', 'Motivo', 'Estado'],
         ...appointmentsForSelectedDate.value.map(t => [
             formatTime(t.fechaHora),
-            `${t.paciente.nombre ?? ''} ${t.paciente.apellido ?? ''}`.trim(),
+            `${t.paciente.apellido ?? ''} ${t.paciente.nombre ?? ''}`.trim(),
             getPatient(t.id_paciente)?.obraSocial ?? '',
             getPatient(t.id_paciente)?.telefonoCelular ?? getPatient(t.id_paciente)?.telefonoFijo ?? '',
             t.motivo ?? '',
@@ -1064,7 +1108,7 @@ const deleteHorario = (id: number) => {
 const printTurnos = () => {
     const el = document.getElementById('print-turnos');
     if (!el) return;
-    const win = window.open('', '_blank', 'width=800,height=600');
+    const win = window.open('', '_blank');
     if (!win) return;
     win.document.write(`<!DOCTYPE html><html><head>
         <meta charset="utf-8">
@@ -1098,8 +1142,8 @@ const printTurnos = () => {
 }
 
 .sobreturno-item {
-    background-color: rgba(255, 152, 0, 0.06);
-    border-left: 3px dashed #ef6c00;
+    background-color: rgba(255, 214, 0, 0.08);
+    border-left: 3px dashed #f9a825;
 }
 
 .proximo-item {

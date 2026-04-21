@@ -6,7 +6,7 @@
         {{ isEdit ? 'Editar Consulta' : 'Nueva Consulta' }}
       </div>
       <div class="text-subtitle2 text-grey-7 q-pt-xs" v-if="patient || selectedPatient">
-        Paciente: {{ (patient || selectedPatient)?.nombre }} {{ (patient || selectedPatient)?.apellido }} (DNI: {{
+        Paciente: {{ (patient || selectedPatient)?.apellido }} {{ (patient || selectedPatient)?.nombre }} (DNI: {{
           (patient || selectedPatient)?.dni ?? 'N/A' }})
       </div>
       <div class="text-subtitle2 text-grey-7 q-pt-xs" v-else>
@@ -204,7 +204,7 @@ onMounted(() => {
   populateForm();
   if (!props.patient) {
     patientOptions.value = medicalStore.patients.map(p => ({
-      label: `${p.nombre} ${p.apellido} - DNI: ${p.dni}`,
+      label: `${p.apellido} ${p.nombre} - DNI: ${p.dni}`,
       value: p
     }));
   } else {
@@ -222,7 +222,7 @@ const filterPatients = (val: string, update: (callbackFn: () => void) => void) =
   if (val === '') {
     update(() => {
       patientOptions.value = medicalStore.patients.map(p => ({
-        label: `${p.nombre} ${p.apellido} - DNI: ${p.dni}`,
+        label: `${p.apellido} ${p.nombre} - DNI: ${p.dni}`,
         value: p
       }));
     });
@@ -237,7 +237,7 @@ const filterPatients = (val: string, update: (callbackFn: () => void) => void) =
         p.dni?.includes(needle)
     );
     patientOptions.value = filtered.map(p => ({
-      label: `${p.nombre} ${p.apellido} - DNI: ${p.dni}`,
+      label: `${p.apellido} ${p.nombre} - DNI: ${p.dni}`,
       value: p
     }));
   });
