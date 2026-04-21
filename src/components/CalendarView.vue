@@ -731,22 +731,42 @@ const feriadoDelDia = computed(() => {
     return feriadosMap.value.get(key) ?? null;
 });
 
-const calendarAttributes = computed(() => [
+const calendarAttributes = computed(() => {
+    // Group active turnos count by date
+    const activeByDate = new Map<string, number>();
+    for (const t of appointmentStore.turnos) {
+        if (t.estado === 'cancelado') continue;
+        const d = date.formatDate(new Date(t.fechaHora), 'YYYY-MM-DD');
+        activeByDate.set(d, (activeByDate.get(d) ?? 0) + 1);
+    }
+
+    const fullDates: Date[] = [];
+    const availableDates: Date[] = [];
+
+    for (const [dateStr, active] of activeByDate.entries()) {
+        const dow = new Date(dateStr + 'T12:00:00').getDay();
+        const maxForDay = appointmentStore.horarios
+            .filter(h => h.diaSemana === dow)
+            .reduce((sum, h) => sum + h.maxTurnosPorDia, 0);
+        if (maxForDay > 0 && active >= maxForDay) {
+            fullDates.push(new Date(dateStr + 'T12:00:00'));
+        } else {
+            availableDates.push(new Date(dateStr + 'T12:00:00'));
+        }
+    }
+
+    return [
     { key: 'today', highlight: true, dates: new Date() },
-    {
-        key: 'turnos',
-        dot: 'blue',
-        dates: [...new Set(
-            appointmentStore.turnos.map(t => date.formatDate(new Date(t.fechaHora), 'YYYY-MM-DD'))
-        )].map(d => new Date(d + 'T12:00:00')),
-    },
+    ...(availableDates.length ? [{ key: 'turnos-available', dot: 'blue', dates: availableDates }] : []),
+    ...(fullDates.length ? [{ key: 'turnos-full', dot: 'green', dates: fullDates }] : []),
     ...[...feriadosMap.value.entries()].map(([dateStr, motivo]) => ({
         key: `feriado-${dateStr}`,
         dot: { color: 'red', class: 'feriado-dot' },
         popover: { label: `🗓️ ${motivo}`, visibility: 'hover' },
         dates: new Date(dateStr + 'T12:00:00'),
     })),
-]);
+    ];
+});
 
 const stats = computed(() => {
     const now = new Date();
