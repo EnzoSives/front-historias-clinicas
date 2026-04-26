@@ -1,4 +1,6 @@
 {
+  "name": "Sistema de Historias Clinicas",
+  "short_name": "Historias Clinicas",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#027be3",
