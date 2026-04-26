@@ -253,8 +253,8 @@
               </div>
               <div class="row q-gutter-sm">
                 <q-btn v-if="step < 3" color="positive" label="Siguiente" @click="step++" />
-                <q-btn type="submit" color="primary" :label="isEdit ? 'Actualizar' : 'Guardar'"
-                  :loading="loading" :disable="!isReadOnly" />
+                <q-btn type="submit" color="primary" :label="isEdit ? 'Actualizar' : 'Guardar'" :loading="loading"
+                  :disable="!isReadOnly" />
               </div>
             </q-stepper-navigation>
           </template>

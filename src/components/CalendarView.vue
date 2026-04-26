@@ -9,8 +9,8 @@
                     Turnos
                 </div>
                 <div class="row items-center q-gutter-xs">
-                    <q-btn outline color="primary" icon="person_add"
-                        :label="$q.screen.gt.xs ? 'Paciente' : undefined" @click="showPatientDialog = true">
+                    <q-btn outline color="primary" icon="person_add" :label="$q.screen.gt.xs ? 'Paciente' : undefined"
+                        @click="showPatientDialog = true">
                         <q-tooltip v-if="$q.screen.xs">Agregar paciente</q-tooltip>
                     </q-btn>
                     <q-btn color="primary" icon="add" :label="$q.screen.gt.xs ? 'Nuevo turno' : undefined"
@@ -274,7 +274,7 @@
                                             <span>{{ getPatient(item.turno.id_paciente)?.dni }}</span>
                                         </template>
                                         <span v-if="item.turno.motivo" class="text-grey-6">· {{ item.turno.motivo
-                                            }}</span>
+                                        }}</span>
                                         <q-badge v-if="isProximo(item.turno) && tiempoRestante(item.turno)"
                                             color="blue-6" class="q-ml-xs" style="font-size:10px">
                                             {{ tiempoRestante(item.turno) }}
@@ -311,7 +311,8 @@
                                                     <q-item-section class="text-body2">Editar turno</q-item-section>
                                                 </q-item>
                                                 <q-separator />
-                                                <q-item-label header class="text-caption text-grey-6 q-py-xs">Cambiar estado</q-item-label>
+                                                <q-item-label header class="text-caption text-grey-6 q-py-xs">Cambiar
+                                                    estado</q-item-label>
                                                 <q-item v-for="opt in statusOptions" :key="opt.value" clickable
                                                     :disable="item.turno.estado === opt.value"
                                                     @click="changeStatus(item.turno.id_turno, opt.value)">
@@ -325,7 +326,8 @@
                                                     <q-item-section avatar>
                                                         <q-icon name="delete" color="negative" size="18px" />
                                                     </q-item-section>
-                                                    <q-item-section class="text-negative text-body2">Eliminar</q-item-section>
+                                                    <q-item-section
+                                                        class="text-negative text-body2">Eliminar</q-item-section>
                                                 </q-item>
                                             </q-list>
                                         </q-menu>
@@ -350,7 +352,8 @@
                 {{ turnosActivosDia }} turno{{ turnosActivosDia !== 1 ? 's' : '' }}
                 <span v-if="sobreturnos > 0"> · {{ sobreturnos }} sobreturno{{ sobreturnos > 1 ? 's' : '' }}</span>
             </p>
-            <table style="width:100%;table-layout:fixed;border-collapse:collapse;font-family:sans-serif;font-size:11px;border:1px solid #bdbdbd">
+            <table
+                style="width:100%;table-layout:fixed;border-collapse:collapse;font-family:sans-serif;font-size:11px;border:1px solid #bdbdbd">
                 <colgroup>
                     <col style="width:55px" />
                     <col style="width:22%" />
@@ -374,22 +377,28 @@
                         <td style="padding:5px 8px;border:1px solid #bdbdbd;white-space:nowrap">
                             {{ item.kind === 'turno' ? formatTime(item.turno.fechaHora) : formatTime(item.slot) }}
                         </td>
-                        <td style="padding:5px 8px;border:1px solid #bdbdbd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                            {{ item.kind === 'turno' ? `${item.turno.paciente.apellido} ${item.turno.paciente.nombre}` : '—' }}
+                        <td
+                            style="padding:5px 8px;border:1px solid #bdbdbd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                            {{ item.kind === 'turno' ? `${item.turno.paciente.apellido} ${item.turno.paciente.nombre}` :
+                            '—' }}
                         </td>
-                        <td style="padding:5px 8px;border:1px solid #bdbdbd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                        <td
+                            style="padding:5px 8px;border:1px solid #bdbdbd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                             {{ item.kind === 'turno' ? (getPatient(item.turno.id_paciente)?.obraSocial ?? '—') : '—' }}
                         </td>
                         <td style="padding:5px 8px;border:1px solid #bdbdbd;white-space:nowrap">
                             {{ item.kind === 'turno' ? (getPatient(item.turno.id_paciente)?.telefonoCelular ??
                                 getPatient(item.turno.id_paciente)?.telefonoFijo ?? '—') : '—' }}
                         </td>
-                        <td style="padding:5px 8px;border:1px solid #bdbdbd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                        <td
+                            style="padding:5px 8px;border:1px solid #bdbdbd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
                             {{ item.kind === 'turno' ? (item.turno.motivo ?? '—') : '—' }}
                         </td>
                     </tr>
                     <tr v-if="mergedItems.length === 0">
-                        <td colspan="5" style="padding:10px;text-align:center;color:#999;border:1px solid #bdbdbd">Sin turnos para esta fecha.</td>
+                        <td colspan="5" style="padding:10px;text-align:center;color:#999;border:1px solid #bdbdbd">Sin
+                            turnos
+                            para esta fecha.</td>
                     </tr>
                 </tbody>
             </table>
@@ -444,7 +453,7 @@
                                     <q-item-section>
                                         <q-item-label>{{ scope.opt.label }}</q-item-label>
                                         <q-item-label caption v-if="scope.opt.sublabel">{{ scope.opt.sublabel
-                                            }}</q-item-label>
+                                        }}</q-item-label>
                                     </q-item-section>
                                 </q-item>
                             </template>
@@ -466,8 +475,8 @@
                             </template>
                         </q-select>
 
-                        <q-select v-if="!addDialogSlotPrefilled" filled v-model="turnoForm.slot" :options="slotOptions" emit-value map-options
-                            label="Horario *" :rules="[val => !!val || 'Seleccione un horario']"
+                        <q-select v-if="!addDialogSlotPrefilled" filled v-model="turnoForm.slot" :options="slotOptions"
+                            emit-value map-options label="Horario *" :rules="[val => !!val || 'Seleccione un horario']"
                             :hint="slotOptions.length === 0 ? 'No hay franjas configuradas para este día' : ''" />
                         <div v-else class="row items-center q-gutter-xs text-body2 text-grey-8">
                             <q-icon name="access_time" size="16px" color="grey-6" />

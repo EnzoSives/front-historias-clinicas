@@ -28,8 +28,8 @@
               aria-label="Editar Paciente" @click="patient && $emit('edit-patient', patient)">
               <q-tooltip class="bg-grey-8" anchor="bottom middle" self="top middle">Editar Paciente</q-tooltip>
             </q-btn>
-            <q-btn v-if="!authStore.isTurnero" round dense color="primary" icon="add" :disable="!patient" aria-label="Nueva Consulta"
-              @click="patient && $emit('new-consultation', patient)">
+            <q-btn v-if="!authStore.isTurnero" round dense color="primary" icon="add" :disable="!patient"
+              aria-label="Nueva Consulta" @click="patient && $emit('new-consultation', patient)">
               <q-tooltip class="bg-grey-8" anchor="bottom middle" self="top middle">Nueva Consulta</q-tooltip>
             </q-btn>
           </div>
