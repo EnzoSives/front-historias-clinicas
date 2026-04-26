@@ -3,9 +3,22 @@
 
         <!-- ── Header ──────────────────────────────────────────────── -->
         <div class="q-mb-md">
-            <div class="text-h5 text-primary text-weight-bold row items-center no-wrap q-mb-xs">
-                <q-icon name="event_note" size="1.4rem" class="q-mr-sm" />
-                Turnos
+            <div class="row items-center justify-between no-wrap q-mb-xs">
+                <div class="text-h5 text-primary text-weight-bold row items-center no-wrap">
+                    <q-icon name="event_note" size="1.4rem" class="q-mr-sm" />
+                    Turnos
+                </div>
+                <div class="row items-center q-gutter-xs">
+                    <q-btn outline color="primary" icon="person_add"
+                        :label="$q.screen.gt.xs ? 'Paciente' : undefined" @click="showPatientDialog = true">
+                        <q-tooltip v-if="$q.screen.xs">Agregar paciente</q-tooltip>
+                    </q-btn>
+                    <q-btn color="primary" icon="add" :label="$q.screen.gt.xs ? 'Nuevo turno' : undefined"
+                        @click="openAddDialog()" :disable="horariosDelDia.length === 0 || !!feriadoDelDia">
+                        <q-tooltip>{{ horariosDelDia.length === 0 ? 'Configurá una franja horaria primero' :
+                            feriadoDelDia ? `Feriado: ${feriadoDelDia}` : 'Nuevo turno' }}</q-tooltip>
+                    </q-btn>
+                </div>
             </div>
             <!-- Stats: horizontally scrollable on mobile -->
             <div class="stats-scroll row no-wrap q-gutter-xs">
@@ -85,7 +98,7 @@
 
             <!-- Right: day appointments -->
             <div class="col-12 col-md-8">
-                <q-card flat bordered>
+                <q-card flat bordered square class="appointments-card" style="border-radius:0">
 
                     <!-- Header row 1: date nav + action buttons -->
                     <q-card-section class="q-py-sm q-px-sm q-px-md-md">
@@ -157,16 +170,7 @@
                                         </q-list>
                                     </q-menu>
                                 </q-btn>
-                                <q-btn outline color="primary" icon="person_add"
-                                    :label="$q.screen.gt.xs ? 'Paciente' : undefined" @click="showPatientDialog = true">
-                                    <q-tooltip v-if="$q.screen.xs">Agregar paciente</q-tooltip>
-                                </q-btn>
-                                <q-btn color="primary" icon="add" :label="$q.screen.gt.xs ? 'Nuevo turno' : undefined"
-                                    @click="openAddDialog" :disable="horariosDelDia.length === 0 || !!feriadoDelDia">
-                                    <q-tooltip>{{ horariosDelDia.length === 0 ? 'Configurá una franja horaria primero' :
-                                        feriadoDelDia ? `Feriado:
-                                        ${feriadoDelDia}` : 'Nuevo turno' }}</q-tooltip>
-                                </q-btn>
+
                             </div>
                         </div>
                     </q-card-section>
@@ -223,7 +227,7 @@
                                 <q-spinner-dots color="primary" size="30px" />
                             </q-item-section>
                         </q-item>
-                        <q-item v-else-if="filteredTurnos.length === 0">
+                        <q-item v-else-if="filteredItems.length === 0">
                             <q-item-section class="text-center text-grey-5 q-py-xl">
 
                                 <div class="text-caption">{{ turnoSearch.trim() ? `Sin resultados para "${turnoSearch}"`
@@ -231,75 +235,106 @@
                             </q-item-section>
                         </q-item>
 
-                        <q-item v-for="(turno, idx) in filteredTurnos" :key="turno.id_turno" :class="['turno-item q-py-xs q-px-md',
-                            isSobreturno(idx) ? 'sobreturno-item' : '',
-                            isProximo(turno) ? 'proximo-item' : '']">
+                        <q-item v-for="item in filteredItems"
+                            :key="item.kind === 'turno' ? `turno-${item.turno.id_turno}` : `libre-${item.slot}`" :class="['turno-item q-py-sm q-px-md',
+                                item.kind === 'turno' && item.isSobreturno ? 'sobreturno-item' : '',
+                                item.kind === 'turno' && isProximo(item.turno) ? 'proximo-item' : '',
+                                item.kind === 'libre' ? 'libre-item' : '']">
+
+                            <!-- Avatar -->
                             <q-item-section avatar style="min-width: 40px">
-                                <q-avatar size="34px" :color="isSobreturno(idx) ? 'amber-5' : statusColor(turno.estado)"
-                                    text-color="white" class="text-caption text-weight-bold">
-                                    {{ initials(turno.paciente) }}
-                                </q-avatar>
-                                <q-badge v-if="isProximo(turno)" floating color="blue-6" label="próximo" />
+                                <template v-if="item.kind === 'turno'">
+                                    <q-avatar size="34px"
+                                        :color="item.isSobreturno ? 'amber-5' : statusColor(item.turno.estado)"
+                                        text-color="white" class="text-caption text-weight-bold">
+                                        {{ initials(item.turno.paciente) }}
+                                    </q-avatar>
+                                    <q-badge v-if="isProximo(item.turno)" floating color="blue-6" label="próximo" />
+                                </template>
+                                <q-avatar v-else size="34px" color="grey-3" text-color="grey-5" icon="person_outline" />
                             </q-item-section>
 
+                            <!-- Contenido -->
                             <q-item-section>
-                                <q-item-label class="text-body2 text-weight-medium">
-                                    {{ turno.paciente.apellido }} {{ turno.paciente.nombre }}
-                                    <q-chip v-if="getPatient(turno.id_paciente)?.obraSocial" dense size="xs"
-                                        color="blue-1" text-color="blue-8" class="q-ml-xs q-px-xs" style="height:16px">
-                                        {{ getPatient(turno.id_paciente)?.obraSocial }}
-                                    </q-chip>
-                                </q-item-label>
-                                <q-item-label caption class="row items-center q-gutter-xs">
-                                    <q-icon name="access_time" size="11px" />
-                                    <span>{{ formatTime(turno.fechaHora) }}</span>
-                                    <span v-if="turno.motivo" class="text-grey-6">· {{ turno.motivo }}</span>
-                                    <q-badge v-if="isProximo(turno) && tiempoRestante(turno)" color="blue-6"
-                                        class="q-ml-xs" style="font-size:10px">
-                                        {{ tiempoRestante(turno) }}
-                                    </q-badge>
-                                </q-item-label>
-                                <q-item-label v-if="turno.notas" caption class="text-grey-5 q-mt-xs">
-                                    <q-icon name="notes" size="11px" class="q-mr-xs" />{{ turno.notas }}
-                                </q-item-label>
+                                <template v-if="item.kind === 'turno'">
+                                    <q-item-label class="text-body2 text-weight-medium">
+                                        {{ item.turno.paciente.apellido }} {{ item.turno.paciente.nombre }}
+                                        <q-chip v-if="getPatient(item.turno.id_paciente)?.obraSocial" dense size="xs"
+                                            color="blue-1" text-color="blue-8" class="q-ml-xs q-px-xs"
+                                            style="height:16px">
+                                            {{ getPatient(item.turno.id_paciente)?.obraSocial }}
+                                        </q-chip>
+                                    </q-item-label>
+                                    <q-item-label caption class="row items-center q-gutter-xs">
+                                        <q-icon name="access_time" size="11px" />
+                                        <span>{{ formatTime(item.turno.fechaHora) }}</span>
+                                        <template v-if="getPatient(item.turno.id_paciente)?.dni">
+                                            <span class="text-grey-5">·</span>
+                                            <q-icon name="badge" size="11px" />
+                                            <span>{{ getPatient(item.turno.id_paciente)?.dni }}</span>
+                                        </template>
+                                        <span v-if="item.turno.motivo" class="text-grey-6">· {{ item.turno.motivo
+                                            }}</span>
+                                        <q-badge v-if="isProximo(item.turno) && tiempoRestante(item.turno)"
+                                            color="blue-6" class="q-ml-xs" style="font-size:10px">
+                                            {{ tiempoRestante(item.turno) }}
+                                        </q-badge>
+                                    </q-item-label>
+                                    <q-item-label v-if="item.turno.notas" caption class="text-grey-5 q-mt-xs">
+                                        <q-icon name="notes" size="11px" class="q-mr-xs" />{{ item.turno.notas }}
+                                    </q-item-label>
+                                </template>
+                                <template v-else>
+                                    <q-item-label class="text-body2 text-grey-5">Sin asignar</q-item-label>
+                                    <q-item-label caption class="row items-center q-gutter-xs">
+                                        <q-icon name="access_time" size="11px" />
+                                        <span>{{ formatTime(item.slot) }}</span>
+                                    </q-item-label>
+                                </template>
                             </q-item-section>
 
+                            <!-- Acciones -->
                             <q-item-section side class="row items-center no-wrap q-gutter-xs">
-                                <q-badge :color="isSobreturno(idx) ? 'amber-5' : statusColor(turno.estado)"
-                                    :label="$q.screen.xs ? undefined : (isSobreturno(idx) ? 'sobreturno' : turno.estado)">
-                                    <q-tooltip v-if="$q.screen.xs">{{ isSobreturno(idx) ? 'Sobreturno' : turno.estado
-                                        }}</q-tooltip>
-                                </q-badge>
-                                <q-btn flat round dense icon="more_vert" size="xs" color="grey-6">
-                                    <q-menu auto-close>
-                                        <q-list dense style="min-width: 170px">
-                                            <q-item clickable @click="openEditDialog(turno)">
-                                                <q-item-section avatar>
-                                                    <q-icon name="edit" color="primary" size="16px" />
-                                                </q-item-section>
-                                                <q-item-section class="text-body2">Editar turno</q-item-section>
-                                            </q-item>
-                                            <q-separator />
-                                            <q-item-label header class="text-caption text-grey-6 q-py-xs">Cambiar
-                                                estado</q-item-label>
-                                            <q-item v-for="opt in statusOptions" :key="opt.value" clickable
-                                                :disable="turno.estado === opt.value"
-                                                @click="changeStatus(turno.id_turno, opt.value)">
-                                                <q-item-section avatar>
-                                                    <q-icon :name="opt.icon" :color="opt.color" size="16px" />
-                                                </q-item-section>
-                                                <q-item-section class="text-body2">{{ opt.label }}</q-item-section>
-                                            </q-item>
-                                            <q-separator />
-                                            <q-item clickable @click="deleteTurno(turno.id_turno)">
-                                                <q-item-section avatar>
-                                                    <q-icon name="delete" color="negative" size="16px" />
-                                                </q-item-section>
-                                                <q-item-section
-                                                    class="text-negative text-body2">Eliminar</q-item-section>
-                                            </q-item>
-                                        </q-list>
-                                    </q-menu>
+                                <template v-if="item.kind === 'turno'">
+                                    <q-badge :color="item.isSobreturno ? 'amber-5' : statusColor(item.turno.estado)"
+                                        :label="$q.screen.xs ? undefined : (item.isSobreturno ? 'sobreturno' : item.turno.estado)">
+                                        <q-tooltip v-if="$q.screen.xs">{{ item.isSobreturno ? 'Sobreturno' :
+                                            item.turno.estado }}</q-tooltip>
+                                    </q-badge>
+                                    <q-btn flat round dense icon="more_vert" size="xs" color="grey-6">
+                                        <q-menu auto-close>
+                                            <q-list style="min-width: 190px">
+                                                <q-item clickable @click="openEditDialog(item.turno)">
+                                                    <q-item-section avatar>
+                                                        <q-icon name="edit" color="primary" size="18px" />
+                                                    </q-item-section>
+                                                    <q-item-section class="text-body2">Editar turno</q-item-section>
+                                                </q-item>
+                                                <q-separator />
+                                                <q-item-label header class="text-caption text-grey-6 q-py-xs">Cambiar estado</q-item-label>
+                                                <q-item v-for="opt in statusOptions" :key="opt.value" clickable
+                                                    :disable="item.turno.estado === opt.value"
+                                                    @click="changeStatus(item.turno.id_turno, opt.value)">
+                                                    <q-item-section avatar>
+                                                        <q-icon :name="opt.icon" :color="opt.color" size="18px" />
+                                                    </q-item-section>
+                                                    <q-item-section class="text-body2">{{ opt.label }}</q-item-section>
+                                                </q-item>
+                                                <q-separator />
+                                                <q-item clickable @click="deleteTurno(item.turno.id_turno)">
+                                                    <q-item-section avatar>
+                                                        <q-icon name="delete" color="negative" size="18px" />
+                                                    </q-item-section>
+                                                    <q-item-section class="text-negative text-body2">Eliminar</q-item-section>
+                                                </q-item>
+                                            </q-list>
+                                        </q-menu>
+                                    </q-btn>
+                                </template>
+                                <q-btn v-else flat dense color="primary" icon="person_add"
+                                    :label="$q.screen.gt.xs ? 'Asignar' : undefined" size="sm"
+                                    @click="openAddDialog(item.slot)">
+                                    <q-tooltip v-if="$q.screen.xs">Asignar paciente</q-tooltip>
                                 </q-btn>
                             </q-item-section>
                         </q-item>
@@ -315,33 +350,46 @@
                 {{ turnosActivosDia }} turno{{ turnosActivosDia !== 1 ? 's' : '' }}
                 <span v-if="sobreturnos > 0"> · {{ sobreturnos }} sobreturno{{ sobreturnos > 1 ? 's' : '' }}</span>
             </p>
-            <table style="width:100%;border-collapse:collapse;font-family:sans-serif;font-size:13px">
+            <table style="width:100%;table-layout:fixed;border-collapse:collapse;font-family:sans-serif;font-size:11px;border:1px solid #bdbdbd">
+                <colgroup>
+                    <col style="width:55px" />
+                    <col style="width:22%" />
+                    <col style="width:20%" />
+                    <col style="width:100px" />
+                    <col />
+                </colgroup>
                 <thead>
                     <tr style="background:#1976d2;color:#fff">
-                        <th style="padding:8px 12px;text-align:left;width:70px">Horario</th>
-                        <th style="padding:8px 12px;text-align:left">Nombre</th>
-                        <th style="padding:8px 12px;text-align:left">Obra social</th>
-                        <th style="padding:8px 12px;text-align:left;width:110px">Teléfono</th>
-                        <th style="padding:8px 12px;text-align:left">Motivo</th>
+                        <th style="padding:6px 8px;text-align:left;border:1px solid #1565c0">Horario</th>
+                        <th style="padding:6px 8px;text-align:left;border:1px solid #1565c0">Nombre</th>
+                        <th style="padding:6px 8px;text-align:left;border:1px solid #1565c0">Obra social</th>
+                        <th style="padding:6px 8px;text-align:left;border:1px solid #1565c0">Teléfono</th>
+                        <th style="padding:6px 8px;text-align:left;border:1px solid #1565c0">Motivo</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(turno, idx) in appointmentsForSelectedDate.filter(t => t.estado !== 'cancelado')"
-                        :key="turno.id_turno" :style="idx % 2 === 0 ? 'background:#f5f5f5' : 'background:#fff'">
-                        <td style="padding:7px 12px;border-bottom:1px solid #e0e0e0">{{ formatTime(turno.fechaHora) }}
+                    <tr v-for="(item, idx) in mergedItems"
+                        :key="item.kind === 'turno' ? `turno-${item.turno.id_turno}` : `libre-${item.slot}`"
+                        :style="idx % 2 === 0 ? 'background:#f5f5f5' : 'background:#fff'">
+                        <td style="padding:5px 8px;border:1px solid #bdbdbd;white-space:nowrap">
+                            {{ item.kind === 'turno' ? formatTime(item.turno.fechaHora) : formatTime(item.slot) }}
                         </td>
-                        <td style="padding:7px 12px;border-bottom:1px solid #e0e0e0">{{ turno.paciente.apellido }} {{
-                            turno.paciente.nombre }}</td>
-                        <td style="padding:7px 12px;border-bottom:1px solid #e0e0e0">{{
-                            getPatient(turno.id_paciente)?.obraSocial ?? '—' }}</td>
-                        <td style="padding:7px 12px;border-bottom:1px solid #e0e0e0">{{
-                            getPatient(turno.id_paciente)?.telefonoCelular ??
-                            getPatient(turno.id_paciente)?.telefonoFijo ?? '—' }}</td>
-                        <td style="padding:7px 12px;border-bottom:1px solid #e0e0e0">{{ turno.motivo ?? '—' }}</td>
+                        <td style="padding:5px 8px;border:1px solid #bdbdbd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                            {{ item.kind === 'turno' ? `${item.turno.paciente.apellido} ${item.turno.paciente.nombre}` : '—' }}
+                        </td>
+                        <td style="padding:5px 8px;border:1px solid #bdbdbd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                            {{ item.kind === 'turno' ? (getPatient(item.turno.id_paciente)?.obraSocial ?? '—') : '—' }}
+                        </td>
+                        <td style="padding:5px 8px;border:1px solid #bdbdbd;white-space:nowrap">
+                            {{ item.kind === 'turno' ? (getPatient(item.turno.id_paciente)?.telefonoCelular ??
+                                getPatient(item.turno.id_paciente)?.telefonoFijo ?? '—') : '—' }}
+                        </td>
+                        <td style="padding:5px 8px;border:1px solid #bdbdbd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                            {{ item.kind === 'turno' ? (item.turno.motivo ?? '—') : '—' }}
+                        </td>
                     </tr>
-                    <tr v-if="appointmentsForSelectedDate.filter(t => t.estado !== 'cancelado').length === 0">
-                        <td colspan="5" style="padding:12px;text-align:center;color:#999">Sin turnos para esta fecha.
-                        </td>
+                    <tr v-if="mergedItems.length === 0">
+                        <td colspan="5" style="padding:10px;text-align:center;color:#999;border:1px solid #bdbdbd">Sin turnos para esta fecha.</td>
                     </tr>
                 </tbody>
             </table>
@@ -396,7 +444,7 @@
                                     <q-item-section>
                                         <q-item-label>{{ scope.opt.label }}</q-item-label>
                                         <q-item-label caption v-if="scope.opt.sublabel">{{ scope.opt.sublabel
-                                        }}</q-item-label>
+                                            }}</q-item-label>
                                     </q-item-section>
                                 </q-item>
                             </template>
@@ -418,9 +466,13 @@
                             </template>
                         </q-select>
 
-                        <q-select filled v-model="turnoForm.slot" :options="slotOptions" emit-value map-options
+                        <q-select v-if="!addDialogSlotPrefilled" filled v-model="turnoForm.slot" :options="slotOptions" emit-value map-options
                             label="Horario *" :rules="[val => !!val || 'Seleccione un horario']"
                             :hint="slotOptions.length === 0 ? 'No hay franjas configuradas para este día' : ''" />
+                        <div v-else class="row items-center q-gutter-xs text-body2 text-grey-8">
+                            <q-icon name="access_time" size="16px" color="grey-6" />
+                            <span>{{ formatTime(turnoForm.slot) }}</span>
+                        </div>
 
                         <q-input filled v-model="turnoForm.motivo" label="Motivo (opcional)" autogrow type="textarea"
                             rows="2" />
@@ -537,14 +589,26 @@
                         <q-btn icon="close" flat round dense v-close-popup />
                     </q-card-section>
 
-                    <q-card-section class="q-gutter-md q-pt-md">
-
-                        <q-input filled v-model="patientForm.nombre" label="Nombre *"
-                            :rules="[val => !!val?.trim() || 'Requerido']" />
-                        <q-input filled v-model="patientForm.apellido" label="Apellido *"
-                            :rules="[val => !!val?.trim() || 'Requerido']" />
-                        <q-input filled v-model="patientForm.obraSocial" label="Obra social" />
-                        <q-input filled v-model="patientForm.telefono" label="Teléfono" type="tel" />
+                    <q-card-section class="q-pt-md q-px-md q-pb-none">
+                        <div class="row q-col-gutter-sm">
+                            <div class="col-6">
+                                <q-input filled v-model="patientForm.nombre" label="Nombre *"
+                                    :rules="[val => !!val?.trim() || 'Requerido']" />
+                            </div>
+                            <div class="col-6">
+                                <q-input filled v-model="patientForm.apellido" label="Apellido *"
+                                    :rules="[val => !!val?.trim() || 'Requerido']" />
+                            </div>
+                            <div class="col-12">
+                                <q-input filled v-model="patientForm.dni" label="DNI" />
+                            </div>
+                            <div class="col-12">
+                                <q-input filled v-model="patientForm.obraSocial" label="Obra social" />
+                            </div>
+                            <div class="col-12">
+                                <q-input filled v-model="patientForm.telefono" label="Teléfono" type="tel" />
+                            </div>
+                        </div>
                     </q-card-section>
 
                     <q-card-actions align="right" class="q-pa-md">
@@ -567,6 +631,9 @@ import type { Turno } from 'src/types';
 // ── Types ────────────────────────────────────────────────────────
 type TurnoEstado = 'pendiente' | 'confirmado' | 'cancelado' | 'completado';
 type PatientOption = { label: string; sublabel?: string; value: { id_paciente: number; nombre: string; apellido: string } };
+type SlotItem =
+    | { kind: 'turno'; turno: Turno; isSobreturno: boolean }
+    | { kind: 'libre'; slot: string };
 interface Feriado { fecha: string; tipo: string; nombre: string; }
 
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -595,7 +662,7 @@ const turnoForm = ref<{ pacienteOpt: PatientOption | null; slot: string; motivo:
     motivo: '',
 });
 
-const patientForm = ref({ nombre: '', apellido: '', obraSocial: '', telefono: '' });
+const patientForm = ref({ nombre: '', apellido: '', dni: '', obraSocial: '', telefono: '' });
 
 // Horario form
 const horarioForm = ref<Omit<HorarioMedico, 'id' | 'id_medico'>>({
@@ -756,15 +823,15 @@ const calendarAttributes = computed(() => {
     }
 
     return [
-    { key: 'today', highlight: true, dates: new Date() },
-    ...(availableDates.length ? [{ key: 'turnos-available', dot: 'blue', dates: availableDates }] : []),
-    ...(fullDates.length ? [{ key: 'turnos-full', dot: 'green', dates: fullDates }] : []),
-    ...[...feriadosMap.value.entries()].map(([dateStr, motivo]) => ({
-        key: `feriado-${dateStr}`,
-        dot: { color: 'red', class: 'feriado-dot' },
-        popover: { label: `🗓️ ${motivo}`, visibility: 'hover' },
-        dates: new Date(dateStr + 'T12:00:00'),
-    })),
+        { key: 'today', highlight: true, dates: new Date() },
+        ...(availableDates.length ? [{ key: 'turnos-available', dot: 'blue', dates: availableDates }] : []),
+        ...(fullDates.length ? [{ key: 'turnos-full', dot: 'green', dates: fullDates }] : []),
+        ...[...feriadosMap.value.entries()].map(([dateStr, motivo]) => ({
+            key: `feriado-${dateStr}`,
+            dot: { color: 'red', class: 'feriado-dot' },
+            popover: { label: `🗓️ ${motivo}`, visibility: 'hover' },
+            dates: new Date(dateStr + 'T12:00:00'),
+        })),
     ];
 });
 
@@ -827,13 +894,47 @@ const pendientesDia = computed(() =>
 // ¿Es hoy el día seleccionado?
 const isToday = computed(() => date.isSameDate(selectedDate.value, new Date(), 'day'));
 
-// Turnos filtrados por búsqueda
-const filteredTurnos = computed(() => {
-    if (!turnoSearch.value.trim()) return appointmentsForSelectedDate.value;
+// Todos los slots del día mezclados con los turnos existentes
+const mergedItems = computed((): SlotItem[] => {
+    const slotsSet = new Set(slotsDelDia.value);
+    const turnoSlotMap = new Map<string, Turno>();
+    for (const t of appointmentsForSelectedDate.value) {
+        if (t.estado === 'cancelado') continue;
+        const d = new Date(t.fechaHora);
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const key = `${date.formatDate(d, 'YYYY-MM-DD')}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+        turnoSlotMap.set(key, t);
+    }
+    const items: SlotItem[] = [];
+    for (const slot of slotsDelDia.value) {
+        const turno = turnoSlotMap.get(slot);
+        items.push(turno
+            ? { kind: 'turno', turno, isSobreturno: false }
+            : { kind: 'libre', slot }
+        );
+    }
+    // Sobreturnos: turnos fuera de los slots definidos
+    for (const t of appointmentsForSelectedDate.value) {
+        if (t.estado === 'cancelado') continue;
+        const d = new Date(t.fechaHora);
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const key = `${date.formatDate(d, 'YYYY-MM-DD')}T${pad(d.getHours())}:${pad(d.getMinutes())}:00`;
+        if (!slotsSet.has(key)) {
+            items.push({ kind: 'turno', turno: t, isSobreturno: true });
+        }
+    }
+    return items;
+});
+
+// Items filtrados por búsqueda
+const filteredItems = computed((): SlotItem[] => {
+    if (!turnoSearch.value.trim()) return mergedItems.value;
     const needle = turnoSearch.value.toLowerCase();
-    return appointmentsForSelectedDate.value.filter(t =>
-        t.paciente.nombre?.toLowerCase().includes(needle) ||
-        t.paciente.apellido?.toLowerCase().includes(needle)
+    return mergedItems.value.filter(item =>
+        item.kind === 'turno' && (
+            item.turno.paciente.nombre?.toLowerCase().includes(needle) ||
+            item.turno.paciente.apellido?.toLowerCase().includes(needle)
+        )
     );
 });
 
@@ -867,7 +968,6 @@ const statusColor = (estado: TurnoEstado): string => ({
     completado: 'green',
 }[estado]);
 
-const isSobreturno = (idx: number) => maxTurnosDia.value > 0 && idx >= maxTurnosDia.value;
 const isProximo = (turno: Turno) => turno.id_turno === proximoTurnoId.value;
 
 const tiempoRestante = (turno: Turno): string | null => {
@@ -900,8 +1000,11 @@ const handleDayClick = (day: { date?: Date }) => {
     if ($q.screen.xs) calendarExpanded.value = false;
 };
 
-const openAddDialog = () => {
-    turnoForm.value = { pacienteOpt: null, slot: '', motivo: '' };
+const addDialogSlotPrefilled = ref(false);
+
+const openAddDialog = (prefilledSlot = '') => {
+    addDialogSlotPrefilled.value = !!prefilledSlot;
+    turnoForm.value = { pacienteOpt: null, slot: prefilledSlot, motivo: '' };
     showAddDialog.value = true;
 };
 
@@ -937,16 +1040,18 @@ const openPatientFromTurno = (input: string) => {
 };
 
 const resetPatientForm = () => {
-    patientForm.value = { nombre: '', apellido: '', obraSocial: '', telefono: '' };
+    patientForm.value = { nombre: '', apellido: '', dni: '', obraSocial: '', telefono: '' };
 };
 
 const addPatient = async () => {
     try {
         const os = patientForm.value.obraSocial.trim();
         const tel = patientForm.value.telefono.trim();
+        const dni = patientForm.value.dni.trim();
         await medicalStore.addPatient({
             nombre: patientForm.value.nombre.trim(),
             apellido: patientForm.value.apellido.trim(),
+            ...(dni ? { dni } : {}),
             ...(os ? { obraSocial: os } : {}),
             ...(tel ? { telefonoCelular: tel } : {}),
         });
@@ -1153,8 +1258,20 @@ const printTurnos = () => {
     overflow: hidden;
 }
 
+.appointments-card {
+    border-radius: 0 !important;
+}
+
+:deep(.appointments-card) {
+    border-radius: 0 !important;
+}
+
 .turno-item {
     transition: background-color 0.15s ease;
+    border-bottom: 1px solid #f0f0f0;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+    border-radius: 0 !important;
 }
 
 .turno-item:hover {
@@ -1164,6 +1281,17 @@ const printTurnos = () => {
 .sobreturno-item {
     background-color: rgba(255, 214, 0, 0.08);
     border-left: 3px dashed #f9a825;
+}
+
+.libre-item {
+    border-left: 3px solid #e0e0e0;
+    opacity: 0.75;
+}
+
+.libre-item:hover {
+    opacity: 1;
+    background-color: rgba(25, 118, 210, 0.03);
+    border-left-color: #1976d2;
 }
 
 .proximo-item {
