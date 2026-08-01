@@ -298,6 +298,8 @@ export const useMedicalStore = defineStore('medical', {
             tratamiento: apiConsultation.tratamiento,
             observaciones: apiConsultation.observaciones,
             examenFisico: apiConsultation.examenFisico,
+            laboratorios: apiConsultation.laboratorios,
+            imagenes: apiConsultation.imagenes,
             createdAt: apiConsultation.createdAt,
             updatedAt: apiConsultation.updatedAt,
           } as ConsultationType;
@@ -341,6 +343,8 @@ export const useMedicalStore = defineStore('medical', {
           tratamiento: response.data.tratamiento,
           observaciones: response.data.observaciones,
           examenFisico: response.data.examenFisico,
+          laboratorios: response.data.laboratorios,
+          imagenes: response.data.imagenes,
           createdAt: response.data.createdAt,
           updatedAt: response.data.updatedAt,
         };
@@ -384,6 +388,8 @@ export const useMedicalStore = defineStore('medical', {
           tratamiento: response.data.tratamiento,
           observaciones: response.data.observaciones,
           examenFisico: response.data.examenFisico,
+          laboratorios: response.data.laboratorios,
+          imagenes: response.data.imagenes,
           createdAt: response.data.createdAt,
           updatedAt: response.data.updatedAt,
         };

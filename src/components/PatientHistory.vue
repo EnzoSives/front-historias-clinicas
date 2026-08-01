@@ -279,10 +279,13 @@
             <div class="q-mt-md text-h6">No hay consultas registradas</div>
             <div class="text-body2 q-mt-sm text-grey-5">Usá "Nueva Consulta" para registrar la primera.</div>
           </div>
-          <div v-else>
-            <ConsultationCard v-for="consultation in sortedConsultations" :key="consultation.id"
-              :consultation="consultation" :patient="patient" @edit="$emit('edit-consultation', consultation)"
-              @delete="$emit('delete-consultation', consultation.id)" />
+          <div v-else class="row q-col-gutter-md">
+            <div v-for="consultation in sortedConsultations" :key="consultation.id"
+              class="col-12 col-sm-6">
+              <ConsultationCard :consultation="consultation" :patient="patient"
+                @edit="$emit('edit-consultation', consultation)"
+                @delete="$emit('delete-consultation', consultation.id)" />
+            </div>
           </div>
         </q-tab-panel>
 
